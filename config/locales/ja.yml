@@ -188,6 +188,10 @@ ja:
       long: ! '%Y年%m月%d日(%a) %H時%M分%S秒 %z'
       short: ! '%y/%m/%d %H:%M'
     pm: 午後
+  virus_check_status:
+    safe: "0"
+    virus_check_down: "ウィルスソフトが起動していません"
+    error: "ウィルスチェック中にエラーが発生しました"
   # remove these aliases after 'activemodel' and 'activerecord' namespaces are removed from Rails repository
   activemodel:
     errors:

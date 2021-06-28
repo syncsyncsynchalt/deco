@@ -25,6 +25,7 @@ Rails.application.routes.draw do
     post :upload, :on => :collection
     post :upload5, :on => :collection
     get :send_ng, :on => :collection
+    get :send_ng2, :on => :collection
     post :create_noflash, :on => :collection
     get :login, :on => :collection
     get :auth, :on => :collection
@@ -92,6 +93,7 @@ Rails.application.routes.draw do
     post :upload, :on => :collection
     post :upload5, :on => :collection
     get :send_ng, :on => :collection
+    get :send_ng2, :on => :collection
     post :create_noflash, :on => :collection
     get :result, :on => :collection
     get :delete, :on => :collection

@@ -234,6 +234,25 @@ class FileSendController < ApplicationController
         flash[:notice] = '送信失敗しました。もう一度送信してください。'
           redirect_to :action => 'send_ng' and return
       end
+      @virus_down_attachments = Array.new
+      @virus_error_attachments = Array.new
+      @attachments.each do |attachment|
+        unless attachment.virus_check == '0' ||
+           attachment.virus_check == nil
+          if attachment.virus_check == t("virus_check_status.virus_check_down")
+            @virus_down_attachments.push attachment
+          elsif attachment.virus_check == t("virus_check_status.error")
+            @virus_error_attachments.push attachment
+          end
+        end
+      end
+      if @attachments.length == @virus_down_attachments.length
+        flash[:notice] = 'ウィルスチェック機能が正常に動作していません。'
+          redirect_to :action => 'send_ng2' and return
+      elsif @attachments.length == @virus_error_attachments.length
+        flash[:notice] = '送信失敗しました。もう一度送信してください。'
+          redirect_to :action => 'send_ng' and return
+      end
       ActiveRecord::Base.transaction do
         @send_matter.save!
         @virus_attachments = Array.new
@@ -417,7 +436,10 @@ class FileSendController < ApplicationController
           @send_matter.mail_address += '@' + params[:mail_domain]
         end
         @send_matter.save!
+        @attachments = Array.new
         @virus_attachments = Array.new
+        @virus_down_attachments = Array.new
+        @virus_error_attachments = Array.new
         params[:attachment].each do |key, value|
           @attachment = Attachment.new
           @attachment.send_matter = @send_matter
@@ -454,6 +476,22 @@ class FileSendController < ApplicationController
             @attachment.virus_check = '0'
             @attachment.save
           end
+          @attachments.push @attachment
+          unless @attachment.virus_check == '0' ||
+             @attachment.virus_check == nil
+            if @attachment.virus_check == t("virus_check_status.virus_check_down")
+              @virus_down_attachments.push @attachment
+            elsif @attachment.virus_check == t("virus_check_status.error")
+              @virus_error_attachments.push @attachment
+            end
+          end
+        end
+        if @attachments.length == @virus_down_attachments.length
+          flash[:notice] = 'ウィルスチェック機能が正常に動作していません。'
+            redirect_to :action => 'send_ng2' and return
+        elsif @attachments.length == @virus_error_attachments.length
+          flash[:notice] = '送信失敗しました。もう一度送信してください。'
+            redirect_to :action => 'send_ng' and return
         end
 
         params[:receiver].each do |key, value|

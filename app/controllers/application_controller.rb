@@ -275,9 +275,27 @@ class ApplicationController < ActionController::Base
   end
 
   def get_virus_status(tmp_path)
-    virus_status = nil
+#    virus_status = nil
+    virus_status = t("virus_check_status.error")
+    clamd_service_down_status = false
+    clamd_service_down_status1 = false
+    clamd_service_down_status2 = false
+    clamd_service_error = false
+    output_str = ""
     begin
       output, err, status = Open3.capture3("clamdscan #{tmp_path}")
+      for str in err.split(/\n|\r\n|\r/)
+        output_str += str
+        if str.include?("ERROR: Could not connect to clamd on LocalSocket") && str.include?("clamd.sock: No such file or directory")
+          clamd_service_down_status = true
+        end
+        if str.include?("ERROR: Could not connect to clamd on LocalSocket")
+          clamd_service_down_status1 = true
+        end
+        if str.include?("clamd.sock: No such file or directory")
+          clamd_service_down_status2 = true
+        end
+      end
       for str in output.split(/\n|\r\n|\r/)
         if str.include?(tmp_path)
           if str.include?("#{tmp_path}: OK")
@@ -286,9 +304,23 @@ class ApplicationController < ActionController::Base
             virus_status = str.sub!(/#{tmp_path}:\ /, '').sub!(/\ FOUND/, '')
           end
         end
+        if str.include?("Total errors:")
+          clamd_service_error = true
+        end
+      end
+      if clamd_service_error == true
+        virus_status = t("virus_check_status.error")
+      end
+      if clamd_service_down_status1 == true && clamd_service_down_status2 == true
+        virus_status = t("virus_check_status.virus_check_down")
+      end
+      if clamd_service_down_status == true && clamd_service_error == true
+        virus_status = t("virus_check_status.virus_check_down")
       end
     rescue
+      virus_status = t("virus_check_status.error")
     end
+#    virus_status = output_str
     return virus_status
   end
 
