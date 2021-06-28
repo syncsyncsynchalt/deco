@@ -25,8 +25,8 @@
       <div class="item-r"></div>
 <%- @attachments.each.with_index do |attachment, count| -%>
 <div class="input-l"><%= count + 1 -%>
-. <%=h truncate(attachment.name, 28) -%>
-（<%=h show_file_size(attachment) %>）</div>
+. <%= attachment.name -%>
+（<%= show_file_size(attachment) %>）</div>
 <%- if(attachment.virus_check != '0') -%>
 <div class="input-r">
 <%= image_tag("common/alert.jpg", :align => 'left', :hspace => '5',
@@ -35,10 +35,10 @@
 ウイルス検出のため削除しました。<br>(<%=h attachment.virus_check -%>)
 </div>
 <%- else -%>
-<div class="input-r"><%= link_to image_tag('/images/common/delete.jpg',
+<div class="input-r"><%= link_to image_tag('common/delete.jpg',
 {:border => '0', :alt => '削除'}),
 {:action => 'delete', :id => attachment.id},
-{:confirm => "削除しますか？", :method => "post"} -%></div>
+ :data => {:confirm => '削除しますか？'} -%></div>
 <%- end -%>
 <%- end -%>
 </div>
@@ -49,25 +49,81 @@
   <% else %>
     <div class="input-mid">希望しない</div>
   <% end %>
+<% if @send_matter.moderate_flag == 1 %>
+  <div class="item-mid">決裁種別</div>
+  <div class="input-mid">
+<% if @send_moderate == nil %>
+決裁無し
+<% else %>
+<% if @send_moderate.type_flag == 0 %>
+通常決裁
+<% else %>
+簡易決裁
+<% end %>
+<% end %>
+  </div>
+  <div class="item-mid">決裁ルート</div>
+  <div class="input-mid">
+<% number = 0 %>
+    <div class="table-d" style="border:0px;">
+<% for moderater in @send_moderaters %>
+      <div class="input-l" style="border:0px; padding:5px 8px; height:20px;">
+<% number += 1 %>
+<%= number %>.
+<%= moderater.moderater.user.name %>
+      </div>
+<div class="input-r" style="border:0px; padding:5px 8px; height:20px; text-align:center;">
+<% if moderater.result == 1 %>
+<font color="blue"><b>承認</b></font>
+<% elsif moderater.result == 2 %>
+<font color="red">却下</font>
+<% else %>
+未決
+<% end %>
+      </div>
+<% end %>
+    </div>
+  </div>
+  <div class="item-mid">決裁結果</div>
+  <div class="input-mid">
+<% if @send_moderate.result == 1 %>
+<font color="blue"><b>承認</b></font>
+<% elsif @send_moderate.result == 2 %>
+<font color="red">却下</font>
+<% else %>
+  未決
+<% end %>
+  </div>
+<% end %>
   <div class="item-mid">ファイル保存期限</div>
+
+<% if @send_matter.sent_at.present? %>
+  <div class="input-mid"><%=h (Time.parse(@send_matter.sent_at.to_s) +
+                      @send_matter.file_life_period).strftime("%Y年%m月%d日%H時%M分%S秒") %></div>
+<% elsif @send_matter.moderate_flag == nil %>
   <div class="input-mid"><%=h (Time.parse(@send_matter.created_at.to_s) +
                       @send_matter.file_life_period).strftime("%Y年%m月%d日%H時%M分%S秒") %></div>
+<% else %>
+  <div class="input-mid">&nbsp;</div>
+<% end %>
   <div class="item-mid">相手へのメッセージ</div>
   <% if @send_matter.message == '' %>
     <div class="input-mid">　</div>
   <% else %>
     <div class="input-mid"><%=h @send_matter.message %></div>
   <% end %>
+<% if @send_matter.sent_at.present? || @send_matter.moderate_flag == nil %>
   <div class="item-mid">ダウンロードページ</div>
   <div class="input-mid">ダウンロードページのURLをお相手の方へメールで案内しています。<br />
     確認を行う場合はこちらから行えます<br /><br />
     <% @send_matter.receivers.each do |receiver| %>
       <%=h receiver.name %> 様 URL<br />
-      <a href="http://<%= $app_env['URL'] %>/file_receive/login/<%= receiver.url %>">
-      http://<%= $app_env['URL'] %>/<br>
+      <a href="<%= @port %><%= $app_env['URL'] %>/file_receive/login/<%= receiver.url %>">
+      <%= @port %><%= $app_env['URL'] %>/<br>
       file_receive/login/<%= receiver.url %></a> <br /><br />
     <% end %>
   </div>
+<% end %>
 </div>
 
 <div align="center" style="clear:both;">

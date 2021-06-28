@@ -15,9 +15,9 @@ $(document).ready(function() {
 <fieldset>
 <div class="table-sys-a">
 
-<% form_for(@app_env, :url => { :action => 'param_update', :id => @app_env.id},
+<%= form_for(@app_env, :url => { :action => 'param_update', :id => @app_env.id},
                       :html => {:id => 'app_env', :name=> "app_env" }) do |f| %>
-  <%= f.error_messages %>
+  <%#= f.error_messages %>
   <div class="item-mid"></div>
   <div class="input-mid"><%= f.text_field :value, :class => 'validate[required, custom[IPAddress]]' %></div>
   <div class="item-mid"></div>

@@ -11,19 +11,20 @@ $(document).ready(function() {
 });
 </script>
 
-<%= $param_label[@app_env.key] %>の設定変更
+<%= $param_label[@app_env.key] %><% if $param_unit[@app_env.key].present? %>(単位：<%= $param_unit[@app_env.key] %>)<% end %>の設定変更
 <fieldset>
 <div class="table-sys-a">
 
-<% form_for(@app_env, :url => { :action => 'update', :id => @app_env.id},
-                      :html => {:id => 'app_env', :name=> "app_env" }) do |f| %>
-  <%= f.error_messages %>
-  <div class="item-mid">秒</div>
-  <div class="input-mid"><%= f.text_field :value, :class => 'validate[required, custom[onlyNumber]]' %></div>
-  <div class="item-mid">ラベル</div>
-  <div class="input-mid"><%= f.text_field :note, :class => 'validate[required]' %></div>
+  <%= form_tag({:action => :update_term}, :id => 'app_env', :name=> "app_env") do -%>
+<%#= form_tag({ :action => 'update_term' }, { :id => 'app_env', :name=> "app_env"} ) do %>
   <div class="item-mid"></div>
-  <div class="input-mid"><%= f.submit "　更新　" %></div>
+  <div class="input-mid"><%= hidden_field_tag 'id', @app_env.id %>
+                         <%= text_field_tag 'term', @term, :size => 5,
+                               :class => 'validate[required, custom[onlyNumber]]' %>
+                         <%= select_tag 'unit', options_for_select([["日", 1], ["時間", 0]], @unit) %>
+  </div>
+  <div class="item-mid"></div>
+  <div class="input-mid"><%= submit_tag " 更新 " -%></div>
 
 <% end %>
 

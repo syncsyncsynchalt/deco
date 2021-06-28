@@ -1,0 +1,79 @@
+<% if @parent_frame -%>
+<fieldset>
+<div class="table-sys-a">
+  <div class="item-mid">親ページ</div>
+  
+  <div class="input-mid">
+  <b><%= @parent_frame.title %></b><br>
+  </div>
+</div>
+</fieldset>
+<br>
+<% end -%>
+
+<fieldset>
+<%= link_to "タイトル編集", { :action => 'edit_title', :id => @content_frame.id } %><br />
+<div class="table-sys-a">
+  <div class="item-mid">タイトル</div>
+  
+  <div class="input-mid">
+  <%= @content_frame.title %><br>
+  </div>
+</div>
+</fieldset>
+
+<br>
+
+<fieldset>
+<%= link_to "説明編集", { :action => 'edit_description', :id => @content_frame.id } %><br />
+<div class="table-sys-a">
+  <div class="item-mid">説明</div>
+  
+  <div class="input-mid">
+  <%= @content_frame.description %><br>
+  </div>
+</div>
+</fieldset>
+
+<br><br>
+
+  <%= form_for(:content_item, :url => { :action => "edit_item"}) do |f| %>
+    <%= f.hidden_field :master_frame, {:value => @master_frame} %>
+
+    <%= f.select :category,
+               $content_item_category %>
+
+    <%= f.submit "　アイテムの追加　" %>
+  <% end %>
+<br>
+
+<% if session[:target_for_back_id] -%>
+<%= link_to "戻る", {:action => session[:target_for_back], :id => session[:target_for_back_id]} %><br />
+<% else -%>
+<%= link_to "戻る", {:action => session[:target_for_back]} %><br />
+<% end -%>
+
+<br>
+<% amt = 0 -%>
+<% @content_items.each.with_index do |content_item, count| %>
+  <% amt = amt + 1 -%>
+  <b><%= $content_item_category[content_item.category - 1][0] %></b>[ID: <%= content_item.id %>]　
+  <%= link_to "編集", { :action => 'edit_item', :id => content_item.id } %>　
+  <%= link_to "削除", { :action => 'delete_item', :id => content_item.id},
+    :data =>{ :confirm => 'アイテムID:' + content_item.id.to_s + 'を削除してもよろしいですか？'},
+    :method => :delete  %><br />
+  
+  <%= raw @items[count] %>
+  <div><br></div>
+
+<% end -%>
+<% if amt == 0 -%>
+  データが登録されていません。<br>
+<% end -%>
+<br>
+
+<% if session[:target_for_back_id] -%>
+<%= link_to "戻る", {:action => session[:target_for_back], :id => session[:target_for_back_id]} %><br />
+<% else -%>
+<%= link_to "戻る", {:action => session[:target_for_back]} %><br />
+<% end -%>

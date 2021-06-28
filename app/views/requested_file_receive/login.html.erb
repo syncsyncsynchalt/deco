@@ -10,12 +10,12 @@
   });
 </script>
 
-<% form_for(:login, :url => { :action => "auth" }, :html => {:id => 'login', :name=> "login" }) do |f| -%>
-<%= f.error_messages %>
+<%= form_for(:login, :url => { :action => "auth" }, :html => {:id => 'login', :name=> "login" }) do |f| -%>
+<%#= f.error_messages %>
 
 <p>
   <%= f.label :パスワード %><br />
-  <%= f.text_field :receive_password,  :class => 'validate[required,length[4, 8]]' %>
+  <%= f.text_field :receive_password %>
 </p>
 
 <p>

@@ -1,0 +1,17 @@
+このメールは，「DECO」から発信しております。<br /><br />
+
+<%= @request_matter.name %>様が次の内容でファイル送信を行いました。<br><br>
+
+■依頼ID<br />
+<%= @request_matter.id %><br /><br />
+
+■送信者一覧<br />
+<% @request_matter.requested_matters.each.with_index do | requested_matter, count | -%>
+  <%= count + 1 %>.<%= requested_matter.name %> 様（<%= requested_matter.mail_address %>）<br />
+<% end -%><br />
+
+■相手へのメッセージ<br />
+<%= @request_matter.message %><br /><br />
+
+■決裁を行う場合はこちらのURLをクリックしてください<br />
+<%= @url %>/file_request_moderate/login/<%= @request_moderater.url %><br />

@@ -1,0 +1,24 @@
+このメールは，<%= h @request_matter.name %>様からの依頼により，<%= @mail_content %>「DECO」から発信しております。<br /><br />
+
+<%= h @receiver %> 様<br /><br />
+
+<%= h @request_matter.name %> 様からファイル送信依頼が来ております。<br /><br />
+
+■依頼ID<br />
+<%= @request_matter.id %><br /><br />
+
+■送信者へのメッセージ<br />
+<%= h @request_matter.message %><br /><br />
+
+下の送信案内ページよりファイル送信をお願いします。<br />
+<%= h @url %><br /><br />
+
+<% if @request_matter.sent_at.present? %>
+<%= (Time.parse(@request_matter.sent_at.to_s) +
+                      @request_period).strftime("%Y年%m月%d日%H時%M分%S秒") %>　までに送信してください。<br /><br />
+<% elsif @send_matter.moderate_flag == nil %>
+<%= (Time.parse(@request_matter.created_at.to_s) +
+                      @request_period).strftime("%Y年%m月%d日%H時%M分%S秒") %>　までに送信してください。<br /><br />
+<% end %>
+
+なお，システムを利用するには，パスワードが必要になります。<br />

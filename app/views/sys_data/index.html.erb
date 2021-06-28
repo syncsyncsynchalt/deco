@@ -1,5 +1,5 @@
 データ数：<%= @saved_files.length %>　
-[ <%= @part_of_page %> ]
+[ <%= raw @part_of_page %> ]
 
 <% count = 0 -%>
 
@@ -27,7 +27,7 @@
         <% elsif saved_file.file_size.to_i > 1024 -%>
           <% label_file_size = (saved_file.file_size.to_i / 1024).to_s + ' KB' -%>
         <% else -%>
-          <% label_file_size = saved_file.file_size + ' B' -%>
+          <% label_file_size = saved_file.file_size.to_s + ' B' -%>
         <% end -%>
         <% if saved_file.file_download_flg.to_i == 0 -%><% download_flg = "未" -%>
         <% elsif saved_file.file_download_flg.to_i == 1 -%><% download_flg = "済" -%>
@@ -52,13 +52,13 @@
         <td nowrap><%= saved_file.sender_mail_address %></td>
         <td nowrap><%= saved_file.file_id %></td>
         <td nowrap><% if saved_file.flg == '送信' -%>
-                     <% if File.exist?($app_env['FILE_DIR'] + "/#{saved_file.file_id}") -%>
+                     <% if File.exist?($app_env['FILE_DIR'].to_s + "/#{saved_file.file_id}") -%>
                        <%= link_to saved_file.file_name, {:controller => 'sys_data',
                                                           :action => 'get_send_file',
                                                           :id => saved_file.file_id } %>
                      <% else -%><%= saved_file.file_name -%><% end -%>
                    <% elsif saved_file.flg == '依頼' -%>
-                     <% if File.exist?($app_env['FILE_DIR'] + "/r#{saved_file.file_id}") -%>
+                     <% if File.exist?($app_env['FILE_DIR'].to_s + "/r#{saved_file.file_id}") -%>
                        <%= link_to saved_file.file_name, {:controller => 'sys_data',
                                                           :action => 'get_requested_file',
                                                           :id => saved_file.file_id } %>

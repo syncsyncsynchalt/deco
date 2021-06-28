@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # Copyright (C) 2010 NMT Co.,Ltd.
 #
 # This program is free software: you can redistribute it and/or modify
@@ -13,7 +14,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-# Methods added to this helper will be available to all templates in the application.
+# Filters added to this controller apply to all controllers in the application.
+# Likewise, all the methods added will be available for all controllers.
 module ApplicationHelper
   def show_file_size(attachment)
     html =''

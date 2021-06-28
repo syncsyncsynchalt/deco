@@ -6,7 +6,7 @@
     </div>
   <% end -%>
 
-  <% form_tag :action => :login_for_administrator do -%>
+  <%= form_tag :action => :login_for_administrator do -%>
   <div id="login_d">
       <%= image_tag("common/userid.gif", :alt => "ユーザID") %>
       <%= text_field_tag 'login' %><br />
@@ -15,6 +15,6 @@
       <%= image_submit_tag("common/login.gif")%>
     </div>
     <br /><br />
-    <%= image_tag("common/copyright.gif", :alt => "Tokushima Prefectural Government") %>
+    <font color="#778899">Powered by</font> <a href="http://deco-project.org"><%= image_tag('common/deco_s2.jpg', :alt => "powerd by DECO", :style => "vertical-align: middle;", :border => 0) %></a>
   <% end -%>
 </div>

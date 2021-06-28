@@ -1,0 +1,92 @@
+<%= form_for(:content_item, :url => { :action => "register_item"},
+  :html => {:multipart => true }) do |f| %>
+  <%= f.hidden_field :master_frame, {:value => @content_item.master_frame} %>
+  <%= f.hidden_field :category, {:value => @content_item.category} %>
+  <% if @edit_type == "update" -%><%= f.hidden_field :id, {:value => @content_item.id} %>
+    
+  <% end -%>
+
+  <% case @content_item.category when 1 -%>
+    <fieldset>
+    <h2><%= $content_item_category[@content_item.category - 1][0] %></h2>
+    <div class="table-sys-a">
+      <div class="item-mid">タイトル</div>
+      <div class="input-mid">
+      <%= f.text_field :string1, {:value => @content_item.string1} %>
+      </div>
+    </div>
+    </fieldset>
+  <% when 2 -%>
+    <fieldset>
+    <h2><%= $content_item_category[@content_item.category - 1][0] %></h2>
+    <div class="table-sys-a">
+    <%= f.text_area :text1, :cols => '60', :rows => '10', :value => @content_item.text1 %>
+      <div class="item-mid">自動的にbrタグを挿入</div>
+      <div class="input-mid">
+      <%= f.check_box :flg %>
+    </div>
+    </fieldset>
+  <% when 3 -%>
+    <fieldset>
+    <h2><%= $content_item_category[@content_item.category - 1][0] %></h2>
+    <div class="table-sys-a">
+      <div class="item-mid">画像ファイル</div>
+      <div class="input-mid">
+      <input id="image" size= "30" type="file" name="image">
+      </div>
+    </div>
+    </fieldset>
+  <% when 4 -%>
+    <fieldset>
+    <h2><%= $content_item_category[@content_item.category - 1][0] %></h2>
+    <div class="table-sys-a">
+      <div class="item-mid">表示文字</div>
+      <div class="input-mid">
+      <%= f.text_field :string1, {:value => @content_item.string1} %>
+      </div>
+
+      <div class="item-mid">リンク先ＵＲＬ</div>
+      <div class="input-mid">
+      <%= f.text_field :url, {:value => @content_item.url} %><br>(例：http://oooo.oo.jp)
+      </div>
+
+      <div class="item-mid">新しくウィンドウを開く</div>
+      <div class="input-mid">
+      <%= f.check_box :flg %>
+      </div>
+    </div>
+    </fieldset>
+  <% when 5 -%>
+    <fieldset>
+    <h2><%= $content_item_category[@content_item.category - 1][0] %></h2>
+    <div class="table-sys-a">
+      <div class="item-mid">リンク用画像ファイル</div>
+      <div class="input-mid">
+      <input id="image" size= "30" type="file" name="image">
+      </div>
+
+      <div class="item-mid">リンク先ＵＲＬ</div>
+      <div class="input-mid">
+      <%= f.text_field :url, {:value => @content_item.url} %><br>(例：http://oooo.oo.jp)
+      </div>
+
+      <div class="item-mid">新しくウィンドウを開く</div>
+      <div class="input-mid">
+      <%= f.check_box :flg %>
+      </div>
+    </div>
+    </fieldset>
+  <% end -%>
+
+  <br>
+  <%= f.submit "　登録　" %>
+<% end %>
+
+<br>
+<br>
+
+<% if session[:target_for_back_id] -%>
+<%= link_to "戻る", {:action => session[:target_for_back], :id => session[:target_for_back_id]} %><br />
+<% else -%>
+<%= link_to "戻る", {:action => session[:target_for_back]} %><br />
+<% end -%>

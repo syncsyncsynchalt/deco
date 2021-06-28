@@ -1,0 +1,34 @@
+<h1><%= raw @title -%></h1>
+
+<%- if @content_frames.length > 0 -%>
+<div id="usage">
+<dl>
+<%- @content_frames.each.with_index do |content_frame, count| -%>
+<%- if content_frame.id == @self_frame.id -%>
+<dt><b><%= raw content_frame.title -%>
+</b></dt>
+<dd></dd>
+<%- else -%>
+<dt><%= link_to content_frame.title, { :action => 'load',
+:id => content_frame.id } -%>
+</dt>
+<dd></dd>
+<%- end -%>
+<%- end -%>
+</dl>
+</div>
+<br>
+<%- end -%>
+
+<div id="ex">
+
+<%- amt = 0 -%>
+<%- @content_items.each.with_index do |content_item, count| -%>
+<%- amt = amt + 1 -%>
+<%= raw @items[count] -%>
+<%- unless content_item.category.to_i == 1 -%>
+<div><br></div>
+<%- end -%>
+<%- end -%>
+</div>
+

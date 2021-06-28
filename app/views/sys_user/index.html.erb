@@ -1,24 +1,38 @@
   <fieldset>
   <h2>登録ユーザ一覧</h2>
-  <div align="right"><%= link_to '新規作成', {:controller => 'users', :action => 'new'} %></div>
-  <div class="table-sys-a">
-    <div class="item-mid3-1">ユーザＩＤ<br></div>
-    <div class="item-mid3-2">メールアドレス／備考<br></div>
-    <div class="item-mid3-3">　</div>
+  <div align="right"><%= link_to '新規作成', {:controller => 'user', :action => 'new'} %></div>
+  <table class="system-content">
+    <thead>
+      <tr>
+        <th width=20% class="c1">ユーザＩＤ</th>
+        <th width=20%>決裁ルート</th>
+        <th width=30%>メールアドレス／備考</th>
+        <th width=30%>　</th>
+      </tr>
+    </thead>
+    <tbody>
     <% cnt = 0 -%>
     <% for user in @users -%>
-      <% cnt =+ 1 %>
-      <div class="input-mid3-1"><%= user.login %></div>
-      <div class="input-mid3-2"><%= user.email %><br>
+      <% cnt = 1 %>
+      <tr>
+        <td class="c1"><%= user.login %></td>
+        <td class="c1">
+        <% if user.moderate_id.present? %>
+          <%= user.moderate.name %>
+        <%- else -%>決裁ルート無し
+        <% end %>
+        </td>
+        <td><%= user.email %>
       <%- if user.note -%><%= user.note -%>
-      <%- else -%><br>
-      <%- end -%><br></div>
-      <div class="input-mid3-3">
+      <%- else -%>
+      <%- end -%></td>
+        <td>
       <%= link_to '[パスワード変更]', {:action => 'chg_pw', :id => user.id } %>
-      <%= link_to '[編集]', {:action => 'edit', :id => user.id } %>
+      <%= link_to '[編集]', {:action => 'edit', :id => user.id } %><br>
+      <%= link_to '[決裁ルート変更]', {:action => 'chg_moderate', :id => user.id } %>
       <%= link_to '[削除]', {:action => 'destroy', :id => user.id},
-                             :confirm => '削除します。よろしいですか?',
-                             :method => :delete -%><br></div>
+                             :data => {:confirm => '削除します。よろしいですか?'},
+                             :method => :delete -%></td>
     <%- end -%>
     <%- if cnt == 0 -%>
       <div class="input-mid3-1"><br></div>
@@ -26,7 +40,7 @@
       <div class="input-mid3-3"><br></div>
     <%- end -%>
 
-  </div>
+  </table>
   </fieldset>
 
 <br><br><br>

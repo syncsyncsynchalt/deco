@@ -15,7 +15,7 @@ $(document).ready(function() {
 
   <fieldset>
   <h2>アナウンスの編集</h2>
-  <% form_for(@announcement, :url => { :action => "update", :id => @announcement.id}, 
+  <%= form_for(@announcement, :url => { :action => "update", :id => @announcement.id}, 
               :html => {:id => 'announcement', :name=> "announcement" }) do |f| -%>
     <div class="table-sys-a">
       <div class="item-mid2">タイトル</div>

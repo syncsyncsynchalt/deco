@@ -1,14 +1,15 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+
+<script type="text/javascript">
+script_url = "<%= url_options[:script_name] %>";
+</script>
+
 <html>
 <head>
   <title>システム管理 - DECO Drive</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-  <%= javascript_include_tag  'jquery', 'jquery.validationEngine', 'swfupload', 'swfupload.queue', 'handlers', 'fileprogress', 'deco' %>
-  <%= stylesheet_link_tag 'os', 'validationEngine.jquery' %>
-  <%= stylesheet_link_tag 'template' %>
-  <%= stylesheet_link_tag 'swfupload' %>
-  <%= stylesheet_link_tag 'styles' %>
-  <%= stylesheet_link_tag 'system.styles' %>
+  <%= stylesheet_link_tag "application" %>
+  <%= javascript_include_tag "application" %>
 </head>
 
 <% if controller.controller_name == 'top' %>
@@ -30,18 +31,17 @@
 <% end %>
 
 <div id="header">
-<img src="/images/common/deco_logo01.jpg" alt="DECO Drive" />
+<%= image_tag('common/deco_logo01.jpg', :alt => "DECO Drive", :border => 0) %>
 </div>
 
 <div id="status">
 [<%= `hostname`.chop -%>]
-<% @access_ip = request.env['HTTP_X_FORWARDED_FOR'] -%>
 接続IPアドレス:<%= @access_ip %>
-<% if logged_in? -%>
+<% if session[:user_id] -%>
   利用状況:外部アクセス( ユーザID: <%= current_user.login %> )
-  <%= link_to '[ログアウト]', :controller => :sessions, :action => :new_for_administrator %>
+  <%= link_to '[ログアウト]', :controller => :sessions, :action => :logout_for_administrator %>
 <% else -%>
-  利用状況:ローカルアクセスアクセス又は外部から
+  利用状況:ローカルアクセス又は外部から
 <% end -%>
 </div>
 
@@ -52,26 +52,28 @@
 <div id="sys-main">
   <div id="sys-menu">
   <br>
-  <ul><li><a href="/sys_top/">トップ</a><br></li></ul>
+  <ul><li><%= link_to "トップ", :controller => :sys_top %><br></li></ul>
   アナウンス管理
-  <ul><li><a href="/sys_announcement/index/">アナウンス管理</a></li></ul>
+  <ul><li><%= link_to "アナウンス管理", :controller => :sys_announcement %></li></ul>
   パラメータ管理
-  <ul><li><a href="/sys_param/common_index/">共通項目</a></li>
-  <li><a href="/sys_param/user_type_index/local/">ローカルユーザ</a></li>
-  <li><a href="/sys_param/user_type_index/remote/">リモートユーザ</a></li></ul>
+  <ul><li><%= link_to "共通項目", :controller => :sys_param, :action => :common_index %></li>
+  <li><%= link_to "ローカルユーザ", :controller => :sys_param, :action => :user_type_index, :id => :local %></li>
+  <li><%= link_to "リモートユーザ", :controller => :sys_param, :action => :user_type_index, :id => :remote %></li></ul>
   ユーザ管理
-  <ul><li><a href="/sys_user/index/1">システム管理者</a></li>
-  <li><a href="/sys_user/index/2">リモートユーザ</a></li></ul>
+  <ul><li><%= link_to "システム管理者", :controller => :sys_user, :id => 1 %></li>
+  <li><%= link_to "リモートユーザ", :controller => :sys_user, :id => 2 %></li></ul>
+  決裁管理
+  <ul><li><%= link_to "決裁登録", :controller => :sys_moderate %></li></ul>
   コンテンツ管理
-  <ul><li><a href="/sys_contents/index/">コンテンツ管理</a></li></ul>
+  <ul><li><%= link_to "コンテンツ管理", :controller => :sys_content %></li></ul>
   登録データ確認
-  <ul><li><a href="/sys_data/index/">登録データ確認</a></li></ul>
+  <ul><li><%= link_to "登録データ確認", :controller => :sys_data %></li></ul>
   ログ閲覧
-  <ul><li><a href="/sys_log/send_log/">送信ログ</a></li>
-  <li><a href="/sys_log/receive_log/">受信ログ</a></li>
-  <li><a href="/sys_log/request_log/">依頼ログ</a></li></ul>
+  <ul><li><%= link_to "送信ログ", :controller => :sys_log, :action => :send_log %></li>
+  <li><%= link_to "受信ログ", :controller => :sys_log, :action => :receive_log %></li>
+  <li><%= link_to "依頼ログ", :controller => :sys_log, :action => :request_log %></li></ul>
   実績集計
-  <ul><li><a href="/sys_total/index/">実績集計</a></li></ul>
+  <ul><li><%= link_to "実績集計", :controller => :sys_total %></li></ul>
   </div>
 
   <div id="sys-cont">

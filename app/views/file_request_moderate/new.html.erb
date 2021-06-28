@@ -1,0 +1,30 @@
+<h2>拒否の理由を記載してください。</h2>
+<%= form_for(:request_modertaer, :url => { :action => "create", :id => params[:id]},
+  :html => {:id => 'request_moderater', :name=> "request_modertaer" }) do |f| %>
+<%= f.hidden_field :result, {:value => 2} %>
+<div class="table-a">
+  <div class="item-top">送信者へのメッセージ</div>
+  <div class="input-top"><%= f.text_area :content, :cols => "40", :rows => '5' -%>
+  </div>
+  <div class="item-mid"></div>
+  <div class="input-mid">
+    <div class="table-d" style="border:0px;">
+      <div class="input-l" style="border:0px;">
+        <%= f.submit "送　信",
+          :data => {:confirm => 'この内容を送信します。よろしいですか？'} %>
+      </div>
+<div class="input-r" style="border:0px;">
+      </div>
+    </div>
+  </div>
+</div>
+<% end -%>
+<br />
+    <div class="table-d" style="border:0px;">
+      <div class="input-l" style="border:0px;">
+<%= link_to "戻　る", :action => :index, :id => params[:id] %>
+      </div>
+<div class="input-r" style="border:0px;">
+      </div>
+    </div>
+<br />

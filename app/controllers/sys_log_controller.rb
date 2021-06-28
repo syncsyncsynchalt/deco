@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # Copyright (C) 2010 NMT Co.,Ltd.
 #
 # This program is free software: you can redistribute it and/or modify
@@ -13,9 +14,11 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
+# Filters added to this controller apply to all controllers in the application.
+# Likewise, all the methods added will be available for all controllers.
 class SysLogController < ApplicationController
   require "rubygems"
-  require "mysql"
+  require "mysql2"
   layout 'system_admin'
   before_filter :check_ip_for_administrator, :administrator_authorize
   before_filter :load_env
@@ -25,17 +28,6 @@ class SysLogController < ApplicationController
     @time1 = Time.now.strftime("%Y/%m/%d %H:%M:%S")
     session[:section_title] = '送信ログ閲覧'
 
-    dbconfig = YAML.load_file("config/database.yml")[RAILS_ENV]
-    dbhost = dbconfig["host"]
-    dbusername = dbconfig["username"]
-    dbpassword = dbconfig["password"]
-    if $database == ""
-       dbname = dbconfig["database"]
-    else
-       dbname = $database
-    end
-    db = Mysql::connect(dbhost, dbusername ,dbpassword ,dbname )
-    db.query("set names utf8")
     if params[:id]
       @page = params[:id].to_i
     else
@@ -68,38 +60,43 @@ class SysLogController < ApplicationController
 
     case @type.to_i
     when 1
-      condition1 = "send_matters.name = \'" + @keyward.to_s + "\'"
+      condition1 = "send_matters.name like '%" + @keyward.to_s + "%'"
       sqlstr = "select * from send_matters where " + condition1
-      @rs = db.query sqlstr
-      @total_data = @rs.num_rows
+#      @rs = db.query sqlstr
+      @rs = SendMatter.find_by_sql(sqlstr)
+      @total_data = @rs.length
     when 2
-      condition1 = "send_matters.mail_address = \'" +
-              @keyward.to_s + "\'"
+      condition1 = "send_matters.mail_address like '%" +
+              @keyward.to_s + "%'"
       sqlstr = "select * from send_matters where " + condition1
-      @rs = db.query sqlstr
-      @total_data = @rs.num_rows
+#      @rs = db.query sqlstr
+      @rs = SendMatter.find_by_sql(sqlstr)
+      @total_data = @rs.length
     when 3
-      condition2 = "receivers.name = \'" + @keyward.to_s + "\'"
+      condition2 = "receivers.name like '%" + @keyward.to_s + "%'"
       sqlstr = "select distinct(send_matters.id) " +
               "from send_matters " +
               "left outer join receivers " +
               "on send_matters.id = receivers.send_matter_id " +
               "where " + condition2
-      @rs = db.query sqlstr
-      @total_data = @rs.num_rows
+#      @rs = db.query sqlstr
+      @rs = SendMatter.find_by_sql(sqlstr)
+      @total_data = @rs.length
     when 4
-      condition2 = "receivers.mail_address = \'" + @keyward.to_s + "\'"
+      condition2 = "receivers.mail_address like '%" + @keyward.to_s + "%'"
       sqlstr = "select distinct(send_matters.id) " +
               "from send_matters " +
               "left outer join receivers " +
               "on send_matters.id = receivers.send_matter_id " +
               "where " + condition2
-      @rs = db.query sqlstr
-      @total_data = @rs.num_rows
+#      @rs = db.query sqlstr
+      @rs = SendMatter.find_by_sql(sqlstr)
+      @total_data = @rs.length
     else
       sqlstr = "select * from send_matters "
-      @rs = db.query sqlstr
-      @total_data = @rs.num_rows
+#      @rs = db.query sqlstr
+      @rs = SendMatter.find_by_sql(sqlstr)
+      @total_data = @rs.length
     end
 
     if condition == ""
@@ -132,6 +129,8 @@ class SysLogController < ApplicationController
 
     if @page > @total_page
       @page = 1
+    elsif @page <= 0
+      @page = 1
     end
 
     @s_data = (@page - 1) * @amt_data + 1
@@ -141,11 +140,11 @@ class SysLogController < ApplicationController
     @select_month.push ["選んで下さい", 0]
     sqlstr_for_csv = "select distinct DATE_FORMAT(created_at, \'%Y%m\') as m " +
             "from send_matters order by m desc"
-    @rs = db.query sqlstr_for_csv
+    @rs = SendMatter.find_by_sql(sqlstr_for_csv)
     @rs.each do | data |
-      year = data[0].slice(0, 4).to_i
-      mon = data[0].slice(4, 2).to_i
-      @select_month.push [year.to_s + '年' + mon.to_s + '月', data[0]]
+      year = data.m.slice(0, 4).to_i
+      mon = data.m.slice(4, 2).to_i
+      @select_month.push [year.to_s + '年' + mon.to_s + '月', data.m]
     end
 
     @part_of_page = original_paginate('sys_log', 'send_log', @page,
@@ -155,7 +154,7 @@ class SysLogController < ApplicationController
     when  3, 4
       sqlstr = "select " +
           "tbl1.sub_id as send_matter_id, " +
-          "convert_tz(tbl1.created_at, '+00:00', '+09:00') " +
+          "tbl1.created_at " +
             "as created_at, " +
           "tbl1.sender_name as sender_name, " +
           "tbl1.mail_address as sender_mail_address, " +
@@ -199,7 +198,7 @@ class SysLogController < ApplicationController
     else
       sqlstr = "select " +
           "tbl1.sub_id as send_matter_id, " +
-          "convert_tz(tbl1.created_at, '+00:00', '+09:00') " +
+          "tbl1.created_at " +
             "as created_at, " +
           "tbl1.sender_name as sender_name, " +
           "tbl1.mail_address as sender_mail_address, " +
@@ -237,9 +236,10 @@ class SysLogController < ApplicationController
     session[:debug] = sqlstr
     @time2 = Time.now.strftime("%Y/%m/%d %H:%M:%S")
     
-    @rs = db.query sqlstr
+#    @rs = db.query sqlstr
+    @rs = SendMatter.find_by_sql(sqlstr)
 
-    db.close if db
+#    db.close if db
     @time3 = Time.now.strftime("%Y/%m/%d %H:%M:%S")
 
   end
@@ -247,19 +247,6 @@ class SysLogController < ApplicationController
   # 受信ログ
   def receive_log
     session[:section_title] = '受信ログ閲覧'
-
-    dbconfig = YAML.load_file("config/database.yml")[RAILS_ENV]
-    dbhost = dbconfig["host"]
-    dbusername = dbconfig["username"]
-    dbpassword = dbconfig["password"]
-    if $database == ""
-       dbname = dbconfig["database"]
-    else
-       dbname = $database
-    end
-
-    db = Mysql::connect(dbhost, dbusername ,dbpassword ,dbname )
-    db.query("set names utf8")
 
     condition1 = ""
     condition2 = ""
@@ -271,12 +258,12 @@ class SysLogController < ApplicationController
       @keyward = params[:keyward]
       case @type.to_i
       when 0
-        condition1 = " and receivers.name = \'" + @keyward.to_s + "\'"
-        condition2 = " and request_matters.name = \'" + @keyward.to_s + "\'"
+        condition1 = " and receivers.name like '%" + @keyward.to_s + "%'"
+        condition2 = " and request_matters.name like '%" + @keyward.to_s + "%'"
       when 1
-        condition1 = " and receivers.mail_address = \'" + @keyward.to_s + "\'"
-        condition2 = " and request_matters.mail_address = \'" +
-                @keyward.to_s + "\'"
+        condition1 = " and receivers.mail_address like '%" + @keyward.to_s + "%'"
+        condition2 = " and request_matters.mail_address like '%" +
+                @keyward.to_s + "%'"
       end
     end
 
@@ -288,16 +275,20 @@ class SysLogController < ApplicationController
             "select distinct DATE_FORMAT(created_at, \'%Y%m\') as m " +
             "from requested_file_dl_logs " +
             "order by m desc"
-    @rs = db.query sqlstr_for_csv
+    @rs = Receiver.find_by_sql(sqlstr_for_csv)
     @rs.each do | data |
-      year = data[0].slice(0, 4).to_i
-      mon = data[0].slice(4, 2).to_i
-      @select_month.push [year.to_s + '年' + mon.to_s + '月', data[0]]
+      year = data.m.slice(0, 4).to_i
+      mon = data.m.slice(4, 2).to_i
+      @select_month.push [year.to_s + '年' + mon.to_s + '月', data.m]
     end
 
     if params[:id]
       @page = params[:id].to_i
     else
+      @page = 1
+    end
+
+    if @page <= 0
       @page = 1
     end
 
@@ -345,9 +336,10 @@ class SysLogController < ApplicationController
     sqlstr = sqlstr_sub1 + " union all " + sqlstr_sub2 + " order by dl_at desc"
 
     @sql = sqlstr
-    @rs = db.query sqlstr
+#    @rs = db.query sqlstr
+    @rs = Receiver.find_by_sql(sqlstr)
 
-    @total_data = @rs.num_rows
+    @total_data = @rs.length
 
     @total_page = (@total_data/@amt_data).to_i
     unless @total_data % @amt_data == 0 
@@ -364,25 +356,12 @@ class SysLogController < ApplicationController
     @part_of_page = original_paginate('sys_log', 'receive_log', @page,
             @total_page, 4, 2)
 
-    db.close if db
+#    db.close if db
   end
 
   # 依頼ログ
   def request_log
     session[:section_title] = '依頼ログ閲覧'
-
-    dbconfig = YAML.load_file("config/database.yml")[RAILS_ENV]
-    dbhost = dbconfig["host"]
-    dbusername = dbconfig["username"]
-    dbpassword = dbconfig["password"]
-    if $database == ""
-       dbname = dbconfig["database"]
-    else
-       dbname = $database
-    end
-
-    db = Mysql::connect(dbhost, dbusername ,dbpassword ,dbname )
-    db.query("set names utf8")
 
     condition = ""
 
@@ -399,39 +378,43 @@ class SysLogController < ApplicationController
 
       case @type.to_i
       when 0
-        condition = "where request_matters.name = \'" + @keyward.to_s + "\'" +
+        condition = "where request_matters.name like '%" + @keyward.to_s + "%'" +
                 condition
 
         sqlstr = "select * from request_matters " + condition
-        @rs = db.query sqlstr
-        @total_data = @rs.num_rows
+#        @rs = db.query sqlstr
+        @rs = RequestMatter.find_by_sql(sqlstr)
+        @total_data = @rs.length
       when 1
-        condition = "where request_matters.mail_address = \'" +
-                @keyward.to_s + "\'" + condition
+        condition = "where request_matters.mail_address like '%" +
+                @keyward.to_s + "%'" + condition
 
         sqlstr = "select * from request_matters " + condition
-        @rs = db.query sqlstr
-        @total_data = @rs.num_rows
+#        @rs = db.query sqlstr
+        @rs = RequestMatter.find_by_sql(sqlstr)
+        @total_data = @rs.length
       when 2
-        condition = "where requested_matters.name = \'" +
-                @keyward.to_s + "\'" + condition
+        condition = "where requested_matters.name like '%" +
+                @keyward.to_s + "%'" + condition
         sqlstr = "select distinct(request_matters.id) from request_matters " +
                "left outer join requested_matters " +
                "on request_matters.id = requested_matters.request_matter_id " +
                 condition
         @sql = sqlstr
-        @rs = db.query sqlstr
-        @total_data = @rs.num_rows
+#        @rs = db.query sqlstr
+        @rs = RequestMatter.find_by_sql(sqlstr)
+        @total_data = @rs.length
       when 3
-        condition = "where requested_matters.mail_address = \'" +
-                @keyward.to_s + "\'" + condition
+        condition = "where requested_matters.mail_address like '%" +
+                @keyward.to_s + "%'" + condition
         sqlstr = "select distinct(request_matters.id) from request_matters " +
                "left outer join requested_matters " +
                "on request_matters.id = requested_matters.request_matter_id " +
                 condition
         @sql = sqlstr
-        @rs = db.query sqlstr
-        @total_data = @rs.num_rows
+#        @rs = db.query sqlstr
+        @rs = RequestMatter.find_by_sql(sqlstr)
+        @total_data = @rs.length
       end
     else
       unless condition == ""
@@ -439,13 +422,18 @@ class SysLogController < ApplicationController
       end
 
       sqlstr = "select * from request_matters" + condition
-      @rs = db.query sqlstr
-      @total_data = @rs.num_rows
+#      @rs = db.query sqlstr
+      @rs = RequestMatter.find_by_sql(sqlstr)
+      @total_data = @rs.length
     end
 
     if params[:id]
       @page = params[:id].to_i
     else
+      @page = 1
+    end
+
+    if @page <= 0
       @page = 1
     end
 
@@ -467,12 +455,12 @@ class SysLogController < ApplicationController
     @select_month.push ["選んで下さい", 0]
     sqlstr_for_csv = "select distinct DATE_FORMAT(created_at, \'%Y%m\') as m " +
             "from request_matters order by m desc"
-    @rs = db.query sqlstr_for_csv
+#    @rs = db.query sqlstr_for_csv
+    @rs = RequestMatter.find_by_sql(sqlstr_for_csv)
     @rs.each do | data |
-    #for organization in @organizations
-      year = data[0].slice(0, 4).to_i
-      mon = data[0].slice(4, 2).to_i
-      @select_month.push [year.to_s + '年' + mon.to_s + '月', data[0]]
+      year = data.m.slice(0, 4).to_i
+      mon = data.m.slice(4, 2).to_i
+      @select_month.push [year.to_s + '年' + mon.to_s + '月', data.m]
     end
 
     @part_of_page = original_paginate('sys_log', 'request_log', @page,
@@ -482,7 +470,7 @@ class SysLogController < ApplicationController
             "request_matters.id as request_matter_id, " +
             "request_matters.name as request_name, " +
             "request_matters.mail_address as request_mail_address, " +
-            "convert_tz(request_matters.created_at, '+00:00', '+09:00') " +
+            "request_matters.created_at " +
               "as created_at, " +
             "requested_matters.id as requested_matter_id, " +
             "requested_matters.name as requested_name, " +
@@ -494,27 +482,15 @@ class SysLogController < ApplicationController
             condition +
             "order by request_matters.created_at desc"
 
-    @rs = db.query sqlstr
+#    @rs = db.query sqlstr
+    @rs = RequestMatter.find_by_sql(sqlstr)
 
-    db.close if db
+#    db.close if db
 
   end
 
   # 送信ログをcsvファイルに出力
   def get_csv_of_send_log
-    dbconfig = YAML.load_file("config/database.yml")[RAILS_ENV]
-    dbhost = dbconfig["host"]
-    dbusername = dbconfig["username"]
-    dbpassword = dbconfig["password"]
-    if $database == ""
-       dbname = dbconfig["database"]
-    else
-       dbname = $database
-    end
-
-    db = Mysql::connect(dbhost, dbusername ,dbpassword ,dbname )
-    db.query("set names utf8")
-
     rslt = 0
 
     condition = ""
@@ -531,8 +507,8 @@ class SysLogController < ApplicationController
       else
         condition = condition + "and "
       end
-      condition = condition + "\'" + (time.strftime("%Y-%m-%d")) + "\' <= created_at " +
-              "and created_at <= \'" + (time.at_end_of_month.strftime("%Y-%m-%d")) + "\' "
+      condition = condition + "created_at BETWEEN '" + (time.strftime("%Y-%m-%d")) + "'" +
+              "and '" + (time.at_end_of_month.strftime("%Y-%m-%d")) + "' "
     end
 
     deletefiles = Dir.glob($app_env['FILE_DIR'] + '/log_send_' + '*')
@@ -543,7 +519,7 @@ class SysLogController < ApplicationController
     if rslt == 0
       sqlstr = "select " +
             "tbl1.sub_id as send_matter_id, " +
-            "convert_tz(tbl1.created_at, '+00:00', '+09:00') " +
+            "tbl1.created_at " +
               "as created_at, " +
             "tbl1.sender_name as sender_name, " +
             "tbl1.mail_address as sender_mail_address, " +
@@ -576,30 +552,31 @@ class SysLogController < ApplicationController
             "on tbl1.sub_id = receivers.send_matter_id " +
             "order by tbl1.created_at desc"
 
-      @rs = db.query sqlstr
+      @rs = RequestMatter.find_by_sql(sqlstr)
 
       filename = 'log_send_' + Time.now.strftime("%Y-%m-%d_%H:%M:%S")
       filename_ws_pass = $app_env['FILE_DIR'] + '/' + filename
-      file = open(filename_ws_pass, 'w')
-      file << '送信日,送信ＩＤ,送信者名,送信者メールアドレス,'.tosjis
-      file << '受信者名,受信者メールアドレス,総ファイル数,総ファイルサイズ'.tosjis + "\n"
+      filename_ws_pass = filename_ws_pass
+      file = open(filename_ws_pass, 'w:shift_jis')
+      file << '登録日,送信ＩＤ,送信者名,送信者メールアドレス,'
+      file << '受信者名,受信者メールアドレス,総ファイル数,総ファイルサイズ' + "\n"
 
       @rs.each do | data |
-        file << (Time.parse(data[1].to_s)).
+        file << (Time.parse(data.created_at.to_s)).
                 strftime("%Y/%m/%d %H:%M:%S") + ","
-        file << data[0].to_s + ","
-        file << data[2].tosjis + ","
-        file << data[3].tosjis + ","
-        if data[4]
-          file << data[4].tosjis
+        file << data.send_matter_id.to_s + ","
+        file << data.sender_name + ","
+        file << data.sender_mail_address + ","
+        if data.receiver_name
+          file << data.receiver_name
         end
         file << ","
-        if data[5]
-          file << data[5].tosjis
+        if data.receiver_mail_address
+          file << data.receiver_mail_address
         end
         file << ","
-        file << data[6].to_s + ","
-        file << data[7].to_s + "\n"
+        file << data.total_file.to_s + ","
+        file << data.total_size.to_s + "\n"
       end
       file.close
 
@@ -609,25 +586,10 @@ class SysLogController < ApplicationController
     else
       redirect_to :action => "send_log"
     end
-
-    db.close if db
   end
 
   # 受信ログをcsvファイルに出力
   def get_csv_of_receive_log
-    dbconfig = YAML.load_file("config/database.yml")[RAILS_ENV]
-    dbhost = dbconfig["host"]
-    dbusername = dbconfig["username"]
-    dbpassword = dbconfig["password"]
-    if $database == ""
-       dbname = dbconfig["database"]
-    else
-       dbname = $database
-    end
-
-    db = Mysql::connect(dbhost, dbusername ,dbpassword ,dbname )
-    db.query("set names utf8")
-
     rslt = 0
 
     condition1 = ""
@@ -641,10 +603,10 @@ class SysLogController < ApplicationController
       year = year_mon.slice(0, 4).to_i
       mon = year_mon.slice(4, 2).to_i
       time = Time.mktime year, mon
-      condition_day1 = "where \'" + (time.strftime("%Y-%m-%d")) + "\' <= file_dl_logs.created_at " +
-              "and file_dl_logs.created_at <= \'" + (time.at_end_of_month.strftime("%Y-%m-%d")) + "\' "
-      condition2 = condition2 + " and \'" + (time.strftime("%Y-%m-%d")) + "\' <= requested_file_dl_logs.created_at " +
-              "and requested_file_dl_logs.created_at <= \'" + (time.at_end_of_month.strftime("%Y-%m-%d")) + "\' "
+      condition_day1 = "where file_dl_logs.created_at BETWEEN '" + (time.strftime("%Y-%m-%d")) + "'" +
+              "and '" + (time.at_end_of_month.strftime("%Y-%m-%d")) + "' "
+      condition2 = condition2 + " and requested_file_dl_logs.created_at BETWEEN \'" + (time.strftime("%Y-%m-%d")) + "\'" +
+              "and '" + (time.at_end_of_month.strftime("%Y-%m-%d")) + "' "
     end
 
     deletefiles = Dir.glob($app_env['FILE_DIR'] + '/log_receive_' + '*')
@@ -678,7 +640,7 @@ class SysLogController < ApplicationController
 
       sqlstr_sub2 = "select " +
               "convert_tz(requested_file_dl_logs.created_at, " +
-              "'+00:00', '-9:00') as dl_at, " +
+              "'+00:00', '+9:00') as dl_at, " +
               "'依頼' as flg, " +
               "request_matters.name as receiver_name, " +
               "request_matters.mail_address as receiver_mail_address, " +
@@ -694,23 +656,23 @@ class SysLogController < ApplicationController
               condition2
 
       sqlstr = sqlstr_sub1 + " union all " + sqlstr_sub2 + " order by dl_at desc"
-    session[:debug] = sqlstr
-      @rs = db.query sqlstr
+      session[:debug] = sqlstr
+      @rs = RequestMatter.find_by_sql(sqlstr)
 
       filename = 'log_receive_' + Time.now.strftime("%Y-%m-%d_%H:%M:%S")
       filename_ws_pass = $app_env['FILE_DIR'] + '/' + filename
-      file = open(filename_ws_pass, 'w')
-      file << 'ダウンロード日,区分,受信者,受信者メールアドレス,'.tosjis
-      file << 'ファイル名,ファイルサイズ'.tosjis + "\n"
+      file = open(filename_ws_pass, 'w:shift_jis')
+      file << 'ダウンロード日,区分,受信者,受信者メールアドレス,'
+      file << 'ファイル名,ファイルサイズ' + "\n"
 
       @rs.each do | data |
-        file << (Time.parse(data[0].to_s)).
+        file << (Time.parse(data.dl_at.to_s)).
                 strftime("%Y/%m/%d %H:%M:%S") + ","
-        file << data[1].tosjis + ","
-        file << data[2].tosjis + ","
-        file << data[3].tosjis + ","
-        file << data[4].tosjis + ","
-        file << data[5].to_s + "\n"
+        file << data.flg + ","
+        file << data.receiver_name + ","
+        file << data.receiver_mail_address + ","
+        file << data.file_name + ","
+        file << data.file_size.to_s + "\n"
       end
       file.close
 
@@ -719,25 +681,10 @@ class SysLogController < ApplicationController
     else
       redirect_to :action => "receive_log"
     end
-
-    db.close if db
   end
 
   # 依頼ログをcsvファイルに出力
   def get_csv_of_request_log
-    dbconfig = YAML.load_file("config/database.yml")[RAILS_ENV]
-    dbhost = dbconfig["host"]
-    dbusername = dbconfig["username"]
-    dbpassword = dbconfig["password"]
-    if $database == ""
-       dbname = dbconfig["database"]
-    else
-       dbname = $database
-    end
-
-    db = Mysql::connect(dbhost, dbusername ,dbpassword ,dbname )
-    db.query("set names utf8")
-
     rslt = 0
 
     condition = ""
@@ -755,8 +702,8 @@ class SysLogController < ApplicationController
       else
         condition = condition + "and "
       end
-      condition = condition + "\'" + (time.strftime("%Y-%m-%d")) + "\' <= request_matters.created_at " +
-              "and request_matters.created_at <= \'" + (time.at_end_of_month.strftime("%Y-%m-%d")) + "\' "
+      condition = condition + "request_matters.created_at BETWEEN '" + (time.strftime("%Y-%m-%d")) + "' " +
+              "and '" + (time.at_end_of_month.strftime("%Y-%m-%d")) + "' "
     end
 
     # 不要ログの削除
@@ -770,7 +717,7 @@ class SysLogController < ApplicationController
               "request_matters.id as request_matter_id, " +
               "request_matters.name as request_name, " +
               "request_matters.mail_address as request_mail_address, " +
-              "convert_tz(request_matters.created_at, '+00:00', '+09:00') " +
+              "request_matters.created_at " +
                 "as created_at, " +
               "requested_matters.id as requested_matter_id, " +
               "requested_matters.name as requested_name, " +
@@ -781,22 +728,22 @@ class SysLogController < ApplicationController
               condition +
               "order by request_matters.created_at desc"
 
-      @rs = db.query sqlstr
+      @rs = RequestMatter.find_by_sql(sqlstr)
 
       filename = 'log_request_' + Time.now.strftime("%Y-%m-%d_%H:%M:%S")
       filename_ws_pass = $app_env['FILE_DIR'] + '/' + filename
-      file = open(filename_ws_pass, 'w')
-      file << '登録日,依頼ＩＤ,依頼人,依頼人メールアドレス,'.tosjis
-      file << '送信者名,送信者メールアドレス'.tosjis + "\n"
+      file = open(filename_ws_pass, 'w:shift_jis')
+      file << '登録日,依頼ＩＤ,依頼人,依頼人メールアドレス,'
+      file << '送信者名,送信者メールアドレス' + "\n"
 
       @rs.each do | data |
-        file << (Time.parse(data[3].to_s)).
+        file << (Time.parse(data.created_at.to_s)).
                 strftime("%Y/%m/%d %H:%M:%S") + ","
-        file << data[0].to_s + ","
-        file << data[1].tosjis + ","
-        file << data[2].tosjis + ","
-        file << data[5].tosjis + ","
-        file << data[6].tosjis + "\n"
+        file << data.request_matter_id.to_s + ","
+        file << data.request_name + ","
+        file << data.request_mail_address + ","
+        file << data.requested_name + ","
+        file << data.requested_mail_address + "\n"
       end
       file.close
 
@@ -806,8 +753,6 @@ class SysLogController < ApplicationController
     else
       redirect_to :action => "request_log"
     end
-
-    db.close if db
   end
 
   # 送信情報を表示

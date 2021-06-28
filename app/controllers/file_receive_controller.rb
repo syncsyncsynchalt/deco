@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # Copyright (C) 2010 NMT Co.,Ltd.
 #
 # This program is free software: you can redistribute it and/or modify
@@ -13,6 +14,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
+# Filters added to this controller apply to all controllers in the application.
+# Likewise, all the methods added will be available for all controllers.
 class FileReceiveController < ApplicationController
   before_filter :load_env
 
@@ -48,15 +51,32 @@ class FileReceiveController < ApplicationController
   def index
     if session[:auth] && session[:site_category] == "file_receive"
       @send_matter = SendMatter.find(session[:auth]['send_matter_id'])
-      if (Time.now - (Time.parse(@send_matter.created_at.to_s) +
-                      @send_matter.file_life_period)) > 0
-        flash[:notice] = "ファイルの保管期限を過ぎましたので削除されました。"
-        redirect_to :action => 'message'
+      if @send_matter.sent_at.present?
+        if (Time.now - (Time.parse(@send_matter.sent_at.to_s) +
+                        @send_matter.file_life_period)) > 0
+          flash[:notice] = "ファイルの保管期限を過ぎましたので削除されました。"
+          redirect_to :action => 'message'
+        else
+          @receiver = Receiver.find(session[:auth]['receiver_id'])
+          @attachments = @send_matter.attachments
+          flash[:notice] = "#{ @receiver.name }様，#{ @send_matter.name }さんから
+                              ファイルを預かっています。"
+        end
+      elsif @send_matter.moderate_flag == nil
+        if (Time.now - (Time.parse(@send_matter.created_at.to_s) +
+                        @send_matter.file_life_period)) > 0
+          flash[:notice] = "ファイルの保管期限を過ぎましたので削除されました。"
+          redirect_to :action => 'message'
+        else
+          @receiver = Receiver.find(session[:auth]['receiver_id'])
+          @attachments = @send_matter.attachments
+          flash[:notice] = "#{ @receiver.name }様，#{ @send_matter.name }さんから
+                              ファイルを預かっています。"
+        end
       else
-        @receiver = Receiver.find(session[:auth]['receiver_id'])
-        @attachments = @send_matter.attachments
-        flash[:notice] = "#{ @receiver.name }様，#{ @send_matter.name }さんから
-                            ファイルを預かっています。"
+        flash[:notice] = "不正なアクセスです。
+                        (ログインしていないか別のウィンドウで使用中です。)"
+        redirect_to :action => 'message'
       end
     else
       flash[:notice] = "不正なアクセスです。
@@ -73,11 +93,27 @@ class FileReceiveController < ApplicationController
       if @attachment.send_matter_id == session[:auth]['send_matter_id'] &&
           @attachment.virus_check == '0'
         @send_matter = SendMatter.find(session[:auth]['send_matter_id'])
-        if (Time.now - (Time.parse(@send_matter.created_at.to_s) +
-                        @send_matter.file_life_period)) > 0
+        if @send_matter.sent_at.present?
+          if (Time.now - (Time.parse(@send_matter.sent_at.to_s) +
+                          @send_matter.file_life_period)) > 0
+            flash[:notice] = "ファイルの保管期限を過ぎましたので削除されました。"
+            redirect_to :action => 'illegal' and return
+          else
+            @download_flag = true
+          end
+        elsif @send_matter.moderate_flag == nil
+          if (Time.now - (Time.parse(@send_matter.created_at.to_s) +
+                          @send_matter.file_life_period)) > 0
+            flash[:notice] = "ファイルの保管期限を過ぎましたので削除されました。"
+            redirect_to :action => 'illegal' and return
+          else
+            @download_flag = true
+          end
+        else
           flash[:notice] = "ファイルの保管期限を過ぎましたので削除されました。"
           redirect_to :action => 'illegal' and return
-        else
+        end
+        if @download_flag == true
           @file_dl_check = FileDlCheck.find(:first, :conditions =>
                                    ["receiver_id = ? AND attachment_id = ?",
                                     session[:auth]['receiver_id'],
@@ -85,9 +121,9 @@ class FileReceiveController < ApplicationController
           if @send_matter.download_check == 1 &&
               @file_dl_check.download_flg == 0
             @receiver = Receiver.find(session[:auth]['receiver_id'])
-            @mail = Notification.deliver_receive_report(@send_matter,
-                                                        @receiver,
-                                                        @attachment)
+            Notification.receive_report(@send_matter,
+                                        @receiver,
+                                        @attachment).deliver
           end
           @file_dl_check.download_flg = 1
           @file_dl_check.save
@@ -95,15 +131,18 @@ class FileReceiveController < ApplicationController
           @file_dl_log.file_dl_check = @file_dl_check
           @file_dl_log.save
           if request.user_agent =~ /Windows/i
-            @filename = @attachment.name.tosjis
+            @filename = @attachment.name.encode("Windows-31J")
           elsif request.user_agent =~ /Mac/i
             @filename = @attachment.name
           else
             @filename = @attachment.name
           end
-          send_file $app_env['FILE_DIR'] + "/#{@attachment.id}",
+          send_file($app_env['FILE_DIR'] + "/#{@attachment.id}",
                     :filename => @filename,
-                    :type => @attachment.content_type
+                    :type => @attachment.content_type)
+        else
+          flash[:notice] = "ファイルの保管期限を過ぎましたので削除されました。"
+          redirect_to :action => 'illegal' and return
         end
       else
         flash[:notice] = "不正なアクセスです。" +
@@ -115,13 +154,5 @@ class FileReceiveController < ApplicationController
         "(ログインしていないか別のウィンドウで使用中です。)"
       redirect_to :action => 'illegal'
     end
-  end
-
-  def illegal
-    session[:auth] = nil
-    session[:site_category] = "file_receive"
-  end
-
-  def message
   end
 end

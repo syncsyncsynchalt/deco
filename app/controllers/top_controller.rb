@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # Copyright (C) 2010 NMT Co.,Ltd.
 #
 # This program is free software: you can redistribute it and/or modify
@@ -13,6 +14,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
+# Filters added to this controller apply to all controllers in the application.
+# Likewise, all the methods added will be available for all controllers.
 class TopController < ApplicationController
   before_filter :authorize
   before_filter :load_env
@@ -20,10 +23,13 @@ class TopController < ApplicationController
   before_filter :vacuum_data_for_file_exchange
   def index
     session[:site_category] = nil
-    @announcements = Announcement.find(:all, :order => 'updated_at desc')
-
-    @content_frames = ContentFrame.find(:all,
-            :conditions => { :master_frame => 0 },
-            :order => 'content_frame_order')
+    @announcements =
+        Announcement
+        .order('updated_at desc')
+    if @announcements
+    end
+    @content_frames = ContentFrame
+        .where(:master_frame => 0)
+        .order('content_frame_order')
   end
 end

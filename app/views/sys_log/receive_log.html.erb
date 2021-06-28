@@ -1,11 +1,11 @@
-<% form_tag :action => 'get_csv_of_receive_log' do %>
+<%= form_tag :action => 'get_csv_of_receive_log' do %>
   <%= select_tag 'month_for_out', options_for_select(@select_month) %> のログを
   <%= submit_tag "　CSV保存　" %>
 <% end %>
 
 <br>
 
-<% form_tag :action => 'receive_log' do %>
+<%= form_tag( {:action => 'receive_log'}, {:method => "get"}) do %>
   <%= select_tag :type, options_for_select([["受信者", 0], ["受信者メールアドレス", 1]], @type.to_i ) %>
   <%= text_field_tag :keyward, @keyward %>
   <%= submit_tag "　検索　" %>
@@ -13,7 +13,7 @@
 <br>
 
 データ数：<%= @total_data %>　
-[ <%= @part_of_page %> ]
+[ <%= raw @part_of_page %> ]
 　<%#= link_to 'CSV保存', {:action => 'get_csv_of_receive_log'} %><br>
 
 <% count = 0 -%>
@@ -35,18 +35,12 @@
       <% count = count + 1 -%>
       <% cr_id = count -%>
       <% if @s_data <= cr_id and cr_id <= @e_data -%>
-        <%# if receives_file.file_size.to_i > 1024 * 1024 -%>
-          <%# label_file_size = (receives_file.file_size.to_i / (1024 * 1024)).to_s + ' MB' -%>
-        <%# elsif receives_file.file_size.to_i > 1024 -%>
-          <%# label_file_size = (receives_file.file_size.to_i / 1024).to_s + ' KB' -%>
-        <%# else -%>
-          <%# label_file_size = receives_file.file_size + ' B' -%>
-        <% if data[5].to_i > 1024 * 1024 -%>
-          <% label_file_size = (data[5].to_i / (1024 * 1024)).to_s + ' MB' -%>
-        <% elsif data[5].to_i > 1024 -%>
-          <% label_file_size = (data[5].to_i / 1024).to_s + ' KB' -%>
+        <% if data.file_size.to_i > 1024 * 1024 -%>
+          <% label_file_size = (data.file_size.to_i / (1024 * 1024)).to_s + ' MB' -%>
+        <% elsif data.file_size.to_i > 1024 -%>
+          <% label_file_size = (data.file_size.to_i / 1024).to_s + ' KB' -%>
         <% else -%>
-          <% label_file_size = data[5] + ' B' -%>
+          <% label_file_size = data.file_size.to_s + ' B' -%>
         <% end -%>
 
         <tr bordercolor=gray>
@@ -56,11 +50,11 @@
         <td nowrap><%#= receives_file.receiver_name %></td>
         <td nowrap><%#= receives_file.receiver_mail_address %></td>
         <td nowrap><%#= receives_file.file_name %></td-->
-        <td nowrap><%= (Time.parse(data[0].to_s)).strftime("%Y/%m/%d %H:%M:%S") %></td>
-        <td nowrap><%= data[1] %></td>
-        <td nowrap><%= data[2] %></td>
-        <td nowrap><%= data[3] %></td>
-        <td nowrap><%= data[4] %></td>
+        <td nowrap><%= (Time.parse(data.dl_at.to_s)).strftime("%Y/%m/%d %H:%M:%S") %></td>
+        <td nowrap><%= data.flg %></td>
+        <td nowrap><%= data.receiver_name %></td>
+        <td nowrap><%= data.receiver_mail_address %></td>
+        <td nowrap><%= data.file_name %></td>
         <td nowrap><%= label_file_size %></td>
         </tr>
       <% end -%>

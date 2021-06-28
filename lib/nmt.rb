@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # Copyright (C) 2010 NMT Co.,Ltd.
 #
 # This program is free software: you can redistribute it and/or modify
@@ -12,7 +13,6 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
-
 module Nmt
   def generate_random_strings(string)
     seed = ''
@@ -28,8 +28,13 @@ module Nmt
       if page.to_i == 1
         string = string + "<< < "
       else
-        string = string + "<a href=\"/#{controller}/#{action}/1\"><<</a> "
-        string = string + "<a href=\"/#{controller}/#{action}" +
+        string = string + "<a href=\"" +
+                 url_for(:controller => controller,
+                         :action => action,
+                         :id => 1) +
+                 "\"><<</a> "
+        string = string + "<a href=\"" +
+                 url_for(:controller => controller, :action => action) +
                  "/#{(page.to_i - 1).to_s}\"><</a> "
       end
 
@@ -64,7 +69,9 @@ module Nmt
           if page.to_i == n
             string = string + n.to_s + " "
           else
-            string = string + "<a href=\"/#{controller}/#{action}" +
+#                 /#{controller}/#{action}" +
+            string = string + "<a href=\"" +
+                     url_for(:controller => controller, :action => action) +
                      "/#{n.to_s}\">#{n.to_s}</a> "
           end
         end
@@ -78,7 +85,9 @@ module Nmt
           string = string + n.to_s + " "
         else
           string = string +
-                   "<a href=\"/#{controller}/#{action}/#{n}\">#{n}</a> "
+                   "<a href=\"" +
+                   url_for(:controller => controller, :action => action) +
+                   "/#{n}\">#{n}</a> "
         end
       end
 
@@ -96,7 +105,9 @@ module Nmt
             string = string + n.to_s + " "
           else
             string = string +
-                     "<a href=\"/#{controller}/#{action}/#{n}\">#{n}</a> "
+                     "<a href=\"" +
+                     url_for(:controller => controller, :action => action) +
+                     "/#{n}\">#{n}</a> "
           end
         end
       end
@@ -105,9 +116,13 @@ module Nmt
         string = string + '> >>'
       else
         string = string +
-         "<a href=\"/#{controller}/#{action}/#{(page.to_i + 1).to_s}\">></a> "
+         "<a href=\"" +
+         url_for(:controller => controller, :action => action) +
+         "/#{(page.to_i + 1).to_s}\">></a> "
         string = string +
-         "<a href=\"/#{controller}/#{action}/#{total_page}\">>></a>"
+         "<a href=\"" +
+         url_for(:controller => controller, :action => action) +
+         "/#{total_page}\">>></a>"
       end
     end
 
@@ -126,30 +141,51 @@ module Nmt
         string = "<fieldset>" + content_item.text1 + "</fieldset>"
       end
     when 3
-      string = "<img src=\"\/create_images\/content_item\/" + content_item.id.to_s + "\">"
+      string = "<img src=\"" +
+               url_for(:controller => :create_images,
+                       :action => :content_items,
+                       :id => content_item.id.to_s) +
+               "\">"
     when 4
       string_option = ""
       if content_item.flg.to_i == 1
         string_option = " target=\"_blank\""
       end
-      string = "<a href=\"" + content_item.url + "\"" + string_option + ">" + content_item.string1 + "<\/a>"
+      string = "<a href=\"" + content_item.url + "\"" +
+               string_option + ">" +
+               content_item.string1 + "<\/a>"
     when 5
       string_option = ""
       if content_item.flg.to_i == 1
         string_option = " target=\"_blank\""
       end
-      string = "<a href=\"" + content_item.url + "\"" + string_option + ">" +  
-        "<img src=\"\/create_images\/content_item\/" + content_item.id.to_s +
-        "\" border=0>" + "<\/a>"
+      string = "<a href=\"" + content_item.url +
+               "\"" + string_option + ">" +  
+               "<img src=\"" +
+               url_for(:controller => :create_images,
+                       :action => :content_items,
+                       :id => content_item.id.to_s) +
+               "\" border=0>" + "<\/a>"
     when 7
       string = "<div class=\"center\">" +
         "<font color=\"#778899\">Powered by</font> " +
         "<a href=\"http\:\/\/deco-project.org\">" +
-        "<img src=\"\/images\/common\/deco_s2.jpg\" alt=\"powerd by DECO\" " +
+        "<img src=\"" +
+               url_for(:controller => :assets,
+                       :action => :common) +"/deco_s2.jpg\" alt=\"powerd by DECO\" " +
         "align=\"bottom\" style=\"vertical-align\: middle\;\" border=0>" +
         "</a></div>"
     end
 
     return string
+  end
+
+  def get_port
+    if $app_env['ENABLE_SSL'].to_i == 1
+      port = "https"
+    else
+      port = "http"
+    end
+    return port
   end
 end

@@ -1,9 +1,9 @@
 
   <%- this_year = 0 -%>
   <%- 1.upto(12) do |i| -%>
-    <%- this_time = @c_time.months_ago (i - 1) -%>
+    <%- this_time = @c_time.months_ago(i - 1) -%>
     <%- unless this_year == this_time.year -%>
-      <%= "<br>" + this_time.year.to_s + "年　" -%>
+      <br><%= this_time.year.to_s + "年　" -%>
       <%- this_year = this_time.year -%>
     <%- end -%>
     <%= link_to this_time.month.to_s + "月" , {:id => i} -%>

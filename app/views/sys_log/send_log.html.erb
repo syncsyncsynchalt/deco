@@ -1,24 +1,24 @@
-<% form_tag :action => 'get_csv_of_send_log' do %>
+<%= form_tag :action => 'get_csv_of_send_log' do %>
   <%= select_tag 'month_for_out', options_for_select(@select_month) %> のログを
-  <%= submit_tag "　CSV保存　" %>
+  <%= submit_tag "CSV保存" %>
 <% end %>
 
 <br>
 
-<% form_tag :action => 'send_log' do %>
+<%= form_tag({:action => 'send_log'}, {:method => "get"}) do %>
   <%#= f.select :type, [["送信者名", 0], ["送信者メールアドレス", 1],
                        ["受信者名", 2], ["受信者メールアドレス", 3]] %>
   <%#= f.text_field :keyword %>
   <%= select_tag :type, options_for_select([["送信者名", 1], ["送信者メールアドレス", 2],
                        ["受信者名", 3], ["受信者メールアドレス", 4]], @type.to_i ) %>
   <%= text_field_tag :keyward, @keyward %>
-  <%= submit_tag "　検索　" %>
+  <%= submit_tag "検索" %>
 <% end %>
 
 <br>
 
 データ数：<%= @total_data %>
-[ <%= @part_of_page %> ]
+[ <%= raw @part_of_page %> ]
 　<%#= link_to 'CSV保存', {:action => 'get_csv_of_send_log'} %><br>
 
 
@@ -26,7 +26,7 @@
 <table border=1 cellspacing=0 cellpadding=3>
   <tr bordercolor=gray>
   <td nowrap bgcolor=#e5f0fe><br></td>
-  <td nowrap bgcolor=#e5f0fe>送信日</td>
+  <td nowrap bgcolor=#e5f0fe>登録日</td>
   <td nowrap bgcolor=#e5f0fe>送信ＩＤ</td>
   <td nowrap bgcolor=#e5f0fe>送信者名</td>
   <td nowrap bgcolor=#e5f0fe>送信者メールアドレス</td>
@@ -68,15 +68,15 @@
   <%# bf_receiver_name = send_file.receiver_name -%>
   <%# bf_receiver_mail_address = send_file.receiver_mail_address -%>
   <%# bf_total_file = send_file.total_file -%>
-  <% bf_created_at = (Time.parse(data[1].to_s)).strftime("%Y/%m/%d %H:%M:%S") -%>
-  <% bf_send_matter_id = data[0] -%>
-  <% bf_sender_name = data[2] -%>
-  <% bf_sender_mail_address = data[3] -%>
-  <% bf_receiver_name = data[4] -%>
-  <% bf_receiver_mail_address = data[5] -%>
-  <% bf_total_file = data[6] -%>
+  <% bf_created_at = (Time.parse(data.created_at.to_s)).strftime("%Y/%m/%d %H:%M:%S") -%>
+  <% bf_send_matter_id = data.send_matter_id -%>
+  <% bf_sender_name = data.sender_name -%>
+  <% bf_sender_mail_address = data.sender_mail_address -%>
+  <% bf_receiver_name = data.receiver_name -%>
+  <% bf_receiver_mail_address = data.receiver_mail_address -%>
+  <% bf_total_file = data.total_file -%>
   <% bf_total_size = '0 B' -%>
-  <% bf_order = data[8] -%>
+  <% bf_order = data.data_order -%>
   <!-- --><%# bf_total_size = send_file.total_size -%>
   <%# if send_file.total_size -%>
     <%# if send_file.total_size.to_i > 1024 * 1024 -%>
@@ -85,13 +85,13 @@
       <%# bf_total_size = (send_file.total_size.to_i / 1024).to_s + ' KB' -%>
     <%# else -%>
       <%# bf_total_size = send_file.total_size.to_s + ' B' -%>
-  <% if data[7] -%>
-    <% if data[7].to_i > 1024 * 1024 -%>
-      <% bf_total_size = (data[7].to_i / (1024 * 1024)).to_s + ' MB' -%>
-    <% elsif data[7].to_i > 1024 -%>
-      <% bf_total_size = (data[7].to_i / 1024).to_s + ' KB' -%>
+  <% if data.total_size -%>
+    <% if data.total_size.to_i > 1024 * 1024 -%>
+      <% bf_total_size = (data.total_size.to_i / (1024 * 1024)).to_s + ' MB' -%>
+    <% elsif data.total_size.to_i > 1024 -%>
+      <% bf_total_size = (data.total_size.to_i / 1024).to_s + ' KB' -%>
     <% else -%>
-      <% bf_total_size = data[7].to_s + ' B' -%>
+      <% bf_total_size = data.total_size.to_s + ' B' -%>
     <% end -%>
   <%  end -%>
 

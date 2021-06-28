@@ -1,0 +1,44 @@
+このメールは，<%= @mail_content %>「DECO」から発信しております。<br /><br />
+
+<%= @requested_matter.name %> 様<br /><br />
+
+次の内容で送信完了しました。<br /><br />
+
+■受信者<br />
+<%= h @requested_matter.request_matter.name %>（<%= h @requested_matter.request_matter.mail_address %>）<br /><br />
+
+■パスワードの通知方法<br />
+<% if @requested_matter.password_notice == 0 -%>
+自分で通知する<br />
+<% elsif @requested_matter.password_notice == 1 -%>
+システムで行う<br />
+<% end -%><br />
+
+■ダウンロード完了通知メール<br />
+<% if @requested_matter.download_check == 0 -%>
+希望しない<br />
+<% elsif @requested_matter.download_check == 1 -%>
+希望する<br />
+<% end -%><br />
+
+■相手へのメッセージ<br />
+<%= @requested_matter.message %><br />
+
+■ダウンロード期間<br />
+<%= (Time.parse(@requested_matter.file_up_date.to_s) +
+                @requested_matter.file_life_period).strftime("%Y年%m月%d日%H時%M分%S秒") %>　まで<br /><br />
+
+■送信ファイル一覧<br />
+<% @attachments.each.with_index do | attachment, count | -%>
+<%= count + 1 %>.<%= attachment.name %>（<%= show_file_size(attachment) %>）<br />
+<% if attachment.virus_check != '0' -%>ウイルスが検出されたため削除されました。(<%= attachment.virus_check %>)<br />
+<% end -%>
+<% end %><br />
+
+■ダウンロード用URL<br />
+<%= @url %><br />
+パスワード：<%= h @requested_matter.receive_password %><br /><br />
+
+■確認・削除用URL<br />
+<%= @url2 %><br />
+

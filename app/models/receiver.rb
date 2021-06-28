@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # Copyright (C) 2010 NMT Co.,Ltd.
 #
 # This program is free software: you can redistribute it and/or modify
@@ -13,8 +14,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
+# Filters added to this controller apply to all controllers in the application.
+# Likewise, all the methods added will be available for all controllers.
 class Receiver < ActiveRecord::Base
   belongs_to(:send_matter)
   has_many :attachments, :through => :file_dl_checks
-  validates_length_of :name, :mail_address, :url, :within => (0..1024)
 end

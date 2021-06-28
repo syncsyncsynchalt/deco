@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # Copyright (C) 2010 NMT Co.,Ltd.
 #
 # This program is free software: you can redistribute it and/or modify
@@ -13,11 +14,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
+# Filters added to this controller apply to all controllers in the application.
+# Likewise, all the methods added will be available for all controllers.
 class SendMatter < ActiveRecord::Base
   has_many(:receivers)
   has_many(:attachments)
-  validates_length_of :name, :mail_address, :receive_password,
-                      :password_notice, :download_check, :message,
-                      :file_life_period, :url, :status,
-                      :relayid, :within => (0..1024)
+  has_one :send_moderate
 end

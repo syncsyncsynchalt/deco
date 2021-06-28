@@ -2,6 +2,15 @@
 
 localDomains = ""
 
+function disp(message, link){
+
+	// 「OK」時の処理開始 ＋ 確認ダイアログの表示
+	if(window.confirm(message)){
+        location.href = link;
+	}else{
+    }
+}
+
 $(document).ready(function() {
   $.validationEngineLanguage.newLang(localDomains);
   $("#app_env1").validationEngine({
@@ -11,7 +20,6 @@ $(document).ready(function() {
 });
 </script>
 
-
   <fieldset>
   <h2>システム管理画面アクセスＩＰアドレスの設定</h2>
   <div class="table-sys-a">
@@ -20,21 +28,21 @@ $(document).ready(function() {
       <div class="input-mid-2-l"><%= app_env.value %></div>
       <div class="input-mid-2-r">
       <%= link_to '[編集]', {:action => 'param_edit1', :id => app_env.id } %>
-      <%= link_to '[削除]', {:action => 'param_destroy', :id => app_env.id},
-                            :confirm => '削除します。よろしいですか?', :method => :delete %>
+      <%= link_to '[削除]', {:action => 'param_destroy', :id => app_env.id}, :method => :delete, :class => 'delete',
+                             :data => {:confirm => '削除します。よろしいですか?'} %>
       </div>
     <%- end -%>
   <%- end -%>
   <br>
-  <%- form_for(:app_env, :url => { :action => "param_create"}, 
+  <%= form_for(:app_env, :url => { :action => "param_create"}, 
               :html => {:id => 'app_env1', :name=> "app_env1" }) do |f| -%>
     <div class="item-mid">ＩＰアドレスの登録</div>
-    <%= f.error_messages -%>
+    <%#= f.error_messages -%>
     <div class="input-mid">
       <%= f.hidden_field :key, {:value => "PERMIT_OPERATION_IPS"} %>
       <%= f.hidden_field :category, {:value => 0} %>
       <%= f.text_field :value, :class => 'validate[required, custom[IPAddress]]' %>
-      <%= f.submit "Create" -%>
+      <%= f.submit "登　録" %>
     </div>
   <%- end -%>
   </div>

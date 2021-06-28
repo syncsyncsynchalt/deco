@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # Copyright (C) 2010 NMT Co.,Ltd.
 #
 # This program is free software: you can redistribute it and/or modify
@@ -13,6 +14,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
+# Filters added to this controller apply to all controllers in the application.
+# Likewise, all the methods added will be available for all controllers.
 class RequestedFileSendController < ApplicationController
   protect_from_forgery :except => [:upload]
   before_filter :load_env
@@ -62,13 +65,29 @@ class RequestedFileSendController < ApplicationController
               :id => session[:"#{@url_code}"]['requested_matter_id'] })
 
     if @requested_matter.send_password == params[:login]['send_password']
-      if (Time.now - (Time.parse(@requested_matter.created_at.to_s) +
-              $app_env['REQUEST_PERIOD'].to_i)) > 0
-        flash[:notice] = "ファイルの送信依頼期限を過ぎています。"
-        redirect_to :action => 'blank'
+      if @requested_matter.request_matter.sent_at.present?
+        if (Time.now - (Time.parse(@requested_matter.request_matter.sent_at.to_s) +
+                $app_env['REQUEST_PERIOD'].to_i)) > 0
+          @request_send_flag = false
+        else
+          @request_send_flag = true
+        end
+      elsif @send_matter.moderate_flag == nil
+        if (Time.now - (Time.parse(@requested_matter.request_matter.created_at.to_s) +
+                $app_env['REQUEST_PERIOD'].to_i)) > 0
+          @request_send_flag = false
+        else
+          @request_send_flag = true
+        end
       else
+        @request_send_flag = false
+      end
+      if @request_send_flag == true
         session[:"#{@url_code}"]['auth'] = "yes"
         redirect_to :action => 'index'
+      else
+        flash[:notice] = "ファイルの送信依頼期限を過ぎています。"
+        redirect_to :action => 'blank'
       end
     else
       flash[:notice] = "パスワードが違います。"
@@ -93,9 +112,13 @@ class RequestedFileSendController < ApplicationController
         flash[:notice] = "すでに送信していただいてます"
         redirect_to :action => 'blank'
       else
+        password_length = $app_env['PW_LENGTH_MIN'].to_i +
+          ($app_env['PW_LENGTH_MAX'].to_i - $app_env['PW_LENGTH_MIN'].to_i) / 2
+        @randam_password = 
+            generate_random_strings(rand(10000).to_s).slice(1,password_length)
         respond_to do |format|
           format.html
-          format.xml  {  reander :xml => @requested_file_send }
+          format.xml { reander :xml => @requested_file_send }
         end
       end
     else
@@ -126,9 +149,13 @@ class RequestedFileSendController < ApplicationController
         flash[:notice] = "すでに送信していただいてます"
         redirect_to :action => 'blank'
       else
+        password_length = $app_env['PW_LENGTH_MIN'].to_i +
+          ($app_env['PW_LENGTH_MAX'].to_i - $app_env['PW_LENGTH_MIN'].to_i) / 2
+        @randam_password = 
+            generate_random_strings(rand(10000).to_s).slice(1,password_length)
         respond_to do |format|
           format.html
-          format.xml  {  reander :xml => @requested_file_send }
+          format.xml { reander :xml => @requested_file_send }
         end
       end
     else
@@ -140,8 +167,10 @@ class RequestedFileSendController < ApplicationController
 
   # ファイルのアップロード
   def upload
-    @requested_matter = RequestedMatter.find(:first,
-            :conditions => { :id => params[:Requested_Matter_id] })
+    @requested_matter =
+        RequestedMatter
+        .where("id = ?", params[:Requested_Matter_id])
+        .first
 
     session[:request_send_url_code] = @requested_matter.url
 
@@ -152,28 +181,41 @@ class RequestedFileSendController < ApplicationController
         @requested_attachment = RequestedAttachment.new()
         @requested_attachment.name = params[:Filename]
         @requested_attachment.size = params[:Filedata].size
-        if (MIME::Types.type_for(params[:Filedata].original_filename)[0])
-          @requested_attachment.content_type = MIME::Types.
-                  type_for(params[:Filedata].original_filename)[0].content_type
-        else
-          @requested_attachment.content_type = ''
-        end
-        @requested_attachment.download_flg = 0
         @requested_attachment.requested_matter_id = @requested_matter.id
+        @requested_attachment.download_flg = 0
         @requested_attachment.save!
-
         @file = params[:Filedata]
-
         if @file
-          @file.binmode
           File.open($app_env['FILE_DIR'] +
                   "/r#{@requested_attachment.id}", "w") do |f|
             f.binmode
             f.write(@file.read)
           end
         end
-        @requested_attachment.virus_check = 0
+        if MimeMagic.by_magic(File.open($app_env['FILE_DIR'] +
+                                        "/r#{@requested_attachment.id}"))
+          @requested_attachment.content_type =
+              MimeMagic.by_magic(File.open($app_env['FILE_DIR'] +
+                                         "/r#{@requested_attachment.id}")).type
+        else
+          @requested_attachment.content_type = ''
+        end
         @requested_attachment.save!
+        if $app_env['VIRUS_CHECK'] == '1'
+          # Virus Check
+          @clamav = ClamAV.instance
+          @clamav.loaddb()
+          @virus_check_result = @clamav.scanfile($app_env['FILE_DIR'] +
+                  "/r#{@requested_attachment.id}")
+          @requested_attachment.virus_check = @virus_check_result
+          @requested_attachment.save!
+          if(@virus_check_result != 0)
+            File.delete($app_env['FILE_DIR'] + "/r#{@requested_attachment.id}")
+          end
+        else
+          @attachment.virus_check = '0'
+          @attachment.save
+        end
       end
     end
   end
@@ -203,6 +245,12 @@ class RequestedFileSendController < ApplicationController
           redirect_to :action => 'send_ng'
         else
           ActiveRecord::Base.transaction do
+            @virus_attachments = Array.new
+            @requested_attachments.each do |attachment|
+              unless attachment.virus_check == '0'
+                @virus_attachments.push attachment
+              end
+            end
             @requested_matter.update_attributes(params[:requested_matter])
             @requested_matter.url_operation = 
                     generate_random_strings(@requested_matter.name)
@@ -217,26 +265,45 @@ class RequestedFileSendController < ApplicationController
                     :id => @requested_matter.url_operation
           end
 
-          full_url_dl = "http://" + $app_env['URL'] +
+          port = get_port()
+          full_url_dl = port + "://" + $app_env['URL'] +
                   "/requested_file_receive/login/" +
                   "#{@requested_matter.url}"
-          full_url_check = "http://" + $app_env['URL'] +
+          full_url_check = port + "://" + $app_env['URL'] +
                   "/requested_file_send/result/" +
                   "#{@requested_matter.url_operation}"
 
           if @requested_attachments.select{ |requested_attachment|
                   requested_attachment.virus_check == '0' }.size > 0
-            @mail = Notification.deliver_requested_send_report(
+            Notification.requested_send_report(
                     @requested_matter,
                     @requested_attachments,
-                    full_url_dl)
+                    full_url_dl).deliver
+            if @requested_matter.password_notice == 1
+              Notification.requested_send_password_report(
+                      @requested_matter,
+                      @requested_attachments,
+                      full_url_dl).deliver
+            end
           end
 
-          @mail = Notification.deliver_requested_send_copied_report(
+          if @virus_attachments.length > 0
+            if $app_env['VIRUS_CHECK_NOTICE'] == '1'
+              @admin_users =
+                  User.find(:all, :conditions =>
+                  {:category => 1})
+              for user in @admin_users
+                Notification.requested_send_virus_info_report(
+                        @requested_matter, @virus_attachments, user).deliver
+              end
+            end
+          end
+
+          Notification.requested_send_copied_report(
                   @requested_matter,
                   @requested_attachments,
                   full_url_dl,
-                  full_url_check)
+                  full_url_check, $app_env['PASSWORD_AUTOMATION'].to_i).deliver
         end
       end
     else
@@ -280,6 +347,7 @@ class RequestedFileSendController < ApplicationController
           end
 
           ActiveRecord::Base.transaction do
+            @virus_attachments = Array.new
 
             @requested_matter.update_attributes(params[:requested_matter])
             @requested_matter.url_operation =
@@ -293,25 +361,41 @@ class RequestedFileSendController < ApplicationController
               @requested_attachment = RequestedAttachment.new()
               @requested_attachment.name = value[:file].original_filename
               @requested_attachment.size = value[:file].size
-              if (MIME::Types.type_for(value[:file].original_filename)[0])
-                @requested_attachment.content_type = MIME::Types.
-                        type_for(value[:file].original_filename)[0].
-                        content_type
-              else
-                @requested_attachment.content_type = ''
-              end
               @requested_attachment.download_flg = 0
               @requested_attachment.requested_matter_id = @requested_matter.id
               @requested_attachment.save!
 
-              value[:file].binmode
               File.open($app_env['FILE_DIR'] +
                       "/r#{@requested_attachment.id}", "w") do |f|
                 f.binmode
                 f.write(value[:file].read)
               end
-              @requested_attachment.virus_check = 0
+              if MimeMagic.by_magic(File.open($app_env['FILE_DIR'] +
+                                              "/r#{@requested_attachment.id}"))
+                @requested_attachment.content_type =
+                    MimeMagic.by_magic(File.open($app_env['FILE_DIR'] +
+                                                 "/r#{@requested_attachment.id}")).type
+              else
+                @requested_attachment.content_type = ''
+              end
               @requested_attachment.save!
+              if $app_env['VIRUS_CHECK'] == '1'
+                # Virus Check
+                @clamav = ClamAV.instance
+                @clamav.loaddb()
+                @virus_check_result = @clamav.scanfile($app_env['FILE_DIR'] +
+                        "/r#{@requested_attachment.id}")
+                @requested_attachment.virus_check = @virus_check_result
+                @requested_attachment.save!
+                unless @virus_check_result == 0
+                  File.delete($app_env['FILE_DIR'] +
+                          "/r#{@requested_attachment.id }")
+                  @virus_attachments.push @requested_attachment
+                end
+              else
+                @requested_attachment.virus_check = '0'
+                @requested_attachment.save!
+              end
             end
           end
 
@@ -320,26 +404,45 @@ class RequestedFileSendController < ApplicationController
 
           @requested_attachments = @requested_matter.requested_attachments
 
-          full_url_dl = "http://" + $app_env['URL'] +
+          port = get_port()
+          full_url_dl = port + "://" + $app_env['URL'] +
                   "/requested_file_receive/login/" +
                   "#{@requested_matter.url}"
-          full_url_check = "http://" + $app_env['URL'] +
+          full_url_check = port + "://" + $app_env['URL'] +
                   "/requested_file_send/result/" +
                   "#{@requested_matter.url_operation}"
 
           if @requested_attachments.select{ |requested_attachment| 
                   requested_attachment.virus_check == '0' }.size > 0
-            @mail = Notification.deliver_requested_send_report(
+            Notification.requested_send_report(
                     @requested_matter,
                     @requested_attachments,
-                    full_url_dl)
+                    full_url_dl).deliver
+            if @requested_matter.password_notice == 1
+              Notification.requested_send_password_report(
+                      @requested_matter,
+                      @requested_attachments,
+                      full_url_dl).deliver
+            end
           end
 
-          @mail = Notification.deliver_requested_send_copied_report(
+          if @virus_attachments.length > 0
+            if $app_env['VIRUS_CHECK_NOTICE'] == '1'
+              @admin_users =
+                  User.find(:all, :conditions =>
+                  {:category => 1})
+              for user in @admin_users
+                Notification.requested_send_virus_info_report(
+                        @requested_matter, @virus_attachments, user).deliver
+             end
+            end
+          end
+
+          Notification.requested_send_copied_report(
                   @requested_matter,
                   @requested_attachments,
                   full_url_dl,
-                  full_url_check)
+                  full_url_check, $app_env['PASSWORD_AUTOMATION'].to_i).deliver
       end
     else
       flash[:notice] = "不正なアクセスです"
@@ -388,11 +491,13 @@ class RequestedFileSendController < ApplicationController
         if @attachment.requested_matter_id == session[:requested_matter_id]
           @attachment.destroy
 
-          @mail = Notification.deliver_requested_file_delete_report(
-                  @requested_matter, @attachment)
+          port = get_port()
+          url = port + "://" + $app_env['URL']
+          Notification.requested_file_delete_report(
+                  @requested_matter, @attachment).deliver
 
-          @mail = Notification.deliver_requested_file_delete_copied_report(
-                  @requested_matter, @attachment, $app_env['URL'])
+          Notification.requested_file_delete_copied_report(
+                  @requested_matter, @attachment, url).deliver
 
           flash[:notice] = "#{@attachment.name} を削除しました。"
           redirect_to(:action => "result")

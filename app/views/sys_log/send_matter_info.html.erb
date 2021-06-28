@@ -19,17 +19,91 @@
     <div class="input-mid"><%= h @send_matter.message %><br></div>
     <div class="item-mid">ステータス</div>
     <div class="input-mid"><%= @status %><br></div>
-    <div class="item-mid">送信日</div>
+    <div class="item-mid">登録日</div>
     <div class="input-mid"><% if @send_matter.created_at -%>
                              <%= (Time.parse(@send_matter.created_at.to_s)).strftime("%Y年%m月%d日%H時%M分%S秒") %>
                            <% end -%><br>
     </div>
+    <div class="item-mid">決裁種別</div>
+    <div class="input-mid">
+<% @send_moderate = @send_matter.send_moderate %>
+<% if @send_moderate == nil %>
+決裁無し
+<% else %>
+<% if @send_moderate.type_flag == 0 %>
+通常決裁
+<% else %>
+簡易決裁
+<% end %>
+<% end %>
+    </div>
+<% unless @send_moderate == nil %>
+    <div class="item-mid">決裁結果</div>
+    <div class="input-mid">
+<% if @send_moderate.result == 1 %>
+<font color="blue"><b>承認</b></font>
+<% elsif @send_moderate.result == 2 %>
+<font color="red">却下</font>
+<% else %>
+  未決
+<% end %>
+    </div>
+    <div class="item-mid">決裁ルート</div>
+    <div class="input-mid">
+<% @send_moderaters = @send_moderate.send_moderaters %>
+<% number = 0 %>
+    <div class="table-d" style="border:0px;">
+<% for moderater in @send_moderaters %>
+      <div class="input-l" style="border:0px; padding:5px 8px; height:20px;">
+<% number += 1 %>
+<%= number %>.
+<%= moderater.moderater.user.name %>
+      </div>
+<div class="input-r" style="border:0px; padding:5px 8px; height:20px; text-align:center;">
+<% if moderater.result == 1 %>
+<font color="blue"><b>承認</b></font>
+<% elsif moderater.result == 2 %>
+<font color="red">却下</font>
+<% else %>
+未決
+<% end %>
+      </div>
+<% end %>
+    </div>
+    </div>
+<% end %>
+
+    <div class="item-mid">送信日</div>
+<% if @send_matter.sent_at.present? %>
+    <div class="input-mid"><%= (Time.parse(@send_matter.sent_at.to_s)).strftime("%Y年%m月%d日%H時%M分%S秒") %>
+                           <br>
+    </div>
+<% elsif @send_matter.moderate_flag == nil %>
+    <div class="input-mid"><% if @send_matter.created_at -%>
+                             <%= (Time.parse(@send_matter.created_at.to_s)).strftime("%Y年%m月%d日%H時%M分%S秒") %>
+                           <% end -%><br>
+    </div>
+<% else %>
+    <div class="input-mid"><br>
+    </div>
+<% end -%>
     <div class="item-mid">受信期限</div>
+<% if @send_matter.sent_at.present? %>
+    <div class="input-mid"><% if @send_matter.file_life_period -%>
+                             <%= (Time.parse(@send_matter.sent_at.to_s) +
+                                 @send_matter.file_life_period).strftime("%Y年%m月%d日%H時%M分%S秒") %>
+                           <% end -%><br>
+    </div>
+<% elsif @send_matter.moderate_flag == nil %>
     <div class="input-mid"><% if @send_matter.file_life_period -%>
                              <%= (Time.parse(@send_matter.created_at.to_s) +
                                  @send_matter.file_life_period).strftime("%Y年%m月%d日%H時%M分%S秒") %>
                            <% end -%><br>
     </div>
+<% else %>
+    <div class="input-mid"><br>
+    </div>
+<% end -%>
   </div>
   </fieldset>
 
@@ -43,7 +117,7 @@
     <td nowrap bgcolor=#e5f0fe>メールアドレス</td>
     </tr>
 
-  <% count = -1 -%>
+  <% @count = -1 -%>
   <% @receivers.each.with_index do | receiver, count | -%>
     <tr bordercolor=gray>
     <td nowrap align=center><%= count + 1 %></td>
@@ -51,8 +125,9 @@
     <td nowrap><%= receiver.name %></td>
     <td nowrap><%= receiver.mail_address %></td>
     </tr>
+    <% @count += 1 -%>
   <% end -%>
-  <% if count < 0 -%>
+  <% if @count < 0 -%>
     <tr><td colspan=4 algin=center>データがありません</td></tr>
   <% end -%>
   </table>
@@ -72,7 +147,7 @@
     <td nowrap bgcolor=#e5f0fe>アップロード日</td>
     </tr>
 
-  <% count = -1 -%>
+  <% @count = -1 -%>
   <% download_flg = "" -%>
   <% @attachments.each.with_index do | attachment, count | -%>
     <% label_file_size = '' -%>
@@ -90,7 +165,7 @@
     <tr bordercolor=gray>
     <td nowrap align=center><%= count + 1 %></td>
     <td nowrap><%= attachment.id %></td>
-    <td nowrap><% if File.exist?($app_env['FILE_DIR'] + "/#{attachment.id}") -%>
+    <td nowrap><% if File.exist?($app_env['FILE_DIR'].to_s + "/#{attachment.id}") -%>
                  <%= link_to attachment.name, {:controller => 'sys_data',
                                                          :action => 'get_send_file',
                                                          :id => attachment.id } %>
@@ -102,8 +177,9 @@
     <td nowrap><%= attachment.virus_check %></td>
     <td nowrap><%= (Time.parse(attachment.created_at.to_s)).strftime("%Y年%m月%d日%H時%M分%S秒") %></td>
     </tr>
+    <% @count += 1 -%>
   <% end -%>
-  <% if count < 0 -%>
+  <% if @count < 0 -%>
     <tr><td colspan=8 algin=center>データがありません</td></tr>
   <% end -%>
   </table>

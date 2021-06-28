@@ -1,0 +1,18 @@
+このメールは，<%= @mail_content %>「DECO」から発信しております。<br /><br />
+
+<%= @request_matter.name %> 様<br /><br />
+
+次の内容で送信完了しました。<br /><br />
+
+■依頼ID<br />
+<%= @request_matter.id %><br /><br />
+
+■送信者一覧<br />
+<% @requested_matters.each.with_index do | receiver, count | %><%= count + 1 -%>
+<%= receiver.name %> 様（<%= receiver.mail_address %>）<br />
+<%= @url %><%= receiver.url %> (pw:<%= receiver.send_password %>)<br /><br />
+
+<% end -%><br />
+■送信者へのメッセージ<br />
+<%= @request_matter.message %><br /><br />
+

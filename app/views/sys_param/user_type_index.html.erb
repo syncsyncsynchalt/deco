@@ -1,6 +1,15 @@
 <script type="text/javascript">
 
 localDomains = ""
+function disp(message, link){
+
+	// 「OK」時の処理開始 ＋ 確認ダイアログの表示
+	if(window.confirm(message)){
+		location.href = link;
+	}else{
+	}
+}
+
 
 $(document).ready(function() {
   $.validationEngineLanguage.newLang(localDomains);
@@ -41,6 +50,7 @@ $(document).ready(function() {
     failure : function() {}
   })
 });
+
 </script>
 
   <fieldset>
@@ -51,22 +61,22 @@ $(document).ready(function() {
       <div class="input-mid-2-l"><%= app_env.value %>（<%= app_env.note %>）</div>
       <div class="input-mid-2-r">
       <%= link_to '[編集]', {:action => 'edit2', :id => app_env.id } %>
-      <%= link_to '[削除]', {:action => 'destroy', :id => app_env.id},
-                            :confirm => '削除します。よろしいですか?', :method => :delete %>
+      <%= link_to '[削除]', {:action => 'destroy', :id => app_env.id}, :method => :delete, :class => 'delete',
+                             :data => {:confirm => '削除します。よろしいですか?'} %>
       </div>
     <% end -%>
   <% end -%>
   <br>
-  <% form_for(:app_env, :url => { :action => "create"},
-              :html => {:id => 'app_env1', :name=> "app_env1" }) do |f| %>
+  <%= form_tag({:action => :create_term}, {:id => 'app_env1', :name=> "app_env1" }) do -%>
     <div class="item-mid"><%= $param_label['FILE_LIFE_PERIOD'] %>の登録</div>
-    <%= f.error_messages %>
     <div class="input-mid">
-      <%= f.hidden_field :key, {:value => "FILE_LIFE_PERIOD"} %>
-      <%= f.hidden_field :category, {:value => @category} %>
-      <div class="w40">秒</div><%= f.text_field :value, :class => 'validate[required, custom[onlyNumber]]' %><br>
-      <div class="w40">ラベル</div><%= f.text_field :note, :class => 'validate[required]' %>
-      <%= f.submit "Create" %>
+      <%= hidden_field_tag 'key',             'FILE_LIFE_PERIOD' %>
+      <%= hidden_field_tag 'category',        @category          %>
+      <%= hidden_field_tag 'organization_id', @organization_id   %>
+      <%= text_field_tag 'term', @term, :size => 5,
+                               :class => 'validate[required, custom[onlyNumber]]' %>
+      <%= select_tag 'unit', options_for_select([["日", 1], ["時間", 0]], @unit) %>
+      <%= submit_tag " 登録 " -%>
     </div>
   <% end %>
   </div>
@@ -79,40 +89,43 @@ $(document).ready(function() {
   <div class="table-sys-a">
   <% app_env_id = '' -%>
   <% file_life_period_def = '' -%>
+  <% file_life_period_def_value = "" %>
   <% @app_envs.each do | app_env | %>
     <% if app_env.key == 'FILE_LIFE_PERIOD_DEF' -%>
       <% app_env_id = app_env.id -%>
       <% file_life_period_def = app_env.value.to_i -%>
+      <% period = AppEnv.where("id = ?", file_life_period_def.to_i).first -%>
+      <% file_life_period_def_value = period.note if period.present? %>
     <% end -%>
   <% end -%>
   <% if app_env_id == '' -%>
-    <% form_for(:app_env, :url => { :action => 'create'},
+    <%= form_for(:app_env, :url => { :action => 'create'},
                 :html => {:id => 'app_env2', :name=> "app_env2" }) do |f| %>
       <div class="item-mid"><%= $param_label['FILE_LIFE_PERIOD_DEF'] %></div>
-      <%= f.error_messages %>
+      <%#= f.error_messages %>
       <div class="input-mid">
-      設定値：<%= file_life_period_def %><br>
+      設定値：<%= file_life_period_def_value %><br>
       <%= f.hidden_field :key, {:value => "FILE_LIFE_PERIOD_DEF"} %>
       <%= f.hidden_field :category, {:value => @category} %>
       <%= f.select :value,
                  @file_life_periods,
                  {:selected => file_life_period_def} %>
-      <%= f.submit "　登録　" %>
+      <%= f.submit "登　録" %>
       </div>
     <% end %>
   <% else -%>
-    <% form_for(:app_env, :url => { :action => 'update', :id => app_env_id},
+    <%= form_for(:app_env, :url => { :action => 'update', :id => app_env_id},
                 :html => {:id => 'app_env2', :name=> "app_env2" }) do |f| %>
       <div class="item-mid"><%= $param_label['FILE_LIFE_PERIOD_DEF'] %></div>
-      <%= f.error_messages %>
+      <%#= f.error_messages %>
       <div class="input-mid">
-      設定値：<%= file_life_period_def %><br>
+      設定値：<%= file_life_period_def_value %><br>
       <%= f.hidden_field :key, {:value => "FILE_LIFE_PERIOD_DEF"} %>
       <%= f.hidden_field :category, {:value => @category} %>
       <%= f.select :value,
                  @file_life_periods,
                  {:selected => file_life_period_def} %>
-      <%= f.submit "　更新　" %>
+      <%= f.submit "更　新" %>
       </div>
     <% end %>
   <% end -%>
@@ -122,12 +135,12 @@ $(document).ready(function() {
 <br>
 
   <fieldset>
-  <h2><%= $param_label['RECEIVERS_LIMIT'] %></h2>
+  <h2><%= $param_label['RECEIVERS_LIMIT'] %>(単位：<%= $param_unit['RECEIVERS_LIMIT'] %>)</h2>
   <div class="table-sys-a">
   <% c=0 -%>
   <% @app_envs.each do | app_env | %>
     <% if app_env.key == 'RECEIVERS_LIMIT' -%>
-      <div class="input-mid-2-l"><%= app_env.value %></div>
+      <div class="input-mid-2-l"><%= app_env.value %><%= $param_unit['RECEIVERS_LIMIT'] %></div>
       <div class="input-mid-2-r">
       <%= link_to '[編集]', {:action => 'edit1_only_num', :id => app_env.id } %>
       </div>
@@ -135,15 +148,15 @@ $(document).ready(function() {
     <% end -%>
   <% end -%>
   <% if c == 0 -%>
-    <% form_for(:app_env, :url => { :action => "create"}, 
+    <%= form_for(:app_env, :url => { :action => "create"}, 
                 :html => {:id => 'app_env3', :name=> "app_env3" }) do |f| %>
       <div class="item-mid"><%= $param_label['RECEIVERS_LIMIT'] %>の登録</div>
-      <%= f.error_messages %>
+      <%#= f.error_messages %>
       <div class="input-mid">
         <%= f.hidden_field :key, {:value => "RECEIVERS_LIMIT"} %>
         <%= f.hidden_field :category, {:value => @category} %>
-        <%= f.text_field :value, :class => 'validate[required, onlyNumber]' %>
-        <%= f.submit "Create" %>
+        <%= f.text_field :value, {:class => 'validate[required, onlyNumber]', :size => '', :style => "width:150px;"} %>
+        <%= f.submit "登　録" %>
       </div>
     <% end %>
   <% end -%>
@@ -153,12 +166,12 @@ $(document).ready(function() {
 <br>
 
   <fieldset>
-  <h2><%= $param_label['FILE_SEND_LIMIT'] %></h2>
+  <h2><%= $param_label['FILE_SEND_LIMIT'] %>(単位：<%= $param_unit['FILE_SEND_LIMIT'] %>)</h2>
   <div class="table-sys-a">
   <% c=0 -%>
   <% @app_envs.each do | app_env | %>
     <% if app_env.key == 'FILE_SEND_LIMIT' -%>
-      <div class="input-mid-2-l"><%= app_env.value %></div>
+      <div class="input-mid-2-l"><%= app_env.value %><%= $param_unit['FILE_SEND_LIMIT'] %></div>
       <div class="input-mid-2-r">
       <%= link_to '[編集]', {:action => 'edit1_only_num', :id => app_env.id } %>
       </div>
@@ -166,15 +179,15 @@ $(document).ready(function() {
     <% end -%>
   <% end -%>
   <% if c == 0 -%>
-    <% form_for(:app_env, :url => { :action => "create"}, 
+    <%= form_for(:app_env, :url => { :action => "create"}, 
                 :html => {:id => 'app_env4', :name=> "app_env4" }) do |f| %>
       <div class="item-mid"><%= $param_label['FILE_SEND_LIMIT'] %>の登録</div>
-      <%= f.error_messages %>
+      <%#= f.error_messages %>
       <div class="input-mid">
         <%= f.hidden_field :key, {:value => 'FILE_SEND_LIMIT'} %>
         <%= f.hidden_field :category, {:value => @category} %>
-        <%= f.text_field :value, :class => 'validate[required, onlyNumber]' %>
-        <%= f.submit "Create" %>
+        <%= f.text_field :value, :class => 'validate[required, onlyNumber]', :size => '', :style => "width:150px;" %>
+        <%= f.submit "登　録" %>
       </div> 
     <% end %>
   <% end -%>
@@ -184,12 +197,12 @@ $(document).ready(function() {
 <br>
 
   <fieldset>
-  <h2><%= $param_label['FILE_SIZE_LIMIT'] %></h2>
+  <h2><%= $param_label['FILE_SIZE_LIMIT'] %>(単位：<%= $param_unit['FILE_SIZE_LIMIT'] %>)</h2>
   <div class="table-sys-a">
   <% c=0 -%>
   <% @app_envs.each do | app_env | %>
     <% if app_env.key == 'FILE_SIZE_LIMIT' -%>
-      <div class="input-mid-2-l"><%= app_env.value %></div>
+      <div class="input-mid-2-l"><%= app_env.value %><%= $param_unit['FILE_SIZE_LIMIT'] %></div>
       <div class="input-mid-2-r">
       <%= link_to '[編集]', {:action => 'edit1_only_num', :id => app_env.id } %>
       </div>
@@ -197,15 +210,15 @@ $(document).ready(function() {
     <% end -%>
   <% end -%>
   <% if c == 0 -%>
-    <% form_for(:app_env, :url => { :action => "create"}, 
+    <%= form_for(:app_env, :url => { :action => "create"}, 
                 :html => {:id => 'app_env5', :name=> "app_env5" }) do |f| %>
       <div class="item-mid"><%= $param_label['FILE_SIZE_LIMIT'] %>の登録</div>
-      <%= f.error_messages %>
+      <%#= f.error_messages %>
       <div class="input-mid">
         <%= f.hidden_field :key, {:value => 'FILE_SIZE_LIMIT'} %>
         <%= f.hidden_field :category, {:value => @category} %>
-        <%= f.text_field :value, :class => 'validate[required, onlyNumber]' %>
-        <%= f.submit "Create" %>
+        <%= f.text_field :value, :class => 'validate[required, onlyNumber]', :size => '', :style => "width:150px;" %>
+        <%= f.submit "登　録" %>
       </div> 
     <% end %>
   <% end -%>
@@ -215,12 +228,12 @@ $(document).ready(function() {
 <br>
 
   <fieldset>
-  <h2><%= $param_label['FILE_TOTAL_SIZE_LIMIT'] %></h2>
+  <h2><%= $param_label['FILE_TOTAL_SIZE_LIMIT'] %>(単位：<%= $param_unit['FILE_TOTAL_SIZE_LIMIT'] %>)</h2>
   <div class="table-sys-a">
   <% c=0 -%>
   <% @app_envs.each do | app_env | %>
     <% if app_env.key == 'FILE_TOTAL_SIZE_LIMIT' -%>
-      <div class="input-mid-2-l"><%= app_env.value %></div>
+      <div class="input-mid-2-l"><%= app_env.value %><%= $param_unit['FILE_TOTAL_SIZE_LIMIT'] %></div>
       <div class="input-mid-2-r">
       <%= link_to '[編集]', {:action => 'edit1_only_num', :id => app_env.id } %>
       </div>
@@ -228,15 +241,15 @@ $(document).ready(function() {
     <% end -%>
   <% end -%>
   <% if c == 0 -%>
-    <% form_for(:app_env, :url => { :action => "create"}, 
+    <%= form_for(:app_env, :url => { :action => "create"}, 
                 :html => {:id => 'app_env6', :name=> "app_env6" }) do |f| %>
       <div class="item-mid"><%= $param_label['FILE_TOTAL_SIZE_LIMIT'] %>の登録</div>
-      <%= f.error_messages %>
+      <%#= f.error_messages %>
       <div class="input-mid">
         <%= f.hidden_field :key, {:value => 'FILE_TOTAL_SIZE_LIMIT'} %>
         <%= f.hidden_field :category, {:value => @category} %>
-        <%= f.text_field :value, :class => 'validate[required, onlyNumber]' %>
-        <%= f.submit "Create" %>
+        <%= f.text_field :value, :class => 'validate[required, onlyNumber]', :size => '', :style => "width:150px;" %>
+        <%= f.submit "登　録" %>
       </div> 
     <% end %>
   <% end -%>
@@ -246,12 +259,12 @@ $(document).ready(function() {
 <br>
 
   <fieldset>
-  <h2><%= $param_label['MESSAGE_LIMIT'] %></h2>
+  <h2><%= $param_label['MESSAGE_LIMIT'] %>(単位：<%= $param_unit['MESSAGE_LIMIT'] %>)</h2>
   <div class="table-sys-a">
   <% c=0 -%>
   <% @app_envs.each do | app_env | %>
     <% if app_env.key == 'MESSAGE_LIMIT' -%>
-      <div class="input-mid-2-l"><%= app_env.value %></div>
+      <div class="input-mid-2-l"><%= app_env.value %><%= $param_unit['MESSAGE_LIMIT'] %></div>
       <div class="input-mid-2-r">
       <%= link_to '[編集]', {:action => 'edit1_only_num', :id => app_env.id } %>
       </div>
@@ -259,15 +272,15 @@ $(document).ready(function() {
     <% end -%>
   <% end -%>
   <% if c == 0 -%>
-    <% form_for(:app_env, :url => { :action => "create"}, 
+    <%= form_for(:app_env, :url => { :action => "create"}, 
                 :html => {:id => 'app_env7', :name=> "app_env7" }) do |f| %>
       <div class="item-mid"><%= $param_label['MESSAGE_LIMIT'] %>の登録</div>
-      <%= f.error_messages %>
+      <%#= f.error_messages %>
       <div class="input-mid">
         <%= f.hidden_field :key, {:value => 'MESSAGE_LIMIT'} %>
         <%= f.hidden_field :category, {:value => @category} %>
-        <%= f.text_field :value, :class => 'validate[required, onlyNumber]' %>
-        <%= f.submit "Create" %>
+        <%= f.text_field :value, :class => 'validate[required, onlyNumber]', :size => '', :style => "width:150px;"%>
+        <%= f.submit "登　録" %>
       </div> 
     <% end %>
   <% end -%>
@@ -277,12 +290,12 @@ $(document).ready(function() {
 <br>
 
   <fieldset>
-  <h2><%= $param_label['PW_LENGTH_MIN'] %></h2>
+  <h2><%= $param_label['PW_LENGTH_MIN'] %>(単位：<%= $param_unit['PW_LENGTH_MIN'] %>)</h2>
   <div class="table-sys-a">
   <% c=0 -%>
   <% @app_envs.each do | app_env | %>
     <% if app_env.key == 'PW_LENGTH_MIN' -%>
-      <div class="input-mid-2-l"><%= app_env.value %></div>
+      <div class="input-mid-2-l"><%= app_env.value %><%= $param_unit['PW_LENGTH_MIN'] %></div>
       <div class="input-mid-2-r">
       <%= link_to '[編集]', {:action => 'edit1_only_num', :id => app_env.id } %>
       </div>
@@ -290,15 +303,15 @@ $(document).ready(function() {
     <% end -%>
   <% end -%>
   <% if c == 0 -%>
-    <% form_for(:app_env, :url => { :action => "create"}, 
+    <%= form_for(:app_env, :url => { :action => "create"}, 
                 :html => {:id => 'app_env8', :name=> "app_env8" }) do |f| %>
       <div class="item-mid"><%= $param_label['PW_LENGTH_MIN'] %>の登録</div>
-      <%= f.error_messages %>
+      <%#= f.error_messages %>
       <div class="input-mid">
         <%= f.hidden_field :key, {:value => 'PW_LENGTH_MIN'} %>
         <%= f.hidden_field :category, {:value => @category} %>
-        <%= f.text_field :value, :class => 'validate[required, onlyNumber]' %>
-        <%= f.submit "Create" %>
+        <%= f.text_field :value, :class => 'validate[required, onlyNumber]', :size => '', :style => "width:150px;" %>
+        <%= f.submit "登　録" %>
       </div> 
     <% end %>
   <% end -%>
@@ -308,12 +321,12 @@ $(document).ready(function() {
 <br>
 
   <fieldset>
-  <h2><%= $param_label['PW_LENGTH_MAX'] %></h2>
+  <h2><%= $param_label['PW_LENGTH_MAX'] %>(単位：<%= $param_unit['PW_LENGTH_MAX'] %>)</h2>
   <div class="table-sys-a">
   <% c=0 -%>
   <% @app_envs.each do | app_env | %>
     <% if app_env.key == 'PW_LENGTH_MAX' -%>
-      <div class="input-mid-2-l"><%= app_env.value %></div>
+      <div class="input-mid-2-l"><%= app_env.value %><%= $param_unit['PW_LENGTH_MAX'] %></div>
       <div class="input-mid-2-r">
       <%= link_to '[編集]', {:action => 'edit1_only_num', :id => app_env.id } %>
       </div>
@@ -321,15 +334,15 @@ $(document).ready(function() {
     <% end -%>
   <% end -%>
   <% if c == 0 -%>
-    <% form_for(:app_env, :url => { :action => "create"}, 
+    <%= form_for(:app_env, :url => { :action => "create"}, 
                 :html => {:id => 'app_env9', :name=> "app_env9" }) do |f| %>
       <div class="item-mid"><%= $param_label['PW_LENGTH_MAX'] %>の登録</div>
-      <%= f.error_messages %>
+      <%#= f.error_messages %>
       <div class="input-mid">
         <%= f.hidden_field :key, {:value => 'PW_LENGTH_MAX'} %>
         <%= f.hidden_field :category, {:value => @category} %>
-        <%= f.text_field :value, :class => 'validate[required, onlyNumber]' %>
-        <%= f.submit "Create" %>
+        <%= f.text_field :value, :class => 'validate[required, onlyNumber]', :size => '', :style => "width:150px;" %>
+        <%= f.submit "登　録" %>
       </div> 
     <% end %>
   <% end -%>

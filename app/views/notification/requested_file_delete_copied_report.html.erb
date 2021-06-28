@@ -1,0 +1,15 @@
+このメールは<%= @mail_content %>「DECO」から発信しております。<br /><br />
+
+<%= @requested_matter.name %> 様<br /><br />
+
+次のファイルの削除が完了しました。<br /><br />
+
+■削除ファイル<br />
+<%= @attachment.name %>（<%= show_file_size(@attachment.size) %>）<br />
+
+■送信者情報<br />
+<%= @requested_matter.request_matter.name %> 様（<%= @requested_matter.request_matter.mail_address %>）<br />
+<%= @url %>/requested_file_send/result/<%= @requested_matter.url %><br />
+
+
+

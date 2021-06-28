@@ -1,0 +1,18 @@
+このメールは，「DECO」から発信しております。<br /><br />
+
+次の内容のファイル送信の決裁が完しました。<br><br>
+
+■送信ID<br />
+<%= @request_matter.id %><br /><br />
+
+■決裁結果<br />
+<% if @request_matter.moderate_result == 1 %>
+承認
+<br /><br />
+<% elsif @request_matter.moderate_result == 2 %>
+却下
+<br /><br />
+■却下理由<br />
+<%= @request_moderater.content %><br /><br />
+<% end %>
+

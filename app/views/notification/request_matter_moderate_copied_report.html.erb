@@ -1,0 +1,38 @@
+このメールは，<%= @mail_content %>「DECO」から発信しております。<br /><br />
+
+<%= @request_matter.name %> 様<br /><br />
+
+次の内容で送信完了しました。<br /><br />
+
+■依頼ID<br />
+<%= @request_matter.id %><br /><br />
+
+■送信者一覧<br />
+<% @request_matter.requested_matters.each.with_index do | receiver, count | %><%= count + 1 -%>
+<%= receiver.name %> 様（<%= receiver.mail_address %>）<br />
+(pw:<%= receiver.send_password %>)<br /><br />
+
+<% end -%><br />
+■送信者へのメッセージ<br />
+<%= @request_matter.message %><br /><br />
+
+■決裁種別<br />
+<% if @request_moderate.type_flag == 0 %>
+通常決裁
+<% else %>
+簡易決裁
+<% end %>
+<br /><br />
+
+<% number = 0 %>
+■決裁ルート<br />
+<% for moderater in @request_moderate.request_moderaters %>
+<% number += 1 %>
+<%= number %>.
+<%= moderater.moderater.user.name %><br>
+<% end %>
+<br><br>
+
+■確認を行う場合はこちらのURLをクリックしてください<br />
+<%= @url %>/file_request/result/<%= @request_matter.url %><br />
+

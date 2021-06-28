@@ -1,3 +1,9 @@
+2012-10-31: Version 1.1.0
+
+        Ruby 1.9.3, Rails 3.2.6に対応
+        細かいバグの修正
+        決裁機能の追加
+
 2011-05-02 Version 1.0.3
 
         Fixed a automatic delection of file.

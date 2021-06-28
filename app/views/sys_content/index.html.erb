@@ -1,0 +1,17 @@
+<% @top_content_frames.each.with_index do |top_content_frame, count| %>
+  [ID: <%= top_content_frame.id %>]　<%= top_content_frame.title %>
+  <%= link_to "編集", { :action => 'edit_page', :id => top_content_frame.id } %><br />
+
+  + <%= link_to "サブページの追加", { :action => 'add_subpage',
+                                      :id => top_content_frame.id} %><br />
+  <% sub_content_frames = ContentFrame.find(:all, :conditions => { :master_frame => top_content_frame.id }, :order => "content_frame_order") -%>
+  <% if sub_content_frames.length > 0 -%>
+    <% sub_content_frames.each.with_index do |sub_content_frame, count_sub| -%>
+　　　[ID: <%= sub_content_frame.id %>]　<%= sub_content_frame.title %>
+　    <%= link_to "編集", { :action => 'edit_page', :id => sub_content_frame.id } %>
+　    <%= link_to "削除", { :action => 'delete_page', :id => sub_content_frame.id },
+                             :data => {:confirm => '削除します。よろしいですか?'} %><br />
+    <% end -%>
+  <% end -%>
+  <br />
+<% end -%>

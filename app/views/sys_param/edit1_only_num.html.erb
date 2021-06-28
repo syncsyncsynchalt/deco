@@ -11,17 +11,17 @@ $(document).ready(function() {
 });
 </script>
 
-<%= $param_label[@app_env.key] %>の設定変更
+<%= $param_label[@app_env.key] %><% if $param_unit[@app_env.key].present? %>(単位：<%= $param_unit[@app_env.key] %>)<% end %>の設定変更
 <fieldset>
 <div class="table-sys-a">
 
-<% form_for(@app_env, :url => { :action => 'update', :id => @app_env.id},
+<%= form_for(@app_env, :url => { :action => 'update', :id => @app_env.id},
                       :html => {:id => 'app_env', :name=> "app_env" }) do |f| %>
-  <%= f.error_messages %>
+  <%#= f.error_messages %>
   <div class="item-mid"></div>
-  <div class="input-mid"><%= f.text_field :value, :class => 'validate[required, custom[onlyNumber]]' %></div>
+  <div class="input-mid"><%= f.text_field :value, :class => 'validate[required, custom[onlyNumber]]', :size => '', :style => "width:150px;" %><% if $param_unit[@app_env.key].present? %><%= $param_unit[@app_env.key] %><% end %></div>
   <div class="item-mid"></div>
-  <div class="input-mid"><%= f.submit "　更新　" %></div>
+  <div class="input-mid"><%= f.submit "更　新" %></div>
 <% end %>
 
 </div>

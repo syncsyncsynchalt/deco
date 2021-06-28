@@ -1,0 +1,36 @@
+<script type="text/javascript">
+
+localDomains = ""
+
+$(document).ready(function() {
+  $.validationEngineLanguage.newLang(localDomains);
+  $("#content_frame").validationEngine({
+    success : function() { document.content_frame.submit(); },
+    failure : function() {}
+  })
+});
+</script>
+
+タイトルの設定変更
+<fieldset>
+<div class="table-sys-a">
+
+<%= form_for(@content_frame, :url => { :action => 'update_content_frame', :id => @content_frame.id},
+                      :html => {:id => 'content_frame', :name=> "content_frame" }) do |f| %>
+  <%#= f.error_messages %>
+  <div class="item-mid"></div>
+  <div class="input-mid"><%= f.text_field :title, :class => 'validate[required]' %></div>
+  <div class="item-mid"></div>
+  <div class="input-mid"><%= f.submit "　更新　" %></div>
+<% end %>
+
+</div>
+</fieldset>
+
+<br>
+
+<% if session[:target_for_back_id] -%>
+<%= link_to "戻る", {:action => session[:target_for_back], :id => session[:target_for_back_id]} %><br />
+<% else -%>
+<%= link_to "戻る", {:action => session[:target_for_back]} %><br />
+<% end -%>

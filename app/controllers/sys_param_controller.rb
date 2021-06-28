@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # Copyright (C) 2010 NMT Co.,Ltd.
 #
 # This program is free software: you can redistribute it and/or modify
@@ -13,6 +14,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
+# Filters added to this controller apply to all controllers in the application.
+# Likewise, all the methods added will be available for all controllers.
 class SysParamController < ApplicationController
   layout 'system_admin'
   before_filter :check_ip_for_administrator, :administrator_authorize
@@ -26,12 +29,29 @@ class SysParamController < ApplicationController
   $param_label['FILE_SIZE_LIMIT']  = '送信ファイル最大容量'
   $param_label['FILE_TOTAL_SIZE_LIMIT'] = '送信ファイル合計最大容量'
   $param_label['MESSAGE_LIMIT']    = 'メッセージの長さ'
-  $param_label['FILE_LIFE_PERIOD'] = '送信ファイル保存期間（秒）'
+  $param_label['FILE_LIFE_PERIOD'] = '送信ファイル保存期間'
   $param_label['FILE_LIFE_PERIOD_DEF'] = '送信ファイル保存期間デフォルト値'
   $param_label['PW_LENGTH_MIN']    = '最短パスワード長'
   $param_label['PW_LENGTH_MAX']    = '最長パスワード長'
   $param_label['URL']              = 'ＵＲＬ'
-  $param_label['REQUEST_PERIOD']   = '依頼期限（秒）'
+  $param_label['REQUEST_PERIOD']   = '依頼期限'
+  $param_label['PASSWORD_AUTOMATION']   = '送信画面のパスワード自動発行'
+  $param_label['MODERATE_DEFAULT']   = 'ローカルユーザ決裁ルート'
+
+  $param_label['ENABLE_SSL']       = 'ＳＳＬの利用'
+
+  $param_label['VIRUS_CHECK']      = 'ウィルスチェックの利用'
+  $param_label['VIRUS_CHECK_NOTICE'] = 'ウィルス検知の通知'
+  $param_label['FROM_MAIL_ADDRESS'] = '送信元メールアドレス'
+
+  $param_unit = Hash.new
+  $param_unit['RECEIVERS_LIMIT']   = '人'
+  $param_unit['FILE_SEND_LIMIT']   = 'ファイル'
+  $param_unit['FILE_SIZE_LIMIT']   = 'MB'
+  $param_unit['FILE_TOTAL_SIZE_LIMIT']  = 'MB'
+  $param_unit['MESSAGE_LIMIT']     = '文字'
+  $param_unit['PW_LENGTH_MIN']     = '文字'
+  $param_unit['PW_LENGTH_MAX']     = '文字'
 
   # authorication
   def index
@@ -46,6 +66,18 @@ class SysParamController < ApplicationController
     session[:target_for_back] = 'common_index'
     session[:target_for_back_id] = nil
     @app_envs = AppEnv.find(:all, :conditions => [ "category = ?", 0 ])
+    @moderates = Moderate.find(:all)
+    @moderate_value =
+        AppEnv
+        .where(["category = ?",
+                "`key` = ?"].join(" AND "),
+               0, 'MODERATE_DEFAULT').first
+    if @moderate_value.present?
+      @selected_moderate =
+          Moderate
+          .where("id = ?",
+                 @moderate_value.value).first
+    end
   end
 
   # create 登録
@@ -92,6 +124,69 @@ class SysParamController < ApplicationController
     render :action => "message"
   end
 
+  def create2
+    @app_env = AppEnv.new()
+    @app_env.key = params[:id]
+    @app_env.value = "1"
+    @app_env.category = "0"
+    rslt = 0
+    if rslt == 0
+      if @app_env.save
+        flash[:notice] = @app_env.key + 'を変更しました。'
+      else
+        flash[:error] = '失敗'
+      end
+    end
+    render :action => "message"
+  end
+
+  def create_term
+    #@app_env = AppEnv.find(params[:id])
+    @app_env = AppEnv.new()
+    rslt = 0
+    error_messages = ""
+
+    @app_env.key = params[:key]
+    @app_env.category = params[:category]
+    @term = params[:term]
+    @unit = params[:unit]
+
+    if @unit.to_i == 0
+      unless 1 <= @term.to_i and @term.to_i <= 23
+        error_messages = "1から23の間の数値を指定してください"
+        rslt = 1
+      else
+        @app_env.value = @term.to_i * 60 * 60
+        @term_label = @term + '時間'
+      end
+    elsif @unit.to_i == 1
+      unless 1 <= @term.to_i and @term.to_i <= 14
+        error_messages = "1から14の間の数値を指定してください"
+        rslt = 1
+      else
+        @app_env.value = @term.to_i * 60 * 60 * 24
+        @term_label = @term + '日'
+      end
+    else
+      rslt = 1
+      error_messages = "時間が不正です"
+    end
+
+    if @app_env.key == 'FILE_LIFE_PERIOD' || 'REQUEST_PERIOD'
+      @app_env.note = @term_label
+    end
+
+    if rslt == 0
+      @app_env.save
+      flash[:notice] = @app_env.key + 'を登録しました。'
+    else
+      flash[:error] = error_messages
+    end
+
+    render :action => "message"
+
+  end
+
   # edit1（値の編集）
   def edit1
     @app_env = AppEnv.find(params[:id])
@@ -105,6 +200,17 @@ class SysParamController < ApplicationController
   # edit2（値、備考の編集）
   def edit2
     @app_env = AppEnv.find(params[:id])
+
+    @hour_in_sec = 60 * 60
+    @day_in_sec = @hour_in_sec * 24
+
+    if @app_env.value.to_i >= @day_in_sec
+      @term = @app_env.value.to_i / @day_in_sec
+      @unit = 1
+    else
+      @term = @app_env.value.to_i / @hour_in_sec
+      @unit = 0
+    end
   end
 
   # update
@@ -151,6 +257,69 @@ class SysParamController < ApplicationController
     end
 
     render :action => "message"
+  end
+
+  def update2
+    @app_env = AppEnv.find(params[:id])
+    if @app_env.value == "0"
+      @app_env.value = "1"
+    else
+      @app_env.value = "0"
+    end
+    rslt = 0
+    if rslt == 0
+      if @app_env.save
+        flash[:notice] = @app_env.key + 'を変更しました。'
+      else
+        flash[:error] = '失敗'
+      end
+    end
+
+    render :action => "message"
+  end
+
+  def update_term
+    @app_env = AppEnv.find(params[:id])
+    rslt = 0
+    error_messages = ""
+
+    @term = params[:term]
+    @unit = params[:unit]
+
+    if @unit.to_i == 0
+      unless 1 <= @term.to_i and @term.to_i <= 23
+        error_messages = "1から23の間の数値を指定してください"
+        rslt = 1
+      else
+        @app_env.value = @term.to_i * 60 * 60
+        @term_label = @term + '時間'
+      end
+    elsif @unit.to_i == 1
+      unless 1 <= @term.to_i and @term.to_i <= 14
+        error_messages = "1か14の間の数値を指定してください"
+        rslt = 1
+      else
+        @app_env.value = @term.to_i * 60 * 60 * 24
+        @term_label = @term + '日'
+      end
+    else
+      rslt = 1
+      error_messages = "時間が不正です<br>"
+    end
+
+    if @app_env.key == 'FILE_LIFE_PERIOD' || 'REQUEST_PERIOD'
+      @app_env.note = @term_label
+    end
+
+    if rslt == 0
+      @app_env.save
+      flash[:notice] = @app_env.key + 'を修正しました。'
+    else
+      flash[:error] = error_messages
+    end
+
+    render :action => "message"
+
   end
 
   # destroy

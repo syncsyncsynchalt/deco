@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # Copyright (C) 2010 NMT Co.,Ltd.
 #
 # This program is free software: you can redistribute it and/or modify
@@ -13,9 +14,11 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
+# Filters added to this controller apply to all controllers in the application.
+# Likewise, all the methods added will be available for all controllers.
 class SysUserController < ApplicationController
   layout 'system_admin'
-  include AuthenticatedSystem
+#  include AuthenticatedSystem
   before_filter :check_ip_for_administrator, :administrator_authorize
 
   def index
@@ -28,28 +31,20 @@ class SysUserController < ApplicationController
       session[:target_for_back] = 'index'
       session[:return_to] = '/sys_user/index/1'
       session[:target_for_back_id] = 1
-      @users = User.find(:all, :conditions => [ "category = ?", 1 ])
+      @users =
+          User.where("category = ?", 1)
+#      @users = User.find(:all, :conditions => [ "category = ?", 1 ])
 
     elsif @category == '2'
       session[:section_title] = 'リモートユーザ'
       session[:target_for_back] = 'index'
       session[:return_to] = '/sys_user/index/2'
       session[:target_for_back_id] = 2
-      @users = User.find(:all, :conditions => [ "category = ?", 2 ])
+      @users =
+          User.where("category = ?", 2)
+#      @users = User.find(:all, :conditions => [ "category = ?", 2 ])
 
     end
-  end
-
-  def create_
-    @user = User.new(params[:user])
-
-    if @user.save
-      flash[:notice] = @user.login + 'を追加しました。'
-    else
-      flash[:error] = '失敗'
-    end
-
-    render :action => "message"
   end
 
   # edit（編集）
@@ -60,6 +55,12 @@ class SysUserController < ApplicationController
   #パスワード変更
   def chg_pw
     @user = User.find(params[:id])
+  end
+
+  #決裁ルート変更
+  def chg_moderate
+    @user = User.find(params[:id])
+    @moderates = Moderate.find(:all)
   end
 
   # update
@@ -82,7 +83,6 @@ class SysUserController < ApplicationController
     flash[:notice] = @user.login + '[' + @user.email + '] を削除しました。'
     render :action => "message"
   end
-
 
   def message
   end

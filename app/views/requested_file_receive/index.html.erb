@@ -25,8 +25,8 @@
 <% if @requested_attachments.size > 0 -%>
   <%  @requested_attachments.each_with_index do | attachment, index | -%>
     <% if attachment.virus_check == '0' -%>
-      <div class="input-l"><%= index + 1 %>. <%= h truncate(attachment.name, 28) %>（<%= show_file_size(attachment) %>）</div>
-      <div class="input-r"><%= link_to image_tag('/images/common/download.gif', {:border => '0', :alt => 'ダウンロード'}),
+      <div class="input-l"><%= index + 1 %>. <%= h truncate(attachment.name, {:length => 28}) %>（<%= show_file_size(attachment) %>）</div>
+      <div class="input-r"><%= link_to image_tag('/assets/common/download.gif', {:border => '0', :alt => 'ダウンロード'}),
                                  {:action => 'get', :id => attachment.id} %></div>
     <% end -%>
   <% end -%>

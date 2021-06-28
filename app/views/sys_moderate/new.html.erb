@@ -1,0 +1,39 @@
+<script type="text/javascript">
+
+localDomains = ""
+
+$(document).ready(function() {
+  $.validationEngineLanguage.newLang(localDomains);
+  $("#moderate").validationEngine({
+    promptPosition: "centerRight"
+  })
+  $('#moderater_user_id').multiselect2side({'search': 'Search: '});
+});
+</script>
+
+  <fieldset>
+  <%= form_for('moderate', :url => { :action => 'create'},
+                      :html => {:id => "moderate", :name=> "moderate" }) do |f| %>
+  <h2>決裁名</h2>
+<div class="table-sys-a">
+      <div class="item-mid2">決裁名</div>
+      <div class="input-mid2"><%= f.text_field(:name, :class => "validate[required]") %></div>
+</div>
+<br /><br />
+  <h2>決裁内容選択</h2>
+    <label><%= f.radio_button(:type_flag, 0, {:checked => true}) %> 通常決裁（決裁者が却下した時点で差し戻されます）</label><br>
+    <label><%= f.radio_button(:type_flag, 1) %> 簡易決裁（一斉にメールを送信して決裁者の1人が決裁した時点で完了します）</label><br>
+<div id="moderater_number">
+</div>
+  <h2>決裁者選択</h2>
+<%= fields_for 'moderater' do |f2| %>
+<%= f2.select :user_id, options_for_select(@users.map{ |user| [ "#{user.name}(#{user.login})", user.id ] }), {}, multiple: true %>
+<% end %>
+<%= f.submit "作　成" %>
+<% end %>
+<br>
+<% if session[:target_for_back_id] -%>
+<%= link_to "戻る", {:controller => session[:target_for_back_controller], :action => session[:target_for_back], :id => session[:target_for_back_id]} %><br />
+<% else -%>
+<%= link_to "戻る", {:controller => session[:target_for_back_controller], :action => session[:target_for_back]} %><br />
+<% end -%>

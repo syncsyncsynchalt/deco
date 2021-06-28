@@ -1,0 +1,55 @@
+  <fieldset>
+  <h2>登録決裁一覧</h2>
+  <div align="right"><%= link_to '新規作成', {:controller => 'sys_moderate', :action => 'new'} %></div>
+  <table class="system-content">
+    <thead>
+      <tr>
+        <th width=30% class="c1">決裁名</th>
+        <th width=15%>決裁内容</th>
+        <th width=35%>決裁者</th>
+        <th width=20%></th>
+      </tr>
+    </thead>
+    <% if @moderates.length > 0 %>
+    <tbody>
+      <% for moderate in @moderates -%>
+      <tr>
+        <td class="c1"><%= moderate.name %></td>
+        <td><% if moderate.type_flag == 1 %>
+            簡易決裁
+            <% else %>
+            通常決裁
+            <% end %>
+        </td>
+        <td>
+        <% moderater_count = 0 %>
+        <% for moderater in moderate.moderaters %>
+          <% if moderater.user.present? %>
+            <% unless moderater_count == 0 %>
+            <br>
+            <% end %>
+            <%= moderater.user.name %>(<%= moderater.user.login %>)
+          <% moderater_count += 1 %>
+          <% end %>
+        <% end %>
+        </td>
+        <td>
+          <%= link_to '[編集]', {:action => 'edit', :id => moderate.id } %>
+          <%= link_to '[削除]', {:action => 'destroy', :id => moderate.id},
+                                 :data => {:confirm => '削除します。よろしいですか?'},
+                                 :method => :delete -%>
+        </td>
+      </tr>
+      <% end %>
+    </tbody>
+    <% else %>
+    <tbody>
+      <td class="c1"></td>
+      <td>登録データがありません</td>
+      <td><br></td>
+    </tbody>
+    <% end %>
+  </table>
+  </fieldset>
+
+<br><br><br>

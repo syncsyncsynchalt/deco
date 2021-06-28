@@ -1,3 +1,11 @@
+<script type="text/javascript">
+function disp(message, link){
+	if(window.confirm(message)){
+		location.href = link;
+	}else{
+	}
+}
+</script>
 <p>
 以下の内容で送信しました。
 </p>
@@ -13,12 +21,14 @@
       <div class="item-mid">パスワード</div>
       <div class="input-mid"><%= h @requested_matter.receive_password %></div>
 
+    <% unless $app_env['PASSWORD_AUTOMATION'] == '1' %>
       <div class="item-mid">パスワードの通知方法</div>
       <% if @requested_matter.password_notice == 1 %>
         <div class="input-mid">システムで通知</div>
       <% else %>
          <div class="input-mid">自分で通知</div>
       <% end %>
+    <% end %>
 
   <div class="item-mid">送信ファイル</div>
   <div class="input-mid">
@@ -26,16 +36,16 @@
       <div class="item-l">ファイル名</div>
       <div class="item-r"></div>
       <% @requested_attachments.each.with_index do |attachment, count| %>
-        <div class="input-l"><%= count + 1 %>. <%= truncate(attachment.name, 28) %>（<%= show_file_size(attachment) %>）</div>
+        <div class="input-l"><%= count + 1 %>. <%= truncate(attachment.name, {:length => 28}) %>（<%= show_file_size(attachment) %>）</div>
         <% if(attachment.virus_check != '0') %>
           <div class="input-r">
             <%= image_tag("common/alert.jpg", :align => 'left', :hspace => '5', :size => "21x20", :title => "ウイルスが検出されたため削除されました。(#{attachment.virus_check})") %>
             ウイルス検出のため削除しました。<br>(<%=h attachment.virus_check %>)
           </div>
         <% else %>
-          <div class="input-r"><%= link_to image_tag('/images/common/delete.jpg', {:border => '0', :alt => '削除'}),
+          <div class="input-r"><%= link_to image_tag('/assets/common/delete.jpg', {:border => '0', :alt => '削除'}),
                                  {:action => 'delete', :id => attachment.id},
-                                 {:confirm => "削除しますか？", :method => "post"} %></div>
+                                 {:onclick => "disp('削除しますか？', '/requested_file_send/delete/#{attachment.id}'); return false;", :method => "post"} %></div>
         <% end %>
       <% end %>
     </div>

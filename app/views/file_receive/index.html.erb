@@ -8,7 +8,13 @@
         &nbsp;様&nbsp;（<%=h @receiver.mail_address %>）</div>
   <div class="item-mid">ファイルお預かり日時</div>
   <div class="input-mid">
+<% if @send_matter.sent_at.present? %>
+        <%= Time.parse(@send_matter.sent_at.to_s).strftime("%Y年%m月%d日%H時%M分%S秒") %></div>
+<% elsif @send_matter.moderate_flag == nil %>
         <%= Time.parse(@send_matter.created_at.to_s).strftime("%Y年%m月%d日%H時%M分%S秒") %></div>
+<% else %>
+        </div>
+<% end %>
   <div class="item-mid">お預かりしているファイル</div>
   <div class="input-mid">
     <div class="table-d">
@@ -18,8 +24,8 @@
         <% @attachments.each_with_index do |attachment, index| %>
           <% if(attachment.virus_check != '0') %>
           <% else %>
-            <div class="input-l"><%= index + 1 %>. <%=h truncate(attachment.name, 28) %>（<%=h show_file_size(attachment) %>）</div>
-            <div class="input-r"><%= link_to image_tag('/images/common/download.gif', {:border => '0', :alt => 'ダウンロード'}),
+            <div class="input-l"><%= index + 1 %>. <%=h truncate(attachment.name, {:lenth => 28}) %>（<%=h show_file_size(attachment) %>）</div>
+            <div class="input-r"><%= link_to image_tag('common/download.gif', {:border => '0', :alt => 'ダウンロード'}),
                                  {:action => 'get', :id => attachment.id} %></div>
           <% end %>
         <% end %>
@@ -38,8 +44,15 @@
     <div class="input-mid"><%=h @send_matter.message %></div>
   <% end %>
   <div class="item-bot">ファイル保管期限</div>
-  <div class="input-bot"><%= (Time.parse(@send_matter.created_at.to_s) +
-                             @send_matter.file_life_period).strftime("%Y年%m月%d日%H時%M分%S秒") %></div>
+<% if @send_matter.sent_at.present? %>
+  <div class="input-bot"><%=h (Time.parse(@send_matter.sent_at.to_s) +
+                      @send_matter.file_life_period).strftime("%Y年%m月%d日%H時%M分%S秒") %></div>
+<% elsif @send_matter.moderate_flag == nil %>
+  <div class="input-bot"><%=h (Time.parse(@send_matter.created_at.to_s) +
+                      @send_matter.file_life_period).strftime("%Y年%m月%d日%H時%M分%S秒") %></div>
+<% else %>
+  <div class="input-bot">&nbsp;</div>
+<% end %>
 </div>
 
 <div style="height:150px; clear:both;"></div>

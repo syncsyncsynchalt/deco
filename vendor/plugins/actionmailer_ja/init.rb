@@ -1,1 +1,0 @@
-require 'actionmailer_ja'

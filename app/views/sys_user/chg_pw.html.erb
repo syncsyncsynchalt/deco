@@ -4,30 +4,26 @@ localDomains = ""
 
 $(document).ready(function() {
   $.validationEngineLanguage.newLang(localDomains);
-  $("#user").validationEngine({
-    success : function() { document.user.submit(); },
-    failure : function() {}
-  })
+  $("#user").validationEngine();
 });
 </script>
 
   <fieldset>
   <h2>パスワード変更</h2>
-  <%- form_for(:user, :url => { :controller => 'users', :action => "pw_update", :id => @user.id}, 
+  <%= form_for(:user, :url => { :controller => 'user', :action => "pw_update", :id => @user.id}, 
               :html => {:id => 'user', :name=> "user" }) do |f| -%>
-    <%= f.hidden_field :category, {:value => 2} -%>
     <div class="table-sys-a">
       <div class="item-mid2">ユーザＩＤ</div>
       <div class="input-mid2"><%= @user.login %></div>
       <div class="item-mid2">メールアドレス</div>
       <div class="input-mid2"><%= @user.email %></div>
       <div class="item-mid2">パスワード</div>
-      <div class="input-mid2"><%= f.password_field :password %></div>
+      <div class="input-mid2"><%= f.password_field :password, :style => "width:150px;", :class => 'validate[required]' %></div>
       <div class="item-mid2">パスワード（確認）</div>
-      <div class="input-mid2"><%= f.password_field :password_confirmation -%>
+      <div class="input-mid2"><%= f.password_field :password_confirmation, :style => "width:150px;", :class => 'validate[required, equals[user_password]]' -%>
 </div>
       <div class="item-mid2"></div>
-      <div class="input-mid2" align="center"><%= f.submit "　変更　" -%></div>
+      <div class="input-mid2" align="center"><%= f.submit "変　更" -%></div>
     </div>
   <%- end -%>
   </fieldset>

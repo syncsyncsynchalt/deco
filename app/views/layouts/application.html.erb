@@ -1,14 +1,15 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+
+<script type="text/javascript">
+script_url = "<%= url_options[:script_name] %>";
+</script>
+
 <html>
 <head>
   <title>DECO Drive</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-  <%= javascript_include_tag  'jquery', 'jquery.validationEngine', 'swfupload', 'swfupload.queue', 'handlers', 'fileprogress', 'deco', 'swfobject' %>
-  <%= stylesheet_link_tag 'os', 'validationEngine.jquery' %>
-  <%= stylesheet_link_tag 'template' %>
-  <%= stylesheet_link_tag 'swfupload' %>
-  <%= stylesheet_link_tag 'styles' %>
-  <%= stylesheet_link_tag 'system.styles' %>
+  <%= stylesheet_link_tag "application" %>
+  <%= javascript_include_tag "application" %>
 </head>
 
 <% if controller.controller_name == 'top' %>
@@ -29,7 +30,11 @@
   <body>
 <% end %>
 
-<script language="JavaScript" src="/javascripts/head01.js" type="text/JavaScript"></script>
+<div id="header">
+<%= image_tag('common/deco_logo01.jpg', :alt => "DECO Drive", :border => 0) %>
+</div>
+<br />
+
 <script type="text/javascript">
 <% if session[:site_category] == "requested_file_send" and session[:request_send_url_code] -%>
   <% param_id = session[:request_send_url_code] -%>
@@ -38,11 +43,11 @@
 <% else -%><% param_id = "" -%>
 <% end -%>
 <% amt = 0 -%>
-<% @content_frames = ContentFrame.find(:all, :conditions => { :master_frame => 0 }, :order => 'content_frame_order') -%>
+<% @content_frames = ContentFrame.where(:master_frame => 0).order('content_frame_order') -%>
 headerMenu = new Array(
 <% @content_frames.each.with_index do |content_frame, count| -%>
 <% amt = amt + 1 -%>
-  "<%= content_frame.title %>"<% unless amt == @content_frames.length -%>,  
+  "<%= content_frame.title %>"<% unless amt == @content_frames.length -%>,
 <% end -%>
 <% end -%>
         );
@@ -51,12 +56,11 @@ print_header('<%= session[:site_category] %>', '<%= param_id %>');
 </script>
 
 <div id="status">
-<%- @access_ip = request.env['HTTP_X_FORWARDED_FOR'] -%>
 接続元IPアドレス:<%= @access_ip %>
 <%- unless session[:site_category] -%>
-  <%- if logged_in? -%>
+<% if session[:user_id] -%>
     ( ユーザID: <%= current_user.login %> )
-    <%= link_to '[ログアウト]', logout_url -%>
+    <%= link_to '[ログアウト]', :controller => :sessions, :action => :destroy -%>
   <%- end -%>
 <%- end -%>
 </div>
@@ -73,7 +77,6 @@ print_header('<%= session[:site_category] %>', '<%= param_id %>');
 <% if session[:site_category] == 'system' -%>
   <div id="sys-main">
     <div id="sys-menu">
-    <script language="JavaScript" src="/javascripts/systemmenu01.js" type="text/JavaScript"></script>
     </div>
     <div id="sys-cont">
     <%= yield %>
@@ -86,7 +89,7 @@ print_header('<%= session[:site_category] %>', '<%= param_id %>');
 </div>
 
 <div id="footer">
-<font color="#778899">Powered by</font> <a href="http://deco-project.org", target="_blank"><img src="/images/common/deco_s2.jpg" alt="powerd by DECO" align="bottom" style="vertical-align: middle;" border=0></a>
+<font color="#778899">Powered by</font> <a href="http://deco-project.org", target="_blank"><%= image_tag('common/deco_s2.jpg', :alt => "powerd by DECO", :align => "bottom", :style => "vertical-align: middle;", :border => 0) %></a>
 </div>
 
 </body>

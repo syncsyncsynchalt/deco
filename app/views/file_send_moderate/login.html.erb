@@ -1,0 +1,41 @@
+<script>
+
+  $(document).ready(function() {
+    $.validationEngineLanguage.newLang();
+    $("#login").validationEngine({
+      success :  false,
+      failure : function() {}
+    })
+  });
+</script>
+<div id="login_d" style="float:center;">
+<%= form_for(:login, :url => { :action => "auth", :id => params[:id] }, :html => {:id => 'login', :name=> "login" }) do -%>
+<br />
+<table border=0 width="380px">
+<tr>
+<td align="right">
+<%= image_tag("common/userid.gif", :alt => "ユーザID") %>
+</td>
+<td align="left">
+<%= @moderate_user.login -%>(<%= @moderate_user.name -%>)
+<%= hidden_field_tag 'login', @moderate_user.login %>
+</td>
+</tr>
+<tr>
+<td align="right">
+<%= image_tag("common/pass.gif", :alt => "パスワード") %>
+</td>
+<td align="left">
+<%= password_field_tag 'password' %>
+</td>
+</tr>
+<tr>
+<td colspan="2">
+<br /><br />
+<%= image_submit_tag("common/login.gif") -%>
+</td>
+</tr>
+</table>
+<%- end -%>
+</div>
+<br /><br /><br />

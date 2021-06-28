@@ -2,28 +2,15 @@
 
 localDomains = ""
 
+
 $(document).ready(function() {
   $.validationEngineLanguage.newLang(localDomains);
-  $("#app_env1").validationEngine({
-    success : function() { document.app_env1.submit(); },
+<% for i in 1..11 %>
+  $("#app_env<%= i %>").validationEngine({
+    success : function() { document.app_env<%= i %>.submit(); },
     failure : function() {}
   })
-  $("#app_env2").validationEngine({
-    success : function() { document.app_env2.submit(); },
-    failure : function() {}
-  })
-  $("#app_env3").validationEngine({
-    success : function() { document.app_env3.submit(); },
-    failure : function() {}
-  })
-  $("#app_env4").validationEngine({
-    success : function() { document.app_env4.submit(); },
-    failure : function() {}
-  })
-  $("#app_env5").validationEngine({
-    success : function() { document.app_env5.submit(); },
-    failure : function() {}
-  })
+<% end %>
 });
 </script>
 
@@ -35,21 +22,20 @@ $(document).ready(function() {
       <div class="input-mid-2-l"><%= app_env.value %></div>
       <div class="input-mid-2-r">
       <%= link_to '[編集]', {:action => 'edit1', :id => app_env.id } %>
-      <%= link_to '[削除]', {:action => 'destroy', :id => app_env.id},
-                            :confirm => '削除します。よろしいですか?', :method => :delete %>
+      <%= link_to '[削除]', {:action => 'destroy', :id => app_env.id}, :method => :delete, :class => 'delete',
+                             :data => {:confirm => '削除します。よろしいですか?'} %>
       </div>
     <% end -%>
   <% end -%>
   <br>
-  <% form_for(:app_env, :url => { :action => "create"}, 
+  <%= form_for(:app_env, :url => { :action => "create"}, 
               :html => {:id => 'app_env1', :name=> "app_env1" }) do |f| -%>
     <div class="item-mid"><%= $param_label['LOCAL_DOMAINS'] %>の登録</div>
-    <%= f.error_messages %>
     <div class="input-mid">
       <%= f.hidden_field :key, {:value => "LOCAL_DOMAINS"} %>
       <%= f.hidden_field :category, {:value => 0} %>
-      <%= f.text_field :value, :class => 'validate[required]' %>
-      <%= f.submit "Create" %>
+      <%= f.text_field :value, :class => 'validate[required, custom[domain]]', :size => '', :style => "width:150px;" %>
+      <%= f.submit "登　録" %>
     </div>
   <% end %>
   </div>
@@ -65,21 +51,20 @@ $(document).ready(function() {
       <div class="input-mid-2-l"><%= app_env.value %></div>
       <div class="input-mid-2-r">
       <%= link_to '[編集]', {:action => 'edit1', :id => app_env.id } %>
-      <%= link_to '[削除]', {:action => 'destroy', :id => app_env.id},
-                            :confirm => '削除します。よろしいですか?', :method => :delete %>
+      <%= link_to '[削除]', {:action => 'destroy', :id => app_env.id}, :method => :delete, :class => 'delete',
+                             :data => {:confirm => '削除します。よろしいですか?'} %>
       </div>
     <% end -%>
   <% end -%>
   <br>
-  <% form_for(:app_env, :url => { :action => "create"}, 
+  <%= form_for(:app_env, :url => { :action => "create"}, 
               :html => {:id => 'app_env2', :name=> "app_env2" }) do |f| %>
     <div class="item-mid"><%= $param_label['LOCAL_IPS'] %>の登録</div>
-    <%= f.error_messages %>
     <div class="input-mid">
       <%= f.hidden_field :key, {:value => "LOCAL_IPS"} %>
       <%= f.hidden_field :category, {:value => 0} %>
-      <%= f.text_field :value, :class => 'validate[required]' %>
-      <%= f.submit "Create" %>
+      <%= f.text_field :value, :class => 'validate[required, custom[IPAddress]]', :size => '', :style => "width:150px;" %>
+      <%= f.submit "登　録" %>
     </div>
   <% end %>
   </div>
@@ -101,15 +86,14 @@ $(document).ready(function() {
     <% end -%>
   <% end -%>
   <% if c == 0 -%>
-    <% form_for(:app_env, :url => { :action => "create"}, 
+    <%= form_for(:app_env, :url => { :action => "create"}, 
                 :html => {:id => 'app_env3', :name=> "app_env3" }) do |f| %>
       <div class="item-mid"><%= $param_label['URL'] %>の登録</div>
-      <%= f.error_messages %>
       <div class="input-mid">
         <%= f.hidden_field :key, {:value => "URL"} %>
         <%= f.hidden_field :category, {:value => 0} %>
-        <%= f.text_field :value, :class => 'validate[required]' %>
-        <%= f.submit "Create" %>
+        <%= f.text_field :value, :class => 'validate[required]', :size => '', :style => "width:150px;" %>
+        <%= f.submit "登　録" %>
       </div>
     <% end %>
   <% end -%>
@@ -132,15 +116,14 @@ $(document).ready(function() {
     <% end -%>
   <% end -%>
   <% if c == 0 -%>
-    <% form_for(:app_env, :url => { :action => "create"}, 
+    <%= form_for(:app_env, :url => { :action => "create"}, 
                 :html => {:id => 'app_env4', :name=> "app_env4" }) do |f| %>
       <div class="item-mid"><%= $param_label['FILE_DIR'] %>の登録</div>
-      <%= f.error_messages %>
       <div class="input-mid">
         <%= f.hidden_field :key, {:value => "FILE_DIR"} %>
         <%= f.hidden_field :category, {:value => 0} %>
-        <%= f.text_field :value, :class => 'validate[required]' %>
-        <%= f.submit "Create" %>
+        <%= f.text_field :value, :class => 'validate[required]', :size => '', :style => "width:150px;" %>
+        <%= f.submit "登　録" %>
       </div> 
     <% end %>
   <% end -%>
@@ -155,6 +138,36 @@ $(document).ready(function() {
   <% c=0 -%>
   <% @app_envs.each do | app_env | %>
     <% if app_env.key == 'REQUEST_PERIOD' -%>
+      <div class="input-mid-2-l"><%= app_env.value %>（<%= app_env.note %>）</div>
+      <div class="input-mid-2-r">
+      <%= link_to '[編集]', {:action => 'edit2', :id => app_env.id } %>
+      </div>
+      <% c += 1 -%>
+    <% end -%>
+  <% end -%>
+  <% if c == 0 -%>
+    <%= form_for(:app_env, :url => { :action => "create"}, 
+                :html => {:id => 'app_env5', :name=> "app_env5" }) do |f| %>
+      <div class="item-mid"><%= $param_label['REQUEST_PERIOD'] %>の登録</div>
+      <div class="input-mid">
+        <%= f.hidden_field :key, {:value => "REQUEST_PERIOD"} %>
+        <%= f.hidden_field :category, {:value => 0} %>
+        <%= f.text_field :value, :class => 'validate[required, custom[onlyNumber]]', :size => '', :style => "width:150px;" %>
+        <%= f.submit "登　録" %>
+      </div> 
+    <% end %>
+  <% end -%>
+  </div>
+  </fieldset>
+
+<br>
+
+  <fieldset>
+  <h2><%= $param_label['FROM_MAIL_ADDRESS'] %></h2>
+  <div class="table-sys-a">
+  <% c=0 -%>
+  <% @app_envs.each do | app_env | %>
+    <% if app_env.key == 'FROM_MAIL_ADDRESS' -%>
       <div class="input-mid-2-l"><%= app_env.value %></div>
       <div class="input-mid-2-r">
       <%= link_to '[編集]', {:action => 'edit1', :id => app_env.id } %>
@@ -163,16 +176,190 @@ $(document).ready(function() {
     <% end -%>
   <% end -%>
   <% if c == 0 -%>
-    <% form_for(:app_env, :url => { :action => "create"}, 
-                :html => {:id => 'app_env5', :name=> "app_env5" }) do |f| %>
-      <div class="item-mid"><%= $param_label['REQUEST_PERIOD'] %>の登録</div>
-      <%= f.error_messages %>
+    <%= form_for(:app_env, :url => { :action => "create"}, 
+                :html => {:id => 'app_env4', :name=> "app_env4" }) do |f| %>
+      <div class="item-mid"><%= $param_label['FROM_MAIL_ADDRESS'] %>の登録</div>
       <div class="input-mid">
-        <%= f.hidden_field :key, {:value => "REQUEST_PERIOD"} %>
+        <%= f.hidden_field :key, {:value => "FROM_MAIL_ADDRESS"} %>
         <%= f.hidden_field :category, {:value => 0} %>
-        <%= f.text_field :value, :class => 'validate[required, custom[onlyNumber]]' %>
-        <%= f.submit "Create" %>
+        <%= f.text_field :value, :class => 'validate[required]', :size => '', :style => "width:150px;" %>
+        <%= f.submit "登　録" %>
       </div> 
+    <% end %>
+  <% end -%>
+  </div>
+  </fieldset>
+
+<br>
+
+  <fieldset>
+  <h2><%= $param_label['PASSWORD_AUTOMATION'] %></h2>
+  <div class="table-sys-a">
+  <% c=0 -%>
+  <% @app_envs.each do | app_env | %>
+    <% if app_env.key == 'PASSWORD_AUTOMATION' -%>
+      <div class="input-mid-2-l"><% if app_env.value == "0" %>自動発行しない<% else %>自動発行する<% end %></div>
+      <div class="input-mid-2-r">
+      <%= link_to '[変更]', {:action => 'update2', :id => app_env.id},
+                             :data => {:confirm => '内容を変更します。よろしいですか?'} %>
+      </div>
+      <% c += 1 -%>
+    <% end -%>
+  <% end -%>
+  <% if c == 0 -%>
+    <%= form_for(:app_env, :url => { :action => "create"}, 
+                :html => {:id => 'app_env9', :name=> "app_env9" }) do |f| %>
+      <%= f.hidden_field :key, {:value => "PASSWORD_AUTOMATION"} %>
+      <%= f.hidden_field :category, {:value => 0} %>
+      <%= f.hidden_field :value, {:value => 1} %>
+      <div class="input-mid-2-l">自動発行しない</div>
+      <div class="input-mid-2-r">
+      <%= link_to '[変更]', {:action => 'create2', :id => "PASSWORD_AUTOMATION"},
+                             :data => {:confirm => '内容を変更します。よろしいですか?'} %>
+      </div>
+    <% end %>
+  <% end -%>
+  </div>
+  </fieldset>
+
+<br>
+
+  <fieldset>
+  <h2><%= $param_label['ENABLE_SSL'] %>(ダウンロードURL等を「https」で発行します)</h2>
+  <div class="table-sys-a">
+  <% c=0 -%>
+  <% @app_envs.each do | app_env | %>
+    <% if app_env.key == 'ENABLE_SSL' -%>
+      <div class="input-mid-2-l"><% if app_env.value == "0" %>利用しない<% else %>利用する<% end %></div>
+      <div class="input-mid-2-r">
+      <%= link_to '[変更]', {:action => 'update2', :id => app_env.id},
+                             :data => {:confirm => '内容を変更します。よろしいですか?'} %>
+      </div>
+      <% c += 1 -%>
+    <% end -%>
+  <% end -%>
+  <% if c == 0 -%>
+    <%= form_for(:app_env, :url => { :action => "create"}, 
+                :html => {:id => 'app_env9', :name=> "app_env9" }) do |f| %>
+        <%= f.hidden_field :key, {:value => "ENABLE_SSL"} %>
+        <%= f.hidden_field :category, {:value => 0} %>
+        <%= f.hidden_field :value, {:value => 1} %>
+      <div class="input-mid-2-l">利用しない</div>
+      <div class="input-mid-2-r">
+        <%= link_to '[変更]', {:action => 'create2', :id => "ENABLE_SSL"},
+                             :data => {:confirm => '内容を変更します。よろしいですか?'} %>
+      </div> 
+    <% end %>
+  <% end -%>
+  </div>
+  </fieldset>
+
+<br>
+
+  <fieldset>
+  <h2><%= $param_label['VIRUS_CHECK'] %></h2>
+  <div class="table-sys-a">
+  <% c=0 -%>
+  <% @app_envs.each do | app_env | %>
+    <% if app_env.key == 'VIRUS_CHECK' -%>
+      <div class="input-mid-2-l"><% if app_env.value == "0" %>利用しない<% else %>利用する<% end %></div>
+      <div class="input-mid-2-r">
+      <%= link_to '[変更]', {:action => 'update2', :id => app_env.id},
+                             :data => {:confirm => '内容を変更します。よろしいですか?'} %>
+      </div>
+      <% c += 1 -%>
+    <% end -%>
+  <% end -%>
+  <% if c == 0 -%>
+    <%= form_for(:app_env, :url => { :action => "create"}, 
+                :html => {:id => 'app_env10', :name=> "app_env10" }) do |f| %>
+      <%= f.hidden_field :key, {:value => "VIRUS_CHECK"} %>
+      <%= f.hidden_field :category, {:value => 0} %>
+      <%= f.hidden_field :value, {:value => 1} %>
+      <div class="input-mid-2-l">利用しない</div>
+      <div class="input-mid-2-r">
+      <%= link_to '[変更]', {:action => 'create2', :id => "VIRUS_CHECK"},
+                             :data => {:confirm => '内容を変更します。よろしいですか?'} %>
+      </div>
+    <% end %>
+  <% end -%>
+  </div>
+  </fieldset>
+
+<br>
+
+  <fieldset>
+  <h2><%= $param_label['VIRUS_CHECK_NOTICE'] %></h2>
+  <div class="table-sys-a">
+  <% c=0 -%>
+  <% @app_envs.each do | app_env | %>
+    <% if app_env.key == 'VIRUS_CHECK_NOTICE' -%>
+      <div class="input-mid-2-l"><% if app_env.value == "0" %>管理者に通知しない<% else %>管理者に通知する<% end %></div>
+      <div class="input-mid-2-r">
+      <%= link_to '[変更]', {:action => 'update2', :id => app_env.id},
+                             :data => {:confirm => '内容を変更します。よろしいですか?'} %>
+      </div>
+      <% c += 1 -%>
+    <% end -%>
+  <% end -%>
+  <% if c == 0 -%>
+    <%= form_for(:app_env, :url => { :action => "create"}, 
+                :html => {:id => 'app_env10', :name=> "app_env10" }) do |f| %>
+      <%= f.hidden_field :key, {:value => "VIRUS_CHECK_NOTICE"} %>
+      <%= f.hidden_field :category, {:value => 0} %>
+      <%= f.hidden_field :value, {:value => 1} %>
+      <div class="input-mid-2-l">管理者に通知しない</div>
+      <div class="input-mid-2-r">
+      <%= link_to '[変更]', {:action => 'create2', :id => "VIRUS_CHECK_NOTICE"},
+                             :data => {:confirm => '内容を変更します。よろしいですか?'} %>
+      </div>
+    <% end %>
+  <% end -%>
+  </div>
+  </fieldset>
+
+<br>
+
+  <fieldset>
+  <h2><%= $param_label['MODERATE_DEFAULT'] %></h2>
+  <div class="table-sys-a">
+  <% app_env_id = '' -%>
+  <% moderate_def = '' -%>
+  <% moderate_def = @selected_moderate.id if @selected_moderate.present? %>
+  <% moderate_def_value = '決裁ルート無し' %>
+  <% moderate_def_value = @selected_moderate.name if @selected_moderate.present? %>
+  <% c=0 -%>
+  <% @app_envs.each do | app_env | %>
+    <% if app_env.key == 'MODERATE_DEFAULT' -%>
+      <%= form_for(:app_env, :url => { :action => 'update', :id => app_env.id},
+                :html => {:id => 'app_env11', :name=> "app_env11" }) do |f| %>
+      <div class="item-mid"><%= $param_label['MODERATE_DEFAULT'] %></div>
+      <div class="input-mid">
+      設定値：<%= moderate_def_value %><br>
+      <%= f.hidden_field :key, {:value => "MODERATE_DEFAULT"} %>
+      <%= f.hidden_field :category, {:value => 0} %>
+      <%= f.select :value,
+                 @moderates.map{ |hoge| [ hoge.name, hoge.id ] },
+                 {:selected => moderate_def, :include_blank => '決裁ルート無し'} %>
+      <%= f.submit "更　新" %>
+      </div>
+      <% end %>
+      <% c += 1 -%>
+    <% end %>
+  <% end %>
+  <% if c == 0 -%>
+    <%= form_for(:app_env, :url => { :action => 'create'},
+                :html => {:id => 'app_env11', :name=> "app_env11" }) do |f| %>
+      <div class="item-mid"><%= $param_label['MODERATE_DEFAULT'] %></div>
+      <div class="input-mid">
+      設定値：<%= moderate_def_value %><br>
+      <%= f.hidden_field :key, {:value => "MODERATE_DEFAULT"} %>
+      <%= f.hidden_field :category, {:value => 0} %>
+      <%= f.select :value,
+                 @moderates.map{ |hoge| [ hoge.name, hoge.id ] },
+                 {:selected => moderate_def, :include_blank => '決裁ルート無し'} %>
+      <%= f.submit "登　録" %>
+      </div>
     <% end %>
   <% end -%>
   </div>

@@ -11,21 +11,19 @@ for (i = 2 ; i <= max_receivers_num; i++) {
 $(document).ready(function() {
   $.validationEngineLanguage.newLang(localDomains);
   $("#request_matter").validationEngine({
-    promptPosition: "centerRight",
-    success : function() { document.request_matter.submit(); },
-    failure : function() {}
-  })
+    promptPosition: "centerRight"
+  });
 });
 </script>
 
 <h1>ファイル依頼</h1>
 
-<p>ファイルを送信してほしい相手にファイル送信を依頼する場合に使用します。<br>
+<p class="comment">ファイルを送信してほしい相手にファイル送信を依頼する場合に使用します。<br>
 以下のフォームに必要事項を記入し，[ファイル送信を依頼する]をクリックしてください。
 （<span class="required">※</span> 印は必須項目です。）</p>
 
-<% form_for(:request_matter, :url => { :action => "create" }, :html => {:id => 'request_matter', :name=> "request_matter" }) do |f| -%>
-<%= f.error_messages -%>
+<%= form_for(:request_matter, :url => { :action => "create" }, :html => {:id => 'request_matter', :name=> "request_matter" }) do |f| -%>
+<%#= f.error_messages -%>
 
     <h2>１．依頼者情報入力　（あなたの情報を入力してください）</h2>
 
@@ -33,15 +31,34 @@ $(document).ready(function() {
 
     <legend>依頼者情報入力</legend>
 
+  <% if session[:user_id].present? %>
+    <% user_name = current_user.name %>
+    <% mail_address = "" %>
+    <% mail_domain = "" %>
+    <% if @local_ips.select{  |local_ip| IPAddr.new(local_ip.value).include?(@access_ip) }.size > 0 %>
+      <% for key_word in current_user.email.split(/\@/) %>
+        <% if mail_address == "" %>
+          <% mail_address = key_word %>
+        <% else %>
+          <% mail_domain = key_word %>
+        <% end %>
+      <% end %>
+    <% else %>
+      <% mail_address = current_user.email %>
+    <% end %>
+  <% else %>
+    <% user_name = "" %>
+    <% mail_domain = "" %>
+  <% end %>
     <div class="table-a">
       <div class="item-top">あなたの名前<span class="required">※</span></div>
-      <div class="input-top"><%= f.text_field :name, :class => 'validate[required]', :size => 30 %></div>
+      <div class="input-top"><%= f.text_field :name, :class => 'validate[required]', :size => 30, :value => user_name %></div>
       <div class="item-bot">あなたのメールアドレス<span class="required">※</span></div>
   <%- if @local_ips.select{ |local_ip| IPAddr.new(local_ip.value).include?(@access_ip) }.size > 0 -%>
-      <div class="input-bot"><%= f.text_field :mail_address, :class => 'validate[required, custom[localDomain]]', :size => 40 %>
+      <div class="input-bot"><%= f.text_field :mail_address, :class => 'validate[required]', :size => 20, :value => mail_address %>@<%= select_tag 'mail_domain', options_for_select($local_domain_list.each_with_index {| local_domain, i |  [ local_domain, local_domain ]}, mail_domain),  :include_blank => true, :class => 'validate[required]' %>
       <br /><span class="note">例）<% $local_domain_list.each_with_index do | local_domain, i | %> tokushima_tarou_1@<b><%= h local_domain %></b><% if i + 1 < $local_domain_list.size %>, <%- end -%><%- end -%></span></div>
   <%- else -%>
-      <div class="input-bot"><%= f.text_field :mail_address, :class => 'validate[required, custom[email]]', :size => 40 -%>
+      <div class="input-bot"><%= f.text_field :mail_address, :class => 'validate[required, custom[email]]', :size => 40, :value => mail_address -%>
       <br /><span class="note">例）name1@example.com</span></div>
   <%- end -%>
     </div>
@@ -69,8 +86,8 @@ $(document).ready(function() {
     <h2>３．送信者情報入力（ファイル送信を依頼する相手の情報を入力してください）</h2>
 
     <span class="left">宛先は最大 <%= h $app_env['RECEIVERS_LIMIT'] %> 名まで追加できます。<br /><br />
-    <img src="/images/common/name_s.jpg" />&nbsp;相手のお名前<span class="required">※</span><br />
-    <img src="/images/common/mail_s.jpg" />&nbsp;相手のメールアドレス<span class="required">※</span>&nbsp;&nbsp;<span class="note">例）name1@example.com</span>
+    <img src="/assets/common/name_s.jpg" />&nbsp;相手のお名前<span class="required">※</span><br />
+    <img src="/assets/common/mail_s.jpg" />&nbsp;相手のメールアドレス<span class="required">※</span>&nbsp;&nbsp;<span class="note">例）name1@example.com</span>
     </span>
 
     <fieldset>
@@ -78,13 +95,13 @@ $(document).ready(function() {
 
 <%- i=1 -%>
 <%- while i<2 -%>
-  <%- fields_for :requested_matter, :index => i do |f2| -%>
+  <%= fields_for @requested_matter, :index => i do |f2| -%>
 
     <div class="table-e">
       <div class="item">ファイル送信者 1人目</div>
       <div class="input-l">
-        <img src="/images/common/name.jpg" align="left" /><%= f2.text_field :name, :class => 'validate[required]', :size => 30 %> 様<br />
-        <img src="/images/common/mail.jpg" align="left" /><%= f2.text_field :mail_address, :class => 'validate[required, custom[email]]', :size => 40 %>
+        <img src="/assets/common/name.jpg" align="left" /><%= f2.text_field :name, :class => 'validate[required]', :size => 30, :index => i %> 様<br />
+        <img src="/assets/common/mail.jpg" align="left" /><%= f2.text_field :mail_address, :class => 'validate[required, custom[email]]', :size => 40, :index => i %>
       </div>
       <div class="input-r"></div>
       <div id="receiver_form"></div>

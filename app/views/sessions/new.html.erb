@@ -5,7 +5,7 @@
   <%= flash[:notice] %>
     </div>
   <% end -%>
-  <% form_tag session_path do -%>
+  <%= form_tag '/sessions/create' do -%>
   <div id="login_d">
       <%= image_tag("common/userid.gif", :alt => "ユーザID") %>
       <%= text_field_tag 'login' %><br />
@@ -16,7 +16,7 @@
     <br /><br />
     <%! image_tag("common/deco_s.jpg", :alt => "powerd by DECO") %>
 
-    <font color="#778899">Powered by</font> <a href="http://deco-project.org"><img src="/images/common/deco_s2.jpg" alt="powerd by DECO" align="bottom" style="vertical-align: middle;" border=0></a>
+    <font color="#778899">Powered by</font> <a href="http://deco-project.org"><img src="/assets/common/deco_s2.jpg" alt="powerd by DECO" align="bottom" style="vertical-align: middle;" border=0></a>
 
   <% end -%>
 </div>

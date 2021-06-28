@@ -1,0 +1,31 @@
+  <fieldset>
+  <h2>決裁ルート変更</h2>
+  <%= form_for(:user, :url => { :controller => 'sys_user', :action => "update", :id => @user.id}, 
+              :html => {:id => 'user', :name=> "user" }) do |f| -%>
+    <div class="table-sys-a">
+      <div class="item-mid2">ユーザＩＤ</div>
+      <div class="input-mid2"><%= @user.login %></div>
+      <div class="item-mid2">ユーザ名</div>
+      <div class="input-mid2"><%= @user.name %></div>
+      <div class="item-mid2">メールアドレス</div>
+      <div class="input-mid2"><%= @user.email %></div>
+      <div class="item-mid2">決済ルート</div>
+      <div class="input-mid2"><%= f.select :moderate_id,
+                 @moderates.map{ |hoge| [ hoge.name, hoge.id ] },
+                 {:selected => @user.moderate_id, :include_blank => '決裁ルート無し'} %></div>
+      <div class="item-mid2"></div>
+      <div class="input-mid2" align="center"><%= f.submit "変　更" -%></div>
+    </div>
+  <%- end -%>
+  </fieldset>
+
+<br>
+<div align=center>
+<% if session[:target_for_back_id] -%>
+<%= link_to "戻る", {:action => session[:target_for_back],
+:id => session[:target_for_back_id]} %><br />
+<% else -%>
+<%= link_to "戻る", {:action => session[:target_for_back]} %><br />
+<% end -%>
+</div>
+<br><br>

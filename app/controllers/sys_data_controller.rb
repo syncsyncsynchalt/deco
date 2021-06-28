@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # Copyright (C) 2010 NMT Co.,Ltd.
 #
 # This program is free software: you can redistribute it and/or modify
@@ -13,6 +14,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
+# Filters added to this controller apply to all controllers in the application.
+# Likewise, all the methods added will be available for all controllers.
 class SysDataController < ApplicationController
   layout 'system_admin'
   before_filter :load_env
@@ -25,6 +28,10 @@ class SysDataController < ApplicationController
     else
       @page = 1
     end
+    if @page <= 0
+      @page = 1
+    end
+
     @amt_data = 100
     @s_data = (@page - 1) * @amt_data + 1
     @e_data = @page * @amt_data
@@ -77,7 +84,7 @@ class SysDataController < ApplicationController
     @attachment = Attachment.find(params[:id])
 
     if request.user_agent =~ /Windows/i
-       @filename = @attachment.name.tosjis
+       @filename = @attachment.name.encode("Windows-31J")
     elsif request.user_agent =~ /Mac/i
       @filename = @attachment.name
     else
@@ -99,7 +106,7 @@ class SysDataController < ApplicationController
   def get_requested_file
     @requested_attachment = RequestedAttachment.find(params[:id])
     if request.user_agent =~ /Windows/i
-       @filename = @requested_attachment.name.tosjis
+       @filename = @requested_attachment.name.encode("Windows-31J")
     elsif request.user_agent =~ /Mac/i
       @filename = @requested_attachment.name
     else

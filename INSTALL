@@ -1,103 +1,104 @@
-REQUIREMENTS
-============
-
-
-* Ruby
-* Rails
-* Rubygem
-* Webserver
-* Database
-* MTA (Postfix or Sendmail ...)
-
-
-INSTALLATION
-============
-
-
-1. Install the required plugin
- - mime-types
- - shared-mime-info
-1. Decompress and put this Directory somewhere (e.g /usr/local/deco )
-2. Create your config/database.yml
-3. Create database (Note: Database for DECO must use UTF-8 character set.)
-4. Setup your Web server 
-
-
-
-
-RECOMMENDED INSTALLATION
-=========================
-
-
-We think that we should separate the Web Server for service and the Web Server for management.
-
-
-e.g.
-
-
-(Internet)
-  |
-[F/W]--(DMZ) 10.0.0.0/24
-  |     + Web Server #1 (for service
-  |  
-(Local network) 192.168.0.0/24
-+ Web Server #2 (for management
-+ Database Server
-
-
-<How to install Database Server (CentOS 5)>
-
+1. MySQLのインストール
 
 # yum -y install mysql mysql-server
 
+(/etc/my.cnf)の「[mysqld]」内に以下を追加する
+-----------------------------------------------------------------------------------------------------
+symbolic-links=0
+character-set-server=utf8
+-----------------------------------------------------------------------------------------------------
 
-Note: Database for DECO must use UTF-8 character set.
+# yum -y install mysql mysql-devel
 
-
-add the following lines to my.cnf
----------------------------
-default-character-set=utf8
----------------------------
-    
 # /etc/init.d/mysqld start
 
-
 # mysql
-> GRANT ALL PRIVILEGES ON deco_production.* TO deco@'192.168.0.0/255.255.255.0' IDENTIFIED BY '********';
-> GRANT ALL PRIVILEGES ON deco_production.* TO deco@'10.0.0.0/255.255.255.0' IDENTIFIED BY '********';
+
+> GRANT ALL PRIVILEGES ON deco_production.* TO deco@'127.0.0.0/255.255.255.0' IDENTIFIED BY '********';
+> GRANT ALL PRIVILEGES ON deco_production.* TO deco@'localhost' IDENTIFIED BY '********';
 > create database deco_production;
 
+2. ライブラリのインストール
 
-<How to install Web Server #1 (CentOS 5)>
+# yum -y install zlib-devel
+# yum -y install openssl-devel
+# yum -y install curl-devel
 
+3. yamlのインストール
 
-1. Install Ruby
 # cd /usr/local/src
-# tar xjvf ruby-1.8.7-p302.tar.bz2
-# cd ruby-1.8.7-p302
+# wget http://pyyaml.org/download/libyaml/yaml-0.1.4.tar.gz
+# tar zxvf yaml-0.1.4.tar.gz
+# ./configure
 # make
 # make install
 
+4. Rubyのインストール
 
-2. Install Rubygem
 # cd /usr/local/src
-# tar xzvf rubygems-1.3.7.tgz
-# cd rubygems-1.3.7
+# wget ftp://ftp.ruby-lang.org/pub/ruby/1.9/ruby-1.9.3-p125.tar.gz
+# tar zxvf ruby-1.9.3-p125.tar.gz
+# cd ruby-1.9.3-p125
+# ./configure
+# make
+# make install
+
+5. RubyGemのインストール
+
+# cd /usr/local/src
+# wget http://rubyforge.org/frs/download.php/75475/rubygems-1.8.11.tgz
+# tar zxvf rubygems-1.8.11.tgz
+# cd rubygems-1.8.11
 # ruby setup.rb
 
+6. clamAVのインストール
 
-3. Install Rails
-# gem install rails --version=2.2.2
+レポジトリを追加する
+
+# wget http://packages.sw.be/rpmforge-release/rpmforge-release-0.5.2-2.el6.rf.x86_64.rpm
+# rpm --import http://apt.sw.be/RPM-GPG-KEY.dag.txt
+# rpm -K rpmforge-release-0.5.2-2.el6.rf.x86_64.rpm
+# rpm -i rpmforge-release-0.5.2-2.el6.rf.x86_64.rpm
+
+ClamAVをパッケージでインストールする
+
+# yum -y install clamav clamd clamav-devel clamav-db
+
+(/etc/clamd.conf)の以下の記述を変更する
+
+-----------------------------------------------------------------------------------------------------
+-User clamav
++User root
+-----------------------------------------------------------------------------------------------------
+
+clamAVを起動させる
+# /etc/init.d/clamd start
+
+OS起動時に起動するように設定する
+# chkconfig clamd on
+
+ウィルス定義ファイルを更新する
+# freshclam
 
 
-4. Install Apache + Passenger
+7. ApacheとPassengerのインストール
+
 # yum -y install httpd httpd-devel
 
+# gem install passenger
+# passenger-install-apache2-module
 
-Add the following lines to httpd.conf.
------------------------------------------
+(/etc/httpd/conf.d/rails.conf)を作成し以下を追加する
 
+-----------------------------------------------------------------------------------------------------
+   LoadModule passenger_module /usr/local/lib/ruby/gems/1.9.1/gems/passenger-3.0.18/ext/apache2/mod_passenger.so
+   PassengerRoot /usr/local/lib/ruby/gems/1.9.1/gems/passenger-3.0.18
+   PassengerRuby /usr/local/bin/ruby
+-----------------------------------------------------------------------------------------------------
 
+(/etc/httpd/conf/httpd.conf)に以下を追加する
+
+-----------------------------------------------------------------------------------------------------
 <VirtualHost *:80>
   ServerName deco
   DocumentRoot /usr/local/deco/public
@@ -107,187 +108,51 @@ Add the following lines to httpd.conf.
     Options -MultiViews
   </Directory>
 </VirtualHost>
+-----------------------------------------------------------------------------------------------------
 
+8. DECOのインストール
 
------------------------------------------
-
-
-# gem install passenger
-# passenger-install-apache2-module
-
-
-Edit the following file.
-[/etc/httpd/conf.d/rails.conf]---------------------------------------------------------------------------------
-   LoadModule passenger_module /usr/local/lib/ruby/gems/1.8/gems/passenger-2.2.15/ext/apache2/mod_passenger.so
-   PassengerRoot /usr/local/lib/ruby/gems/1.8/gems/passenger-2.2.15
-   PassengerRuby /usr/local/bin/ruby
----------------------------------------------------------------------------------------------------------------
-    
-# yum -y install mysql mysql-devel
-
-
-5. Install  plugin
-
-
-gem install mime-types
-gem install shared-mime-info
-gem install mysql
-
-
-6. Install DECO
-
-
-Decompress and put this Directory somewhere.
+(/usr/local)にDECOの圧縮ファイルを置いておく
 # cd /usr/local
 # tar xzvf deco.tar.gz
+# cd deco
+# gem install bundler
+# bundle install
+(config/database.yml)の「production」の設定を編集する
 
-
-Edit config/database.yml.
---------------------------------------
+-----------------------------------------------------------------------------------------------------
 production:
   adapter: mysql
   encoding: utf8
   database: deco_production
   pool: 5
-  host: (IP address of database)
+  host: localhost
   username: deco
   password: ********
   socket: /var/lib/mysql/mysql.sock
---------------------------------------
+-----------------------------------------------------------------------------------------------------
 
-
-# cd /usr/local/deco
 # rake db:migrate RAILS_ENV=production
+# rake db:seed RAILS_ENV=production
 
+(config/environments/production.rb)にメールサーバ情報の記述を追加する
+-----------------------------------------------------------------------------------------------------
+  ActionMailer::Base.smtp_settings[:address] = "localhost"
+  ActionMailer::Base.smtp_settings[:domain] = "example.com"
+-----------------------------------------------------------------------------------------------------
 
-Edit app/models/notification.rb, and  config/environments/production.rb to adjust to your environment.
+# rake assets:precompile RAILS_ENV=production
+# chown -R apache:apache /usr/local/deco
 
-Edit app/models/notification.rb
-from       "<name1@sample.com>"
+ファイル保存ディレクトリの作成
+# mkdir -p /var/deco/files
+# chown -R apache:apache /var/deco/files
 
-e.g. config/environments/production.rb
-add this
-ActionMailer::Base.smtp_settings[:address] = "10.0.0.15"
-ActionMailer::Base.smtp_settings[:domain] = "example.jp"
+Webサーバの起動
+# /etc/rc.d/init.d/httpd start
 
+以下のURLで管理画面で設定を行う
+(DECOサーバのURL)/sys_top
 
-Remove the following files.
-rm -f app/controllers/sys_*
-
-
-Restart Apache.
-# /etc/init.d/httpd restart
-
-
-<How to install Web Server #2 (CentOS 5)>
-
-
-1. Install Ruby
-# cd /usr/local/src
-# tar xjvf ruby-1.8.7-p302.tar.bz2
-# cd ruby-1.8.7-p302
-# make
-# make install
-
-
-2. Install Rubygem
-# cd /usr/local/src
-# tar xzvf rubygems-1.3.7.tgz
-# cd rubygems-1.3.7
-# ruby setup.rb
-
-
-3. Install Rails
-# gem install rails --version=2.2.2
-
-
-4. Install Apache + Passenger
-# yum -y install httpd httpd-devel
-
-
-Add the following lines to httpd.conf
------------------------------------------
-
-
-<VirtualHost *:80>
-  ServerName deco
-  DocumentRoot /usr/local/deco/public
-  RailsEnv production
-  <Directory /usr/local/deco/public>
-    AllowOverride all
-    Options -MultiViews
-  </Directory>
-</VirtualHost>
-
-
------------------------------------------
-
-
-# gem install passenger
-# passenger-install-apache2-module
-
-
-Edit the following file.
-[/etc/httpd/conf.d/rails.conf]---------------------------------------------------------------------------------
-   LoadModule passenger_module /usr/local/lib/ruby/gems/1.8/gems/passenger-2.2.15/ext/apache2/mod_passenger.so
-   PassengerRoot /usr/local/lib/ruby/gems/1.8/gems/passenger-2.2.15
-   PassengerRuby /usr/local/bin/ruby
----------------------------------------------------------------------------------------------------------------
-
-
-# yum -y install mysql mysql-devel
-
-
-5. Install required plugin
-
-
-# gem install mime-types
-# gem install shared-mime-info
-# gem install mysql
-
-
-6. Install DECO
-
-
-Decompress and put this Directory somewhere.
-# cd /usr/local
-# tar xzvf deco.tar.gz
-
-
-Edit config/database.yml.
---------------------------------------
-production:
-  adapter: mysql
-  encoding: utf8
-  database: deco_production
-  pool: 5
-  host: (IP address of database)
-  username: deco
-  password: ********
-  socket: /var/lib/mysql/mysql.sock
---------------------------------------
-
-
-Edit app/models/notification.rb, and config/environments/production.rb to adjust to your environment.
-
-Edit app/models/notification.rb
-from       "<name1@sample.com>"
-
-e.g. config/environments/production.rb
-add this
-ActionMailer::Base.smtp_settings[:address] = "10.0.0.15"
-ActionMailer::Base.smtp_settings[:domain] = "example.jp"
-
-Edit config/routes.rb.
----------------------------------------------
--map.root :controller => "top"
-+map.root :controller => "sys_top"
----------------------------------------------------------
-
-
-Restart Apache.
-# /etc/init.d/httpd restart
-    
-<How to set up DECO>
-Enter the following URL into a web browser to access management page.
-http://(Web Server #2 IP address)/
+設定が完了したら以下のURLでシステムにアクセス
+(DECOサーバのURL)/

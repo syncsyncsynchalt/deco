@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # Copyright (C) 2010 NMT Co.,Ltd.
 #
 # This program is free software: you can redistribute it and/or modify
@@ -13,6 +14,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
+# Filters added to this controller apply to all controllers in the application.
+# Likewise, all the methods added will be available for all controllers.
 class RequestedFileReceiveController < ApplicationController
   before_filter :load_env
 
@@ -25,7 +28,7 @@ class RequestedFileReceiveController < ApplicationController
 
     session[:request_receive_url_code] = @url_code
     if session[:"#{@url_code}"]
-      if session[:"#{@url_code}"]['r_auth'] 
+      if session[:"#{@url_code}"]['r_auth']
         pass_port = ''
         session[:site_category] = "requested_file_receive"
         redirect_to :action => 'index'
@@ -110,8 +113,8 @@ class RequestedFileReceiveController < ApplicationController
                     :conditions => ["requested_matter_id = ?
                       AND download_flg = ?",
                       session[:"#{@url_code}"]['requested_matter_id'], 1])
-              @mail = Notification.deliver_requested_file_dl_report(
-                      @requested_attachment)
+              Notification.requested_file_dl_report(
+                      @requested_attachment).deliver
             end
           end
 
@@ -123,7 +126,7 @@ class RequestedFileReceiveController < ApplicationController
           @requested_file_dl_log.save
 
           if request.user_agent =~ /Windows/i
-            @filename = @requested_attachment.name.tosjis
+            @filename = @requested_attachment.name.encode("Windows-31J")
           elsif request.user_agent =~ /Mac/i
             @filename = @requested_attachment.name
           else
