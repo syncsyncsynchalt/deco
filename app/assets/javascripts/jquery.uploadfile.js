@@ -36,7 +36,7 @@
             dragDrop: true,
             autoSubmit: true,
             showCancel: true,
-            showAbort: true,
+            showAbort: false,
             showDone: false,
             showDelete: false,
             showError: true,
@@ -72,9 +72,9 @@
             uploadButtonClass: "ajax-file-upload",
             dragDropStr: "<span><b>Drag &amp; Drop Files</b></span>",
             uploadStr:"ファイルを選択",
-            abortStr: "Abort",
-            cancelStr: "Cancel",
-            deleteStr: "Delete",
+            abortStr: "キャンセル",
+            cancelStr: "キャンセル",
+            deleteStr: "送信完了",
             doneStr: "Done",
             multiDragErrorStr: "Multiple File Drag &amp; Drop is not allowed.",
             extErrorStr: "is not allowed. Allowed extensions: ",
@@ -103,6 +103,9 @@
         this.errorLog = $("<div></div>"); //Writing errors
         this.responses = [];
         this.existingFileNames = [];
+        // 追加
+        this.existingFileSizes = [];
+        // 追加終了
         if(!feature.formdata) //check drag drop enabled.
         {
             s.dragDrop = false;
@@ -182,7 +185,7 @@
             //update new settings
             s = $.extend(s, settings);
 
-            //We need to update action for already created Form.            
+            //We need to update action for already created Form.
             if(settings.hasOwnProperty('url'))
             {
                 $("form").each(function(i,items)
@@ -190,8 +193,8 @@
                     $(this).attr('action',settings['url']);
                    });
             }
-            
-            
+
+
         }
 
     this.enqueueFile = function(file){
@@ -199,7 +202,7 @@
         var files = [file];
             serializeAndUploadFiles(s, obj, files);
     }
-        
+
         this.reset = function (removeStatusBars) {
             obj.fileCounter = 1;
             obj.selectedFiles = 0;
@@ -450,6 +453,9 @@
                 // 追加終了
                 obj.selectedFiles++;
                 obj.existingFileNames.push(files[i].name);
+                // 追加
+                obj.existingFileSizes.push(files[i].size);
+                // 追加終了
                 // Make object immutable
                 var ts = $.extend({}, s);
                 var fd = new FormData();
@@ -528,6 +534,10 @@
                     var pos = obj.existingFileNames.indexOf(fileArr[x]);
                     if (pos != -1) {
                         obj.existingFileNames.splice(pos, 1);
+                        // 追加
+                        obj.existingFileSizes.splice(pos, 1);
+                        // 追加終了
+
                     }
                 }
             }
@@ -691,7 +701,11 @@
             this.statusbar = $("<div class='ajax-file-upload-statusbar'></div>").width(s.statusBarWidth);
             this.preview = $("<img class='ajax-file-upload-preview' />").width(s.previewWidth).height(s.previewHeight).appendTo(this.statusbar).hide();
             this.filename = $("<div class='ajax-file-upload-filename'></div>").appendTo(this.statusbar);
+            // 追加
             this.progressDiv = $("<div class='ajax-file-upload-progress'>").appendTo(this.statusbar).hide();
+//            this.progressDiv = $("<div class='ajax-file-upload-progress'>").appendTo(this.statusbar).hide();
+//            this.progressDiv = $("<div class='ajax-file-upload-progress'>").appendTo(this.statusbar).show();
+            // 追加終了
             this.progressbar = $("<div class='ajax-file-upload-bar'></div>").appendTo(this.progressDiv);
             this.abort = $("<div>" + s.abortStr + "</div>").appendTo(this.statusbar).hide();
             this.cancel = $("<div>" + s.cancelStr + "</div>").appendTo(this.statusbar).hide();
@@ -785,7 +799,7 @@
                     for (var key in o.headers) {
                         xhr.setRequestHeader(key, o.headers[key]);
                     }
-            
+
                     pd.progressDiv.show();
                     pd.cancel.hide();
                     pd.done.hide();
@@ -796,6 +810,16 @@
                             xhr.abort();
                             obj.selectedFiles -= fileArray.length; //reduce selected File count
                             s.onAbort.call(obj, fileArray, pd);
+                            // ファイルサイズ減少
+                            // 追加
+                            total_file_size = 0
+                            for (var x=0; x<obj.existingFileSizes.length; x++) {
+                                total_file_size += obj.existingFileSizes[x];
+                            }
+                            total_queued_number = obj.selectedFiles;
+                            $("#total_file_size_value").html(getSizeStr(total_file_size));
+                            $("#total_queued_number_value").html(total_queued_number);
+                            // 追加終了
 
                         });
                     }
@@ -806,6 +830,9 @@
                 },
                 uploadProgress: function (event, position, total, percentComplete) {
                     //Fix for smaller file uploads in MAC
+                    // 追加
+                    if(percentComplete >= 100) pd.abort.hide();
+                    // 追加終了
                     if(percentComplete > 98) percentComplete = 98;
 
                     var percentVal = percentComplete + '%';
@@ -847,6 +874,7 @@
                     if(s.showStatusAfterSuccess) {
                         // 追加
                         pd.progressDiv.hide();
+                        //pd.progressbar.width('0%');
                         // 追加終了
                         if(s.showDone) {
                             pd.done.show();
@@ -928,6 +956,16 @@
                         s.onCancel.call(obj, fileArray, pd);
                         obj.selectedFiles -= fileArray.length; //reduce selected File count
                         updateFileCounter(s, obj);
+                        // ファイルサイズ減少
+                        // 追加
+                        total_file_size = 0
+                        for (var x=0; x<obj.existingFileSizes.length; x++) {
+                            total_file_size += obj.existingFileSizes[x];
+                        }
+                        total_queued_number = obj.selectedFiles;
+                        $("#total_file_size_value").html(getSizeStr(total_file_size));
+                        $("#total_queued_number_value").html(total_queued_number);
+                        // 追加終了
                     });
                 }
                 form.ajaxForm(options);
