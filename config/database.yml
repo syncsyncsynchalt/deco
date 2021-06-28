@@ -12,7 +12,8 @@ development:
   adapter: mysql2
   encoding: utf8
   reconnect: false
-  database: deco_development
+#  database: deco_development
+  database: deco_production
   pool: 5
   username: deco
   password: 

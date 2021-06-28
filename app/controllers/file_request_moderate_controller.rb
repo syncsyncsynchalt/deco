@@ -112,7 +112,7 @@ class FileRequestModerateController < ApplicationController
           @request_matter.moderate_result = 1
           @request_matter.sent_at = Time.now
           @request_matter.save!
-          flash[:notice] = "決裁の登録が完了しました。"
+          flash[:notice] = "決裁が完了しました"
             @requested_matters.each do |requested_matter|
               full_url = port + "://" + $app_env['URL'] +
                   "/requested_file_send/login/" + requested_matter.url
@@ -146,7 +146,7 @@ class FileRequestModerateController < ApplicationController
                     @next_moderater.user, url).deliver
             @next_moderater.send_flag = 1
             @next_moderater.save
-            flash[:notice] = "決裁の登録が完了しました。"
+            flash[:notice] = "決裁が完了しました"
           else
             @requested_matters.each do |requested_matter|
               full_url = port + "://" + $app_env['URL'] +
@@ -165,7 +165,7 @@ class FileRequestModerateController < ApplicationController
             Notification.send_result_report(@request_matter,
                                             @requested_matters,
                                             url_dl).deliver
-            flash[:notice] = "決裁の登録が完了しました。"
+            flash[:notice] = "決裁が完了しました"
           end
         end
       # 簡易決裁
@@ -180,7 +180,7 @@ class FileRequestModerateController < ApplicationController
           @request_matter.moderate_result = 1
           @request_matter.sent_at = Time.now
           @request_matter.save!
-          flash[:notice] = "決裁の登録が完了しました。"
+          flash[:notice] = "決裁が完了しました"
           @requested_matters.each do |requested_matter|
             full_url = port + "://" + $app_env['URL'] +
                 "/requested_file_send/login/" + requested_matter.url
@@ -198,7 +198,7 @@ class FileRequestModerateController < ApplicationController
           Notification.request_copied_report(@request_matter,
                                          @requested_matters, req_url,
                                          $app_env['REQUEST_PERIOD'].to_i).deliver
-          flash[:notice] = "決裁の登録が完了しました。"
+          flash[:notice] = "決裁が完了しました"
       end
     end
     redirect_to :action => :message
@@ -228,7 +228,7 @@ class FileRequestModerateController < ApplicationController
     Notification.request_matter_moderate_result_report(@request_matter,
                                     @request_moderater,
                                     url).deliver
-    flash[:notice] = "決裁の登録が完了しました。"
+    flash[:notice] = "決裁が完了しました"
     redirect_to :action => :message
   end
 

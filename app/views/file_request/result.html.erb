@@ -47,9 +47,12 @@
 <% if moderater.result == 1 %>
 <font color="blue"><b>承認</b></font>
 <% elsif moderater.result == 2 %>
-<font color="red">却下</font>
+<font color="red">差戻</font>
 <% else %>
-未決
+<% if moderater.send_flag == 1 %>
+処理中
+<% end %>
+&nbsp;
 <% end %>
       </div>
 <% end %>
@@ -60,9 +63,9 @@
 <% if @request_moderate.result == 1 %>
 <font color="blue"><b>承認</b></font>
 <% elsif @request_moderate.result == 2 %>
-<font color="red">却下</font>
+<font color="red">差戻</font>
 <% else %>
-  未決
+&nbsp;
 <% end %>
   </div>
 <% end %>

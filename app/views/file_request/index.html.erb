@@ -86,8 +86,8 @@ $(document).ready(function() {
     <h2>３．送信者情報入力（ファイル送信を依頼する相手の情報を入力してください）</h2>
 
     <span class="left">宛先は最大 <%= h $app_env['RECEIVERS_LIMIT'] %> 名まで追加できます。<br /><br />
-    <img src="/assets/common/name_s.jpg" />&nbsp;相手のお名前<span class="required">※</span><br />
-    <img src="/assets/common/mail_s.jpg" />&nbsp;相手のメールアドレス<span class="required">※</span>&nbsp;&nbsp;<span class="note">例）name1@example.com</span>
+    <%= image_tag('common/name_s.jpg') %>&nbsp;相手のお名前<span class="required">※</span><br />
+    <%= image_tag('common/mail_s.jpg') %>&nbsp;相手のメールアドレス<span class="required">※</span>&nbsp;&nbsp;<span class="note">例）name1@example.com</span>
     </span>
 
     <fieldset>
@@ -100,8 +100,8 @@ $(document).ready(function() {
     <div class="table-e">
       <div class="item">ファイル送信者 1人目</div>
       <div class="input-l">
-        <img src="/assets/common/name.jpg" align="left" /><%= f2.text_field :name, :class => 'validate[required]', :size => 30, :index => i %> 様<br />
-        <img src="/assets/common/mail.jpg" align="left" /><%= f2.text_field :mail_address, :class => 'validate[required, custom[email]]', :size => 40, :index => i %>
+        <%= image_tag('common/name.jpg', :align => "left") %><%= f2.text_field :name, :class => 'validate[required]', :size => 30, :index => i %> 様<br />
+        <%= image_tag('common/mail.jpg', :align => "left") %><%= f2.text_field :mail_address, :class => 'validate[required, custom[email]]', :size => 40, :index => i %>
       </div>
       <div class="input-r"></div>
       <div id="receiver_form"></div>

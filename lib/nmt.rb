@@ -16,8 +16,13 @@
 module Nmt
   def generate_random_strings(string)
     seed = ''
-    seed = string + OpenSSL::Random.random_bytes(8).unpack('H*').first
+    seed = generate_random_string_values(string, 100)
     return Digest::SHA1.hexdigest(seed)
+  end
+
+  def generate_random_string_values(string, length = 100)
+    chars = ('a'..'z').to_a + ('A'..'Z').to_a + ('0'..'9').to_a
+    return Array.new(length.to_i){chars[rand(chars.size)]}.join 
   end
 
   def original_paginate(controller, action, page, total_page, w_in, w_out)

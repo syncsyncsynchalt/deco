@@ -76,9 +76,12 @@
 <% if moderater.result == 1 %>
 <font color="blue"><b>承認</b></font>
 <% elsif moderater.result == 2 %>
-<font color="red">却下</font>
+<font color="red">差戻</font>
 <% else %>
-未決
+<% if moderater.send_flag == 1 %>
+処理中
+<% end %>
+&nbsp;
 <% end %>
       </div>
 <% end %>
@@ -89,9 +92,9 @@
 <% if @send_moderate.result == 1 %>
 <font color="blue"><b>承認</b></font>
 <% elsif @send_moderate.result == 2 %>
-<font color="red">却下</font>
+<font color="red">差戻</font>
 <% else %>
-  未決
+&nbsp;
 <% end %>
   </div>
 <% end %>
@@ -104,7 +107,7 @@
   <div class="input-mid"><%=h (Time.parse(@send_matter.created_at.to_s) +
                       @send_matter.file_life_period).strftime("%Y年%m月%d日%H時%M分%S秒") %></div>
 <% else %>
-  <div class="input-mid">&nbsp;</div>
+  <div class="input-mid">決裁完了後に確定します</div>
 <% end %>
   <div class="item-mid">相手へのメッセージ</div>
   <% if @send_matter.message == '' %>

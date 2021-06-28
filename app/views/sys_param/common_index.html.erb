@@ -76,9 +76,20 @@ $(document).ready(function() {
   <h2><%= $param_label['URL'] %></h2>
   <div class="table-sys-a">
   <% c=0 -%>
+  <% @ssl_use = 0 %>
+  <% @app_envs.each do | app_env | %>
+    <% if app_env.key == 'ENABLE_SSL' -%>
+<% if app_env.value == "0"
+     @ssl_use = 0
+   else
+     @ssl_use = 1
+   end %>
+    <% end -%>
+  <% end -%>
   <% @app_envs.each do | app_env | %>
     <% if app_env.key == 'URL' -%>
-      <div class="input-mid-2-l"><%= app_env.value %></div>
+      <div class="input-mid-2-l">
+      <% if @ssl_use == 0 %>http://<% else %>https://<% end %><%= app_env.value %></div>
       <div class="input-mid-2-r">
       <%= link_to '[編集]', {:action => 'edit1', :id => app_env.id } %>
       </div>
@@ -90,6 +101,11 @@ $(document).ready(function() {
                 :html => {:id => 'app_env3', :name=> "app_env3" }) do |f| %>
       <div class="item-mid"><%= $param_label['URL'] %>の登録</div>
       <div class="input-mid">
+      <% if @ssl_use == 0 %>
+         http://
+      <% else %>
+         https://
+      <% end %>
         <%= f.hidden_field :key, {:value => "URL"} %>
         <%= f.hidden_field :category, {:value => 0} %>
         <%= f.text_field :value, :class => 'validate[required]', :size => '', :style => "width:150px;" %>

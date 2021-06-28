@@ -1,4 +1,4 @@
-<h2>決裁が送られています。</h2>
+<h2>決裁申請</h2>
 <div class="table-a">
   <div class="item-top">申請日時</div>
   <div class="input-top"><%= Time.parse(@send_matter.created_at.to_s).strftime("%Y/%m/%d %H時%M分%S秒") -%>
@@ -45,8 +45,15 @@
     <div class="input-mid">希望しない</div>
   <% end %>
   <div class="item-mid">ファイル保存期限</div>
+<% if @send_matter.sent_at.present? %>
+  <div class="input-mid"><%=h (Time.parse(@send_matter.sent_at.to_s) +
+                      @send_matter.file_life_period).strftime("%Y年%m月%d日%H時%M分%S秒") %></div>
+<% elsif @send_matter.moderate_flag == nil %>
   <div class="input-mid"><%=h (Time.parse(@send_matter.created_at.to_s) +
                       @send_matter.file_life_period).strftime("%Y年%m月%d日%H時%M分%S秒") %></div>
+<% else %>
+  <div class="input-mid">決裁完了後に確定します</div>
+<% end %>
   <div class="item-mid">相手へのメッセージ</div>
   <% if @send_matter.message == '' %>
     <div class="input-mid">　</div>
@@ -79,9 +86,12 @@
 <% if moderater.result == 1 %>
 <font color="blue"><b>承認</b></font>
 <% elsif moderater.result == 2 %>
-<font color="red">却下</font>
+<font color="red">差戻</font>
 <% else %>
-未決
+<% if moderater.send_flag == 1 %>
+処理中
+<% end %>
+&nbsp;
 <% end %>
       </div>
 <% end %>
@@ -94,7 +104,7 @@
 <% elsif @send_moderate.result == 2 %>
 <font color="red">却下</font>
 <% else %>
-  未決
+&nbsp;
 <% end %>
   </div>
 <% unless @send_moderater.result > 0 %>

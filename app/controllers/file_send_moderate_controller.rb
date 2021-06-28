@@ -135,7 +135,7 @@ class FileSendModerateController < ApplicationController
           @send_matter.moderate_result = 1
           @send_matter.sent_at = Time.now
           @send_matter.save!
-          flash[:notice] = "決裁の登録が完了しました。"
+          flash[:notice] = "決裁が完了しました"
           if @attachments.select{ |attachment|
               attachment.virus_check == '0'}.size > 0
             @receivers.each do |receiver|
@@ -170,7 +170,7 @@ class FileSendModerateController < ApplicationController
                     @next_moderater.user, url).deliver
             @next_moderater.send_flag = 1
             @next_moderater.save
-            flash[:notice] = "決裁の登録が完了しました。"
+            flash[:notice] = "決裁が完了しました"
           else
             @receivers.each do |receiver|
               full_url_dl = port + "://" + $app_env['URL'] +
@@ -187,7 +187,7 @@ class FileSendModerateController < ApplicationController
             Notification.send_result_report(@send_matter,
                                             @receivers, @attachments,
                                             url_dl).deliver
-            flash[:notice] = "決裁の登録が完了しました。"
+            flash[:notice] = "決裁が完了しました"
           end
         end
       # 簡易決裁
@@ -202,7 +202,7 @@ class FileSendModerateController < ApplicationController
           @send_matter.moderate_result = 1
           @send_matter.sent_at = Time.now
           @send_matter.save!
-          flash[:notice] = "決裁の登録が完了しました。"
+          flash[:notice] = "決裁が完了しました"
           if @attachments.select{ |attachment|
               attachment.virus_check == '0'}.size > 0
             @receivers.each do |receiver|
@@ -221,7 +221,7 @@ class FileSendModerateController < ApplicationController
           Notification.send_result_report(@send_matter,
                                           @receivers, @attachments,
                                           url_dl).deliver
-            flash[:notice] = "決裁の登録が完了しました。"
+          flash[:notice] = "決裁が完了しました"
       end
     end
     redirect_to :action => :message
@@ -251,7 +251,7 @@ class FileSendModerateController < ApplicationController
     Notification.send_matter_moderate_result_report(@send_matter,
                                     @send_moderate,
                                     url).deliver
-    flash[:notice] = "決裁の登録が完了しました。"
+    flash[:notice] = "決裁が完了しました"
     redirect_to :action => :message
   end
 

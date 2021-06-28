@@ -18,7 +18,9 @@
 # Likewise, all the methods added will be available for all controllers.
 class FileRequestController < ApplicationController
   protect_from_forgery :except => [:upload]
-  before_filter :authorize
+  before_filter :authorize, :except => [:result, :login, :auth, :result_ng]
+  before_filter :result_id_check, :only => [:result]
+  before_filter :result_authorize, :only => [:result]
   before_filter :load_env
 
   # 入力フォーム
@@ -30,30 +32,6 @@ class FileRequestController < ApplicationController
 
     @local_domains = AppEnv.find(:all, :conditions =>
                  {:key => 'LOCAL_DOMAINS'})
-    if session[:ldap_use]
-      @mail_domain_number = 0
-      for local_domain in @local_domains
-        current_user[LDAP_MAIL_ADDLESS].each do |mail_address|
-          if @mail_domain_number == 0
-            if /@#{local_domain.value}/ =~ mail_address
-              @mail_domain_number = local_domain.id
-              @send_mail_address = mail_address
-            end
-          else
-            if /@#{local_domain.value}/ =~ mail_address
-              if local_domain.id < @mail_domain_number.to_i
-                @mail_domain_number = local_domain.id
-                @send_mail_address = mail_address
-              elsif local_domain.id == @mail_domain_number
-               if mail_address < @send_mail_address
-                 @send_mail_address = mail_address
-               end
-             end
-           end
-         end
-        end
-      end
-    end
     respond_to do |format|
       format.html
       format.xml { render :xml => @request_file }
@@ -178,12 +156,85 @@ class FileRequestController < ApplicationController
   end
 
   def result
-    @request_matter = RequestMatter.find(session[:request_matter_id])
+    if params[:id].present?
+      @request_matter = RequestMatter.find(:first, :conditions =>
+                                     { :url => params[:id] })
+      session[:request_matter_id] = @request_matter.id
+    else
+      @request_matter = RequestMatter.find(session[:request_matter_id])
+    end
     @requested_matters =
         RequestedMatter.find_all_by_request_matter_id(session[:request_matter_id])
     if @request_matter.moderate_flag == 1
       @request_moderate = @request_matter.request_moderate
       @request_moderaters = @request_moderate.request_moderaters
     end
+  rescue ActiveRecord::RecordNotFound
+    flash[:notice] = "不正なアクセスです。
+                     （アクセスの集中，ブラウザの操作上の問題が考えられます。）"
+    redirect_to :action => "result_ng"
+  end
+
+  def login
+  rescue ActiveRecord::RecordNotFound
+    flash[:notice] = "不正なアクセスです。
+                     （アクセスの集中，ブラウザの操作上の問題が考えられます。）"
+    redirect_to :action => "result_ng"
+  end
+
+  def auth
+    user =
+        User
+        .where("login = ?",
+               params[:login]).first
+    if user && user.authenticate(params[:password])
+      session[:user_id] = user.id
+      redirect_to :action => 'result', :id => session[:url_id]
+      flash[:notice] = "ログインしました。"
+    else
+      flash[:notice] = "ユーザあるいはパスワードが違います"
+      redirect_to :action => 'login'
+    end
+  end
+
+  def result_ng
+    render :action => 'message'
+  end
+
+  private
+
+  def result_id_check
+    if params[:id].present?
+      session[:url_id] = params[:id]
+#    else
+#      flash[:notice] = "不正なアクセスです。
+#                       （アクセスの集中，ブラウザの操作上の問題が考えられます。）"
+#      redirect_to :action => "result_ng"
+    end
+  rescue ActiveRecord::RecordNotFound
+    flash[:notice] = "不正なアクセスです。
+                     （アクセスの集中，ブラウザの操作上の問題が考えられます。）"
+    redirect_to :action => "result_ng"
+  end
+
+  def result_authorize
+    session[:autorize] = 'yes'
+    @local_ips =
+        AppEnv
+        .where("app_envs.key = 'LOCAL_IPS'")
+    if @local_ips.select{ |local_ip|
+            IPAddr.new(local_ip.value).include?(@access_ip) }.size > 0
+      session[:user_category] = 3
+    else
+      if session[:user_id].present?
+        session[:user_category] = 2
+      else
+        redirect_to :action => "login"
+      end
+    end
+  rescue ActiveRecord::RecordNotFound
+    flash[:notice] = "不正なアクセスです。
+                     （アクセスの集中，ブラウザの操作上の問題が考えられます。）"
+    redirect_to :action => "result_ng"
   end
 end

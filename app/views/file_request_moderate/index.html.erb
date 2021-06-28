@@ -1,4 +1,4 @@
-<h2>決裁が送られています。</h2>
+<h2>決裁申請</h2>
 <div class="table-a">
 
   <div class="item-top">あなたのお名前</div>
@@ -45,7 +45,10 @@
 <% elsif moderater.result == 2 %>
 <font color="red">却下</font>
 <% else %>
-未決
+<% if moderater.send_flag == 1 %>
+処理中
+<% end %>
+&nbsp;
 <% end %>
       </div>
 <% end %>
@@ -58,7 +61,7 @@
 <% elsif @request_moderate.result == 2 %>
 <font color="red">却下</font>
 <% else %>
-  未決
+&nbsp;
 <% end %>
   </div>
 <% unless @request_moderate.result > 0 %>
