@@ -1,0 +1,113 @@
+<% self.class.include Rails.application.routes.url_helpers %>
+
+# SYS_PARAM --------------------------------------------------------------------
+
+@ajaxValidateSysParam = (data)->
+  result = ''
+  $.ajax(
+    url: '<%= validate_sys_param_index_path(format: :json) %>'
+    type: "POST"
+    cache: false
+    async : false 
+    data: data
+    dataType: "json"
+  ).done((data, textStatus, jqXHR)->
+    result = data[2] if (!data[1])
+  ).fail((jqXHR, textStatus, errorThrown)->
+    result = 'チェックに失敗しました。'
+  ).always((args)->
+  )
+  return result
+  
+@validateDirectory = (field, rules, i, options)->
+  data = 
+    authenticity_token: $("input[name='authenticity_token']").val()
+    validate_type: 'directory'
+    field_id: field.attr("id")
+    key: field.data("key")
+    value: field.val()
+    category: field.data("category")
+  result = ajaxValidateSysParam(data)
+  return '* ' + result if result.length > 0
+  
+@validateTermUnit = (field, rules, i, options)->
+  data = 
+    authenticity_token: $("input[name='authenticity_token']").val()
+    validate_type: 'term_unit'
+    field_id: field.attr("id")
+    key: field.data("key")
+    value: field.val()
+    category: field.data("category")
+    term: field.val()
+    unit: $('#period_unit').val()
+  result = ajaxValidateSysParam(data)
+  return '* ' + result if result.length > 0
+
+@validatePWLengthMinMax = (field, rules, i, options)->
+  data = 
+    authenticity_token: $("input[name='authenticity_token']").val()
+    validate_type: 'pw_length_min_max'
+    field_id: field.attr("id")
+    key: field.data("key")
+    value: field.val()
+    category: field.data("category")
+  result = ajaxValidateSysParam(data)
+  return '* ' + result if result.length > 0
+
+# USER -------------------------------------------------------------------------
+
+@ajaxValidateUser = (data)->
+  result = ''
+  $.ajax(
+    url: '<%= validate_user_index_path(format: :json) %>'
+    type: "POST"
+    cache: false
+    async : false 
+    data: data
+    dataType: "json"
+  ).done((data, textStatus, jqXHR)->
+    result = data[2] if (!data[1])
+  ).fail((jqXHR, textStatus, errorThrown)->
+    result = 'チェックに失敗しました。'
+  ).always((args)->
+  )
+  return result
+  
+@validateLogin = (field, rules, i, options)->
+  data = 
+    authenticity_token: $("input[name='authenticity_token']").val()
+    validate_type: 'login'
+    field_id: field.attr("id")
+    value: field.val()
+    user_id: rules[i+2]
+  result = ajaxValidateUser(data)
+  return '* ' + result if result.length > 0
+  
+@emailAccountMaxSize = (field, rules, i, options)->
+  max = Number(rules[i + 2])
+  mail_domain = $('#' + rules[i + 3]).val()
+  domain_len = mail_domain.length
+  account_max = max - domain_len - 1
+  len = field.val().length
+  if (len > account_max)
+    return "* " + account_max + "文字以下にしてください"
+
+# CONTENT ----------------------------------------------------------------------
+
+@fileType = (field, rules, i, options)->
+  uploadedFile = $(field)
+  if (uploadedFile)
+    extensions = rules[i + 2]
+    mimeFilter = new RegExp(extensions)
+    if (!mimeFilter.test($(uploadedFile).val().split('.').reverse()[0]))
+      return "* 画像形式が違います。"
+
+@fileMaxSize = (field, rules, i, options)->
+  uploadedFile = $(field)
+  if (uploadedFile && $(uploadedFile)[0].files.length > 0)
+    max_m = Number(rules[i + 2])
+    max = max_m * 1024 * 1024
+    size = $(uploadedFile)[0].files[0].size
+    if (size > max)
+      return "* ファイルサイズは" + max_m + "MB以下にしてください"
+

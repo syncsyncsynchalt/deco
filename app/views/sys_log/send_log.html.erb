@@ -18,152 +18,69 @@
 <br>
 
 データ数：<%= @total_data %>
-[ <%= raw @part_of_page %> ]
-　<%#= link_to 'CSV保存', {:action => 'get_csv_of_send_log'} %><br>
+[ <%= render '/layouts/original_paginate', controller: 'sys_log', action: 'send_log', page: @page, total_page: @total_page, w_in: 4, w_out: 2 %> ]<br>
 
-
-<!--pre><%#= @sqlstr %></pre-->
-<table border=1 cellspacing=0 cellpadding=3>
+<table border="1" cellspacing="0" cellpadding="3">
   <tr bordercolor=gray>
-  <td nowrap bgcolor=#e5f0fe><br></td>
-  <td nowrap bgcolor=#e5f0fe>登録日</td>
-  <td nowrap bgcolor=#e5f0fe>送信ＩＤ</td>
-  <td nowrap bgcolor=#e5f0fe>送信者名</td>
-  <td nowrap bgcolor=#e5f0fe>送信者メールアドレス</td>
-  <td nowrap bgcolor=#e5f0fe>受信者名</td>
-  <td nowrap bgcolor=#e5f0fe>受信者メールアドレス</td>
-  <td nowrap bgcolor=#e5f0fe>総ファイル数</td>
-  <td nowrap bgcolor=#e5f0fe>総ファイルサイズ</td>
+  <td nowrap bgcolor="#e5f0fe"><br></td>
+  <td nowrap bgcolor="#e5f0fe">登録日</td>
+  <td nowrap bgcolor="#e5f0fe">送信ＩＤ</td>
+  <td nowrap bgcolor="#e5f0fe">送信者名</td>
+  <td nowrap bgcolor="#e5f0fe">送信者メールアドレス</td>
+  <td nowrap bgcolor="#e5f0fe">受信者名</td>
+  <td nowrap bgcolor="#e5f0fe">受信者メールアドレス</td>
+  <td nowrap bgcolor="#e5f0fe">総ファイル数</td>
+  <td nowrap bgcolor="#e5f0fe">総ファイルサイズ</td>
   </tr>
 
   <% count = 0 -%>
-  <% cr_id = 0 -%>
-<% created_at = "" -%>
-<% send_matter_id = "" -%>
-<% sender_name = "" -%>
-<% sender_mail_address = "" -%>
-<% receiver_name = "" -%>
-<% receiver_mail_address = "" -%>
-<% total_file = "" -%>
-<% total_size = "" -%>
-<% order = "" -%>
-<% bf_created_at = "" -%>
-<% bf_send_matter_id = "" -%>
-<% bf_send_matter_id_b = "" -%>
-<% bf_sender_name = "" -%>
-<% bf_sender_mail_address = "" -%>
-<% bf_receiver_name = "" -%>
-<% bf_receiver_mail_address = "" -%>
-<% bf_total_file = "" -%>
-<% bf_total_size = "" -%>
-<% bf_order = "" -%>
 
-  <%# @send_files.each.with_index do | send_file, count | -%>
   <% @rs.each do | data | -%>
-    <%# count = count + 1 -%>
-  <%# bf_created_at = (Time.parse(send_file.created_at.to_s)).strftime("%Y/%m/%d %H:%M:%S") -%>
-  <%# bf_send_matter_id = send_file.send_matter_id -%>
-  <%# bf_sender_name = send_file.sender_name -%>
-  <%# bf_sender_mail_address = send_file.sender_mail_address -%>
-  <%# bf_receiver_name = send_file.receiver_name -%>
-  <%# bf_receiver_mail_address = send_file.receiver_mail_address -%>
-  <%# bf_total_file = send_file.total_file -%>
-  <% bf_created_at = (Time.parse(data.created_at.to_s)).strftime("%Y/%m/%d %H:%M:%S") -%>
-  <% bf_send_matter_id = data.send_matter_id -%>
-  <% bf_sender_name = data.sender_name -%>
-  <% bf_sender_mail_address = data.sender_mail_address -%>
-  <% bf_receiver_name = data.receiver_name -%>
-  <% bf_receiver_mail_address = data.receiver_mail_address -%>
-  <% bf_total_file = data.total_file -%>
-  <% bf_total_size = '0 B' -%>
-  <% bf_order = data.data_order -%>
-  <!-- --><%# bf_total_size = send_file.total_size -%>
-  <%# if send_file.total_size -%>
-    <%# if send_file.total_size.to_i > 1024 * 1024 -%>
-      <%# bf_total_size = (send_file.total_size.to_i / (1024 * 1024)).to_s + ' MB' -%>
-    <%# elsif send_file.total_size.to_i > 1024 -%>
-      <%# bf_total_size = (send_file.total_size.to_i / 1024).to_s + ' KB' -%>
-    <%# else -%>
-      <%# bf_total_size = send_file.total_size.to_s + ' B' -%>
-  <% if data.total_size -%>
-    <% if data.total_size.to_i > 1024 * 1024 -%>
-      <% bf_total_size = (data.total_size.to_i / (1024 * 1024)).to_s + ' MB' -%>
-    <% elsif data.total_size.to_i > 1024 -%>
-      <% bf_total_size = (data.total_size.to_i / 1024).to_s + ' KB' -%>
-    <% else -%>
-      <% bf_total_size = data.total_size.to_s + ' B' -%>
-    <% end -%>
-  <%  end -%>
-
-  <% if bf_send_matter_id_b != "" -%>
-    <% if bf_send_matter_id == bf_send_matter_id_b -%>
-      <% receiver_name = receiver_name + "<br>" + bf_receiver_name -%>
-      <% receiver_mail_address = receiver_mail_address + "<br>" + bf_receiver_mail_address -%>
-    <% else -%>
-      <%# cr_id = cr_id + 1 -%>
-      <%# if @s_data <= cr_id and cr_id <= @e_data -%>
-        <tr bordercolor=gray>
-        <td nowrap align=center><%#= cr_id %><%= order + @s_data - 1 %></td>
-        <td nowrap><%= created_at %></td>
-        <td nowrap><a href="/sys_log/send_matter_info/<%= send_matter_id %>"><%= send_matter_id %></a></td>
-        <td nowrap><%= sender_name %></td>
-        <td nowrap><%= sender_mail_address %></td>
-        <td nowrap><%= raw receiver_name %></td>
-        <td nowrap><%= raw receiver_mail_address %></td>
-        <td nowrap><%= total_file %></td>
-        <td nowrap><%= total_size %></td>
-        </tr>
-     <%# end -%>
-
-      <% bf_send_matter_id_b = bf_send_matter_id -%>
-
-      <% count = count + 1 -%>
-      <% created_at = bf_created_at -%>
-      <% send_matter_id = bf_send_matter_id -%>
-      <% sender_name = bf_sender_name -%>
-      <% sender_mail_address = bf_sender_mail_address -%>
-      <% receiver_name = bf_receiver_name -%>
-      <% receiver_mail_address = bf_receiver_mail_address -%>
-      <% total_file = bf_total_file -%>
-      <% total_size = bf_total_size -%>
-      <%# order = bf_order -%>
-      <% order = count -%>
-      <% cr_id = bf_order.to_i -%>
-    <% end -%>
-  <% else -%>
-      <% bf_send_matter_id_b = bf_send_matter_id -%>
-
-      <% count = count + 1 -%>
-      <% created_at = bf_created_at -%>
-      <% send_matter_id = bf_send_matter_id -%>
-      <% sender_name = bf_sender_name -%>
-      <% sender_mail_address = bf_sender_mail_address -%>
-      <% receiver_name = bf_receiver_name -%>
-      <% receiver_mail_address = bf_receiver_mail_address -%>
-      <% total_file = bf_total_file -%>
-      <% total_size = bf_total_size -%>
-      <%# order = bf_order -%>
-      <% order = count -%>
-      <% cr_id = bf_order.to_i -%>
-    <% end -%>
+    <tr bordercolor="gray">
+      <td nowrap align="center"><%= count + @s_data %></td>
+      <td nowrap><%= (Time.parse(data.created_at.to_s)).strftime("%Y/%m/%d %H:%M:%S") %></td>
+      <td nowrap>
+      <%= link_to data.send_matter_id.to_s, {:controller => :sys_log, :action => :send_matter_info, :id => data.send_matter_id} %>
+      </td>
+      <td nowrap><%= data.sender_name %></td>
+      <td nowrap><%= data.sender_mail_address %></td>
+      <td nowrap>
+        <%- receiver_count = 0 -%>
+        <%- for tmp_receiver in get_receivers(data.send_matter_id, 'name') -%>
+          <%- if receiver_count > 0 -%>
+           <br/>
+          <%- end -%>
+          <%= tmp_receiver %>
+          <%- receiver_count += 1 -%>
+        <%- end -%>
+      </td>
+      <td nowrap>
+        <%- receiver_count = 0 -%>
+        <%- for tmp_receiver in get_receivers(data.send_matter_id, 'mail_address') -%>
+          <%- if receiver_count > 0 -%>
+           <br/>
+          <%- end -%>
+          <%= tmp_receiver %>
+          <%- receiver_count += 1 -%>
+        <%- end -%>
+      </td>
+      <td nowrap><%= data.total_file %></td>
+      <%- if data.total_size -%>
+        <%- if data.total_size.to_i > 1024 * 1024 -%>
+          <%- file_total_size = (data.total_size.to_i / (1024 * 1024)).to_s + ' MB' -%>
+        <%- elsif data.total_size.to_i > 1024 -%>
+          <%- file_total_size = (data.total_size.to_i / 1024).to_s + ' KB' -%>
+        <%- else -%>
+          <%- file_total_size = data.total_size.to_s + ' B' -%>
+        <%- end -%>
+      <%- end -%>
+      <td nowrap><%= file_total_size %></td>
+    </tr>
+    <% count = count + 1 -%>
   <% end -%>
 
   <% if count == 0 -%>
-    <tr><td colspan=8 algin=center>データがありません</td></tr>
-  <% else -%>
-    <%# if @s_data <= cr_id and cr_id <= @e_data -%>
-      <tr bordercolor=gray>
-      <td nowrap align=center><%#= cr_id + 1 %><%= order + @s_data - 1 %></td>
-        <td nowrap><%= created_at %></td>
-        <td nowrap><a href="/sys_log/send_matter_info/<%= send_matter_id %>"><%= send_matter_id %></a></td>
-        <td nowrap><%= sender_name %></td>
-        <td nowrap><%= sender_mail_address %></td>
-        <td nowrap><%= raw receiver_name %></td>
-        <td nowrap><%= raw receiver_mail_address %></td>
-        <td nowrap><%= total_file %></td>
-        <td nowrap><%= total_size %></td>
-      </tr>
-    <%# end -%>
+    <tr><td colspan="9" algin=center>データがありません</td></tr>
   <% end -%>
 </table>
 

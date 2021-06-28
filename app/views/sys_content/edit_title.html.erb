@@ -1,14 +1,12 @@
 <script type="text/javascript">
-
-localDomains = ""
-
-$(document).ready(function() {
-  $.validationEngineLanguage.newLang(localDomains);
-  $("#content_frame").validationEngine({
-    success : function() { document.content_frame.submit(); },
-    failure : function() {}
-  })
-});
+  var localDomains = "";
+  $(document).ready(function() {
+    $.validationEngineLanguage.newLang(localDomains);
+    $("#content_frame").validationEngine({
+      success : function() { document.content_frame.submit(); },
+      failure : function() {}
+    });
+  });
 </script>
 
 タイトルの設定変更
@@ -19,7 +17,7 @@ $(document).ready(function() {
                       :html => {:id => 'content_frame', :name=> "content_frame" }) do |f| %>
   <%#= f.error_messages %>
   <div class="item-mid"></div>
-  <div class="input-mid"><%= f.text_field :title, :class => 'validate[required]' %></div>
+  <div class="input-mid"><%= f.text_field :title, :class => 'validate[required,maxSize[18]]' %></div>
   <div class="item-mid"></div>
   <div class="input-mid"><%= f.submit "　更新　" %></div>
 <% end %>

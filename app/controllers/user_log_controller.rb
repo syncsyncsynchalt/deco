@@ -1,23 +1,164 @@
 # -*- coding: utf-8 -*-
+# Copyright (C) 2010 NMT Co.,Ltd.
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>
+
+# Filters added to this controller apply to all controllers in the application.
+# Likewise, all the methods added will be available for all controllers.
 class UserLogController < ApplicationController
   layout 'user_management'
   before_action :authorize, :load_env
 
   def index
+    params[:conditions] ||= Hash.new
+    @conditions = params[:conditions]
+    select_strs = Array.new
+    order_values = Array.new
+    order_value = Array.new
+
+    where_strs = Array.new
+    where_vals = Hash.new
+
+    where_strs << "user_id = :user_id"
+    where_vals[:user_id] = current_user.id
+
+    if params[:conditions][:search_text].present?
+      case params[:conditions][:search_select]
+      when 'name', 'mail_address'
+        where_strs << "receivers.#{params[:conditions][:search_select]} LIKE :where_val"
+        where_vals[:where_val] = "%#{ActiveRecord::Base.send(:sanitize_sql_like, params[:conditions][:search_text])}%"
+      else
+      end
+    end
+
+    case params[:conditions][:sort_select_1]
+    when 'created_at'
+      order_value << params[:conditions][:sort_select_1]
+    else
+      order_value << "created_at"
+    end
+    params[:conditions][:sort_select_1] ||= 'created_at'
+    case params[:conditions][:sort_select_2]
+    when 'ASC', 'DESC', 'asc', 'desc'
+      order_value << t("views.sort_value.#{params[:conditions][:sort_select_2]}")
+    else
+      order_value << "desc"
+    end
+    params[:conditions][:sort_select_2] ||= 'desc'
+    order_values << order_value.join(" ")
+
+    @user_logs = 
+      SendMatter
+      .joins(:receivers)
+      .order(order_values.join(", "))
+      .page(params[:page])
+      .per(10)
+    if params[:conditions][:begin_date].present? && params[:conditions][:end_date].present?
+      @user_logs =
+        @user_logs
+        .where(where_strs.join(" AND "), where_vals)
+        .where(created_at: Date.parse(params[:conditions][:begin_date]).to_datetime.beginning_of_day.to_s(:db)..Date.parse(params[:conditions][:end_date]).to_datetime.end_of_day.to_s(:db))
+    else
+      if params[:conditions][:begin_date].present?
+        where_strs << "send_matters.created_at >= :created_at_begin"
+        where_vals[:created_at_begin] = ActiveRecord::Base.send(:sanitize_sql_like, Date.parse(params[:conditions][:begin_date]).to_datetime.beginning_of_day.to_s(:db))
+      elsif params[:conditions][:end_date].present?
+        where_strs << "send_matters.created_at <= :created_at_end"
+        where_vals[:created_at_end] = ActiveRecord::Base.send(:sanitize_sql_like, Date.parse(params[:conditions][:end_date]).to_datetime.end_of_day.to_s(:db))
+#        @user_logs =
+#          @user_logs
+#          .where(created_at: Float::MIN..Date.parse(params[:conditions][:end_date]).to_datetime.end_of_day.to_s(:db))
+      end
+      @user_logs =
+        @user_logs
+        .where(where_strs.join(" AND "), where_vals)
+    end
   end
 
-  def index_result
-    @conditions = params[:conditions]
-    @user_logs = SendMatter.search_q(current_user.id, @conditions).page(params[:page]).per(10)
-  end
+#  def index_result
+#    @conditions = params[:conditions]
+#    @user_logs = SendMatter.search_q(current_user.id, @conditions).page(params[:page]).per(10)
+#  end
 
   def index_request
+    params[:conditions] ||= Hash.new
+    @conditions = params[:conditions]
+    select_strs = Array.new
+    order_values = Array.new
+    order_value = Array.new
+
+    where_strs = Array.new
+    where_vals = Hash.new
+
+    where_strs << "user_id = :user_id"
+    where_vals[:user_id] = current_user.id
+
+    if params[:conditions][:search_text].present?
+      case params[:conditions][:search_select]
+      when 'name', 'mail_address'
+        where_strs << "requested_matters.#{params[:conditions][:search_select]} LIKE :where_val"
+        where_vals[:where_val] = "%#{ActiveRecord::Base.send(:sanitize_sql_like, params[:conditions][:search_text])}%"
+      else
+      end
+    end
+
+    case params[:conditions][:sort_select_1]
+    when 'created_at'
+      order_value << params[:conditions][:sort_select_1]
+    else
+      order_value << "created_at"
+    end
+    params[:conditions][:sort_select_1] ||= 'created_at'
+    case params[:conditions][:sort_select_2]
+    when 'ASC', 'DESC', 'asc', 'desc'
+      order_value << t("views.sort_value.#{params[:conditions][:sort_select_2]}")
+    else
+      order_value << "desc"
+    end
+    params[:conditions][:sort_select_2] ||= 'desc'
+    order_values << order_value.join(" ")
+
+    @user_logs = 
+      RequestMatter
+      .joins(:requested_matters)
+      .order(order_values.join(", "))
+      .page(params[:page])
+      .per(10)
+    if params[:conditions][:begin_date].present? && params[:conditions][:end_date].present?
+      @user_logs =
+        @user_logs
+        .where(where_strs.join(" AND "), where_vals)
+        .where(created_at: Date.parse(params[:conditions][:begin_date]).to_datetime.beginning_of_day.to_s(:db)..Date.parse(params[:conditions][:end_date]).to_datetime.end_of_day.to_s(:db))
+    else
+      if params[:conditions][:begin_date].present?
+        where_strs << "request_matters.created_at >= :created_at_begin"
+        where_vals[:created_at_begin] = ActiveRecord::Base.send(:sanitize_sql_like, Date.parse(params[:conditions][:begin_date]).to_datetime.beginning_of_day.to_s(:db))
+      elsif params[:conditions][:end_date].present?
+        where_strs << "request_matters.created_at <= :created_at_end"
+        where_vals[:created_at_end] = ActiveRecord::Base.send(:sanitize_sql_like, Date.parse(params[:conditions][:end_date]).to_datetime.end_of_day.to_s(:db))
+      end
+      @user_logs =
+        @user_logs
+        .where(where_strs.join(" AND "), where_vals)
+    end
+#    @user_logs = RequestMatter.search_q(current_user.id, @conditions).page(params[:page]).per(10)
   end
 
-  def index_request_result
-    @conditions = params[:conditions]
-    @user_logs = RequestMatter.search_q(current_user.id, @conditions).page(params[:page]).per(10)
-  end
+#  def index_request_result
+#    @conditions = params[:conditions]
+#    @user_logs = RequestMatter.search_q(current_user.id, @conditions).page(params[:page]).per(10)
+#  end
 
   # 送信情報を表示
   def send_matter_info
@@ -36,6 +177,7 @@ class UserLogController < ApplicationController
       @receivers =
           Receiver
           .where(:send_matter_id => params['id'])
+=begin
       sqlstr = "select " +
             "attachments.id as id, " +
             "attachments.created_at as created_at, " +
@@ -50,6 +192,23 @@ class UserLogController < ApplicationController
             "order by attachments.id desc"
 
       @attachments = Attachment.find_by_sql(sqlstr)
+=end
+#=begin
+      @attachments =
+        Attachment
+        .select(["attachments.id as id",
+                 "attachments.created_at as created_at",
+                 "attachments.name as name",
+                 "attachments.size as size",
+                 "attachments.content_type as content_type",
+                 "attachments.virus_check as virus_check",
+                 "file_dl_checks.download_flg as download_flg",
+                 ].join(", "))
+        .left_joins(:file_dl_checks)
+        .where(:send_matter_id => params[:id])
+        .order(["attachments.id ASC",
+                ].join(", "))
+#=end
 
       if @send_matter.download_check
         @download_check = transfer_download_check(@send_matter.download_check)

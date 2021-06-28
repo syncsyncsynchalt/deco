@@ -1,14 +1,14 @@
 <script type="text/javascript">
 $(function() {
   $(".address_name_inner,.address_email_inner").click(function() {
-    location.href = '/user_log/requested_matter_info/' + $(this).parent().attr('class').replace('requested_matter_item_','');
+    id = $(this).parent().data('id');
+    $("a#show_requested_matter_" + id)[0].click();
   });
 
   $(".address_name_inner, .address_email_inner").hover(
     function(){
       $(".address_name, .address_email").css('background-color', 'white');
       $("."+$(this).parent().attr('class')).css('background-color', '#FFF5EE');
-//      $("."+$(this).parent().attr('class')).css('background-color', '#e5f0fe');
     },
     function() {
       $("."+$(this).parent().attr('class')).css('background-color', 'white');
@@ -34,18 +34,20 @@ $(function() {
     <th><%= t('activerecord.attributes.requested_matters.mail_address') %></th>
   </tr>
 
-<% unless @user_logs.blank? %>
+<% if @user_logs.present? %>
   <% tmp_id  = "" %>
   <% @user_logs.each do |record| %>
     <% unless record.id == tmp_id %>
     <tr id="request_matter_item_<%= record.id %>">
-      <td class="address_date"><%= record.created_at.strftime("%Y-%m-%d %H:%M:%S") %></td>
+      <td class="address_date">
+        <%= record.created_at.strftime("%Y-%m-%d %H:%M:%S") %>
+      </td>
       <% items = get_requested_matters_info(record.id) %>
       <% if items.size >= 1 %>
       <td class="address_name" style="border-spacing:2px;padding: 0px;">
         <table class="table-address-inner">
         <% items.each do |item| %>
-          <tr class="requested_matter_item_<%= item[0] %>">
+          <tr class="requested_matter_item_<%= item[0] %>" data-id="<%= item[0] %>">
             <td class="address_name_inner"><%= item[1] %></td>
           </tr>
         <% end %>
@@ -54,8 +56,13 @@ $(function() {
       <td class="address_email" style="border-spacing:2px;padding: 0px;">
         <table class="table-address-inner">
         <% items.each do |item| %>
-          <tr class="requested_matter_item_<%= item[0] %>">
+          <tr class="requested_matter_item_<%= item[0] %>" data-id="<%= item[0] %>">
             <td class="address_email_inner"><%= item[2] %></td>
+            <%= link_to '',
+                { :controller => :user_log, :action => :requested_matter_info, :id => item[0] },
+                :id => "show_requested_matter_#{item[0]}", 
+                :class => 'show_requested_matter', 
+                :style => 'visibility:hidden;' %>
           </tr>
         <% end %>
         </table>

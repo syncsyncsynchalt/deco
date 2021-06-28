@@ -35,6 +35,7 @@ class SysDataController < ApplicationController
     @amt_data = 100
     @s_data = (@page - 1) * @amt_data + 1
     @e_data = @page * @amt_data
+=begin
     sqlstr_sub1 = "SELECT " +
             "attachments.created_at AS file_up_date, " +
             "send_matters.id AS id, " +
@@ -69,6 +70,47 @@ class SysDataController < ApplicationController
     sqlstr = sqlstr_sub1 + " UNION " + sqlstr_sub2 +
           " ORDER BY file_up_date DESC"
     @saved_files = FileDlCheck.find_by_sql(sqlstr)
+=end
+
+#=begin
+    send_attachments =
+      Attachment
+      .select(["attachments.created_at AS file_up_date",
+               "send_matters.id AS id",
+               "'送信' AS flg",
+               "send_matters.name AS sender_name",
+               "send_matters.mail_address AS sender_mail_address",
+               "attachments.id AS file_id",
+               "attachments.name AS file_name",
+               "attachments.size AS file_size",
+               "attachments.content_type AS file_content_type",
+               "file_dl_checks.download_flg AS file_download_flg",
+               "attachments.virus_check AS file_virus_check",
+               ].join(", "))
+      .joins(:send_matter, :file_dl_checks)
+
+    requested_attachments = 
+      RequestedAttachment
+      .select(["requested_matters.file_up_date AS file_up_date",
+               "requested_matters.id AS id",
+               "'依頼' AS flg",
+               "requested_matters.name AS sender_name",
+               "requested_matters.mail_address AS sender_mail_address",
+               "requested_attachments.id AS file_id",
+               "requested_attachments.name AS file_name",
+               "requested_attachments.size AS file_size",
+               "requested_attachments.content_type AS file_content_type",
+               "requested_attachments.download_flg AS file_download_flg",
+               "requested_attachments.virus_check AS file_virus_check",
+               ].join(", "))
+      .joins(:requested_matter)
+    @saved_files =
+      send_attachments
+      .union(requested_attachments)
+      .order(["file_up_date DESC",
+              ].join(", "))
+#=end
+
     @total_page = (@saved_files.length/@amt_data).to_i
     unless @saved_files.length % @amt_data == 0 
       @total_page = @total_page + 1

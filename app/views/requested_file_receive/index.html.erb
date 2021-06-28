@@ -46,7 +46,18 @@
       <% if @requested_matter.message == '' -%>
       <div class="input-mid">　</div>
       <% else -%>
-      <div class="input-mid"><%= simple_format(@requested_matter.message, {}, wrapper_tag: "div") %></div>
+      <div class="input-mid">
+      <%#= simple_format(@requested_matter.message, {}, wrapper_tag: "div") %>
+      <%- if @requested_matter.message.present? -%>
+      <%- message_count = 0 -%>
+      <%- for key_word in @requested_matter.message.split(/\r\n|\r|\n/) -%>
+        <%- unless message_count == 0 -%>
+        <%- end -%>
+        <div><%= key_word -%></div>
+        <%- message_count += 1 -%>
+      <%- end -%>
+      <%- end -%>
+      </div>
       <% end -%>
 
       <div class="item-mid">ファイル保管期限</div>

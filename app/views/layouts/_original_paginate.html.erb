@@ -1,0 +1,142 @@
+<%
+  string = ""
+  if page == nil or total_page == nil or w_in == nil or w_out == nil
+    string = "miss some paramater."
+%>
+<%== "miss some paramater." %>
+<%
+  else
+    if page.to_i == 1
+%>
+<%== "<< <" %>
+<%
+    else
+      string = string + "<a href=\"" +
+               url_for(:controller => controller,
+                       :action => action,
+                       :id => 1) +
+               "\"><<</a> "
+      string = string + "<a href=\"" +
+               url_for(:controller => controller, :action => action, :id => page.to_i - 1) +
+               "\"><</a> "
+%>
+<%= link_to("<<", :controller => controller, :action => action, :id => 1, :type => params[:type], :keyward => params[:keyward]) %>
+<%= link_to("<", :controller => controller, :action => action, :id => page.to_i - 1, :type => params[:type], :keyward => params[:keyward]) %>
+<%
+    end
+
+    if total_page.to_i <= w_in.to_i * 2 + 1
+      p_c_s = 1
+    elsif page.to_i > total_page.to_i - w_in.to_i
+      p_c_s = total_page.to_i - w_in.to_i * 2
+    elsif page.to_i <= w_in.to_i + 1
+      p_c_s = 1
+    else
+      p_c_s = page.to_i - w_in.to_i
+    end
+
+    p_c_e = total_page.to_i
+    if total_page.to_i <= w_in.to_i * 2 + 1
+      p_c_e = total_page.to_i
+    elsif page.to_i <= w_in.to_i
+      p_c_e = w_in.to_i * 2 + 1
+    elsif total_page.to_i <= page.to_i + w_in.to_i
+      p_c_e = total_page.to_i
+    else
+      p_c_e = page.to_i + w_in.to_i
+    end
+
+    if p_c_s > 1
+      if p_c_s <= w_out.to_i
+        p_l_e = p_c_s - 1
+      else
+        p_l_e = w_out.to_i
+      end
+      1.upto(p_l_e) do |n|
+        if page.to_i == n
+          string = string + n.to_s + " "
+%>
+<%= n.to_s + " " %>
+<%
+        else
+          string = string + "<a href=\"" +
+                   url_for(:controller => controller, :action => action, :id => n) +
+                   "\">#{n.to_s}</a> "
+%>
+<%= link_to(n.to_s, :controller => controller, :action => action, :id => n, :type => params[:type], :keyward => params[:keyward]) %>
+<%
+        end
+      end
+      if p_c_s - 1 > w_out.to_i
+        string = string + '... '
+%>
+<%== "..." %>
+<%
+      end
+    end
+
+    p_c_s.upto(p_c_e) do |n|
+      if page.to_i == n
+        string = string + n.to_s + " "
+%>
+<%== n.to_s %>
+<%
+      else
+        string = string +
+                 "<a href=\"" +
+                 url_for(:controller => controller, :action => action, :id => n) +
+                 "\">#{n}</a> "
+%>
+<%= link_to(n.to_s, :controller => controller, :action => action, :id => n, :type => params[:type], :keyward => params[:keyward]) %>
+<%
+      end
+    end
+
+    if total_page.to_i - p_c_e >= 1
+      if total_page.to_i - p_c_e > w_out.to_i
+        string = string + '... '
+%>
+<%== "..." %>
+<%
+      end
+      if total_page.to_i - p_c_e < w_out.to_i
+        p_r_s = p_c_e
+      else
+        p_r_s = total_page.to_i - w_out.to_i + 1
+      end
+      p_r_s.upto(total_page.to_i) do |n|
+        if page.to_i == n
+          string = string + n.to_s + " "
+        else
+          string = string +
+                   "<a href=\"" +
+                   url_for(:controller => controller, :action => action, :id => n) +
+                   "\">#{n}</a> "
+%>
+<%= link_to(n.to_s, :controller => controller, :action => action, :id => n, :type => params[:type], :keyward => params[:keyward]) %>
+<%
+        end
+      end
+    end
+
+    if page.to_i == total_page.to_i || total_page.to_i == 0
+      string = string + '> >>'
+%>
+<%== '> >>' %>
+<%
+    else
+      string = string +
+       "<a href=\"" +
+       url_for(:controller => controller, :action => action, :id => page.to_i + 1) +
+       "\">></a> "
+      string = string +
+       "<a href=\"" +
+       url_for(:controller => controller, :action => action, :id => total_page.to_i) +
+       "\">>></a>"
+%>
+<%= link_to ">" ,{:controller => controller, :action => action, :id => page.to_i + 1, :type => params[:type], :keyward => params[:keyward]} %>
+<%= link_to ">>" ,{:controller => controller, :action => action, :id => total_page.to_i, :type => params[:type], :keyward => params[:keyward]} %>
+<%
+    end
+  end
+%>

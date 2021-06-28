@@ -30,7 +30,7 @@
     </div>
     <div class="input-mid">
       <% if current_user.moderate.present? %>
-      <div class="to_modal"onclick="open_modal_window('/user_management/show_moderate/<%= current_user.moderate.id %>', 'modal');"><%= current_user.moderate.name %></div>
+      <div class="to_modal"onclick="open_modal_window('<%= show_moderate_user_management_index_path(id: current_user.moderate.id) %>', 'modal');"><%= current_user.moderate.name %></div>
       <% else %>
         &nbsp;
       <% end %>
@@ -41,7 +41,7 @@
     <div class="input-bot">
       <% if current_user.moderaters.present? %>
         <% current_user.moderaters.each do |moderater| %>
-      <div class="to_modal"onclick="open_modal_window('/user_management/show_moderate/<%= moderater.moderate.id %>', 'modal');"><%= moderater.moderate.name %></div>
+      <div class="to_modal"onclick="open_modal_window('<%= show_moderate_user_management_index_path(id: moderater.moderate.id) %>', 'modal');"><%= moderater.moderate.name %></div>
         <% end %>
       <% else %>
         &nbsp;

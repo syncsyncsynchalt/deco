@@ -1,12 +1,35 @@
+# -*- coding: utf-8 -*-
+# Copyright (C) 2010 NMT Co.,Ltd.
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>
+
+# Filters added to this controller apply to all controllers in the application.
+# Likewise, all the methods added will be available for all controllers.
 class AddressBooksController < ApplicationController
   before_action :authorize, :load_env
   layout "user_management"
 
   def index_sub
+    index()
+    @address_books =
+      @address_books
+      .per(8)
     render :layout => 'sub'
   end
 
   def index_sub_result
+=begin
 #    @recipient_number = params[:recipient_number]
     @conditions = params[:conditions]
     if @conditions[:search_select].present?
@@ -18,12 +41,13 @@ class AddressBooksController < ApplicationController
     else
       @address_books = AddressBook.where("user_id = ? ", current_user.id).order("#{@conditions[:sort_select_1]} #{t("views.sort_value.#{@conditions[:sort_select_2]}")}").page params[:page]
     end
-    render :layout => 'sub'
+=end
+    index_sub()
   end
 
 
   def index_result
-#    @recipient_number = params[:recipient_number]
+=begin
     @conditions = params[:conditions]
     if @conditions[:search_select].present?
       if @conditions[:search_text].present?
@@ -34,6 +58,8 @@ class AddressBooksController < ApplicationController
     else
       @address_books = AddressBook.where("user_id = ? ", current_user.id).order("#{@conditions[:sort_select_1]} #{t("views.sort_value.#{@conditions[:sort_select_2]}")}").page params[:page]
     end
+=end
+    index()
   end
 
   def edit_result
@@ -56,10 +82,47 @@ class AddressBooksController < ApplicationController
   # GET /address_books
   # GET /address_books.json
   def index
-    @address_books = current_user.address_books.order("email ASC").page params[:page]
+    params[:conditions] ||= Hash.new
+    where_strs = Array.new
+    where_vals = Hash.new
+    order_values = Array.new
+    order_value = Array.new
+
+    if params[:conditions][:search_text].present?
+      case params[:conditions][:search_select]
+      when 'organization', 'name', 'email'
+        where_strs << "#{params[:conditions][:search_select]} LIKE :where_val"
+        where_vals[:where_val] = "%#{ActiveRecord::Base.send(:sanitize_sql_like, params[:conditions][:search_text])}%"
+      else
+      end
+    end
+
+    case params[:conditions][:sort_select_1]
+    when 'organization', 'name', 'email'
+      order_value << params[:conditions][:sort_select_1]
+    else
+      order_value << "email"
+    end
+    params[:conditions][:sort_select_1] ||= 'email'
+    case params[:conditions][:sort_select_2]
+    when 'ASC', 'DESC', 'asc', 'desc'
+      order_value << t("views.sort_value.#{params[:conditions][:sort_select_2]}")
+    else
+      order_value << "asc"
+    end
+    params[:conditions][:sort_select_2] ||= 'asc'
+    order_values << order_value.join(" ")
+
+    @address_books =
+      current_user
+      .address_books
+      .where(where_strs.join(" AND "), where_vals)
+      .order(order_values.join(", "))
+      .page(params[:page])
 #    @address_books = AddressBook.all.page params[:page]
 
     respond_to do |format|
+      format.js
       format.html # index.html.erb
       format.json { render json: @address_books }
     end

@@ -14,8 +14,8 @@
 <br>
 
 データ数：<%= @total_data %>　
-[ <%= raw @part_of_page %> ]
-　<%#= link_to 'CSV保存', {:action => 'get_csv_of_request_log'} %><br>
+[ <%#= raw @part_of_page %>
+<%= render '/layouts/original_paginate', controller: 'sys_log', action: 'request_log', page: @page, total_page: @total_page, w_in: 4, w_out: 2 %> ]
 
 <table border=1 cellspacing=0 cellpadding=3>
   <tr bordercolor=gray>
@@ -36,6 +36,8 @@
 <% requested_matter_id = "" -%>
 <% requested_matter_name = "" -%>
 <% requested_matter_mail = "" -%>
+<% requested_matter_name_lists = Array.new -%>
+<% requested_matter_mail_lists = Array.new -%>
 <% bf_created_at = "" -%>
 <% bf_request_matter_id = "" -%>
 <% bf_request_matter_id_b = "" -%>
@@ -46,17 +48,6 @@
 
 <%# @requested_matters.each.with_index do | requested_matter, count | -%>
 <% @rs.each do | data | -%>
-  <!--<%# cr_id = count + 1 -%>
-  <%# bf_request_matter_id_b = request_matter_id -%>
-  <%# bf_created_at = requested_matter.created_at.to_s -%>-->
-  <%# bf_created_at = (Time.parse(requested_matter.created_at.to_s)).strftime("%Y/%m/%d %H:%M:%S") -%>
-  <%# bf_request_matter_id = requested_matter.request_matter_id -%>
-  <%# bf_request_matter_name = requested_matter.request_name -%>
-  <%# bf_request_matter_mail = requested_matter.request_mail_address -%>
-  <%# requested_matter_id = requested_matter.requested_matter_id -%>
-  <%# bf_requested_matter_name = "<a href=\"/sys_log/requested_matter_info/" + requested_matter_id.to_s + "\">" +
-    requested_matter.requested_name + "</a>" -%>
-  <%# bf_requested_matter_mail = requested_matter.requested_mail_address -%>
   <% bf_created_at = (Time.parse(data.created_at.to_s)).strftime("%Y/%m/%d %H:%M:%S") -%>
   <% bf_request_matter_id = data.request_matter_id -%>
   <% bf_request_matter_name = data.request_name -%>
@@ -73,15 +64,35 @@
       <% cr_id = cr_id + 1 -%>
       <% if @s_data <= cr_id and cr_id <= @e_data -%>
         <tr bordercolor=gray>
-        <td nowrap align=center><%= cr_id %></td>
-        <td nowrap><%= created_at %></td>
-        <td nowrap><%= request_matter_id %></td>
-        <td nowrap><%= request_matter_name %></td>
-        <td nowrap><%= request_matter_mail %></td>
-        <td nowrap><%= raw requested_matter_name %></td>
-        <td nowrap><%= raw requested_matter_mail %></td>
+          <td nowrap align=center><%= cr_id %></td>
+          <td nowrap><%= created_at %></td>
+          <td nowrap><%= request_matter_id %></td>
+          <td nowrap><%= request_matter_name %></td>
+          <td nowrap><%= request_matter_mail %></td>
+          <td nowrap>
+          <% count = 0 %>
+          <% for requested_matter_name_list in requested_matter_name_lists %>
+            <% if count > 0 %>
+            <br>
+            <% end %>
+            <%= link_to requested_matter_name_list[0], {:controller => :sys_log, :action => :requested_matter_info, :id => requested_matter_name_list[1]} %>
+            <% count += 1 %>
+          <% end %>
+          </td>
+          <td nowrap>
+          <% count = 0 %>
+          <% for requested_matter_mail_list in requested_matter_mail_lists %>
+            <% if count > 0 %>
+            <br>
+            <% end %>
+            <%= requested_matter_mail_list %>
+            <% count += 1 %>
+          <% end %>
+          </td>
         </tr>
       <% end -%>
+      <% requested_matter_name_lists = Array.new -%>
+      <% requested_matter_mail_lists = Array.new -%>
 
       <% bf_request_matter_id_b = bf_request_matter_id -%>
 
@@ -102,6 +113,8 @@
     <% requested_matter_name = bf_requested_matter_name -%>
     <% requested_matter_mail = bf_requested_matter_mail -%>
   <% end -%>
+  <% requested_matter_name_lists << [data.requested_name, requested_matter_id] -%>
+  <% requested_matter_mail_lists << data.requested_mail_address -%>
 <% end -%>
 
   <% if cr_id == 0 and @total_data == 0 -%>
@@ -115,8 +128,26 @@
       <td nowrap><%= request_matter_id %></td>
       <td nowrap><%= request_matter_name %></td>
       <td nowrap><%= request_matter_mail %></td>
-      <td nowrap><%= raw requested_matter_name %></td>
-      <td nowrap><%= raw requested_matter_mail %></td>
+      <td nowrap><%#= raw requested_matter_name %>
+        <% count = 0 %>
+        <% for requested_matter_name_list in requested_matter_name_lists %>
+          <% if count > 0 %>
+          <br>
+          <% end %>
+          <%= link_to requested_matter_name_list[0], {:controller => :sys_log, :action => :requested_matter_info, :id => requested_matter_name_list[1]} %>
+          <% count += 1 %>
+        <% end %>
+      </td>
+      <td nowrap><%#= raw requested_matter_mail %>
+        <% count = 0 %>
+        <% for requested_matter_mail_list in requested_matter_mail_lists %>
+          <% if count > 0 %>
+          <br>
+          <% end %>
+          <%= requested_matter_mail_list %>
+          <% count += 1 %>
+        <% end %>
+      </td>
       </tr>
     <% end -%>
   <% end -%>

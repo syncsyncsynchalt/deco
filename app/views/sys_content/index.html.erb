@@ -18,7 +18,8 @@
       [ID: <%= sub_content_frame.id %>]  <%= sub_content_frame.title %>
       <%= link_to "編集", { :action => 'edit_page', :id => sub_content_frame.id } %>
       <%= link_to "削除", { :action => 'delete_page', :id => sub_content_frame.id },
-                             :data => {:confirm => '削除します。よろしいですか?'} %><br />
+                             :data => {:confirm => '削除します。よろしいですか?'},
+                             :method => :delete %><br />
     <% end -%>
   <% end -%>
   <br />

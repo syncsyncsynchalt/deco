@@ -3,7 +3,7 @@
 localDomains = "<%= h @local_domains %>"
 arInput = 0;
 receivers = new Array();
-max_receivers_num = <%= h @params_app_env['RECEIVERS_LIMIT'] %>;
+max_receivers_num = <%= h @params_app_env['RECEIVERS_LIMIT'].to_i %>;
 
 for (i = 2 ; i <= max_receivers_num; i++) {
   receivers[i] = 0;
@@ -16,40 +16,39 @@ $(document).ready(function() {
   });
 });
 </script>
+
 <div class="modal"></div>
-<h1>ファイル依頼</h1>
-
-<p class="comment">ファイルを送信してほしい相手にファイル送信を依頼する場合に使用します。<br>
-以下のフォームに必要事項を記入し，[ファイル送信を依頼する]をクリックしてください。
-（<span class="required">※</span> 印は必須項目です。）</p>
-
 <%= form_for(:request_matter, :url => { :action => "create" }, :html => {:id => 'request_matter', :name=> "request_matter" }) do |f| -%>
 <%#= f.error_messages -%>
+
+  <h1>ファイル依頼</h1>
+
+  <p class="comment">
+    ファイルを送信してほしい相手にファイル送信を依頼する場合に使用します。<br>
+    以下のフォームに必要事項を記入し，[ファイル送信を依頼する]をクリックしてください。
+    （<span class="required">※</span> 印は必須項目です。）
+  </p>
 
   <%= render 'request_user', f: f %>
 
   <h2>２．メッセージ</h2>
-
   <fieldset>
-
     <legend>メッセージ</legend>
-
     <div class="table-a">
-
-    <div class="item-top">相手へのメッセージ</div>
-    <div class="input-top">
-    <%= f.text_area :message, :cols => "40", :rows => '5' ,:class => "validate[maxSize[#{@params_app_env['MESSAGE_LIMIT']}]]" %><br>
-  (<%= h @params_app_env['MESSAGE_LIMIT'] %>文字まで入力可能)</div>
+      <div class="item-top">相手へのメッセージ</div>
+      <div class="input-top">
+        <%= f.text_area :message, :cols => "40", :rows => '5' ,
+              :class => "validate[maxSize[#{@params_app_env['MESSAGE_LIMIT'].to_i}]]" %><br>
+        (<%= h @params_app_env['MESSAGE_LIMIT'].to_i %>文字まで入力可能)
+      </div>
     </div>
+  </fieldset>
 
-</fieldset>
+  <h2>３．送信者情報入力（ファイル送信を依頼する相手の情報を入力してください）</h2>
 
+  <%= render 'requested_users_address_book' %>
 
-    <h2>３．送信者情報入力（ファイル送信を依頼する相手の情報を入力してください）</h2>
-
-<%= render 'requested_users_address_book' %>
-
-<br><br>
-<p align="center"><%= image_submit_tag("common/but_request.gif") -%></p>
+  <br><br>
+  <p align="center"><%= image_submit_tag("common/but_request.gif") -%></p>
+  <br><br>
 <%- end -%>
-<br /><br />

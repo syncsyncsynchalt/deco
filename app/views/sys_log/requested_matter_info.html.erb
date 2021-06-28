@@ -1,130 +1,189 @@
 <h2>個別データ表示</h2>
 <h3>依頼情報</h3>
 <fieldset>
-  <div class="table-sys-a">
-    <div class="item-mid">依頼ＩＤ</div>
-    <div class="input-mid"><%= h @requested_matter.request_matter.id %></div>
-    <div class="item-mid">依頼者名</div>
-    <div class="input-mid"><%= h @requested_matter.request_matter.name %></div>
-    <div class="item-mid">依頼者者メールアドレス</div>
-    <div class="input-mid"><%= h @requested_matter.request_matter.mail_address %></div>
-    <div class="item-mid">メッセージ</div>
-    <div class="input-mid"><%= h @requested_matter.request_matter.message %><br></div>
-    <div class="item-mid">登録日</div>
-    <div class="input-mid">
-      <%= (Time.parse(@requested_matter.request_matter.created_at.to_s)).strftime("%Y年%m月%d日%H時%M分%S秒") %></div>
-    <div class="item-mid">決裁種別</div>
-    <div class="input-mid">
-<% @request_moderate = @requested_matter.request_matter.request_moderate %>
-<% if @request_moderate == nil %>
-決裁無し
-<% else %>
-<% if @request_moderate.type_flag == 0 %>
-通常決裁
-<% else %>
-簡易決裁
-<% end %>
-<% end %>
-    </div>
-<% unless @request_moderate == nil %>
-    <div class="item-mid">決裁結果</div>
-    <div class="input-mid">
-<% if @request_moderate.result == 1 %>
-<font color="blue"><b>承認</b></font>
-<% elsif @request_moderate.result == 2 %>
-<font color="red">却下</font>
-<% else %>
-  未決
-<% end %>
-    </div>
-    <div class="item-mid">決裁ルート</div>
-    <div class="input-mid">
-<% @request_moderaters = @request_moderate.request_moderaters %>
-<% number = 0 %>
-    <div class="table-i" style="border:0px;">
-<% for moderater in @request_moderaters %>
-      <div class="input-l" style="border:0px; padding:5px 8px; height:20px;">
-<% number += 1 %>
-<%= number %>.
-<%= moderater.moderater.user.name %>
+  <div class="table-sys-a1">
+    <div class="item-body">
+      <div class="item-tr">
+        <div class="item-mid">依頼ＩＤ</div>
+        <div class="input-mid"><%= h @requested_matter.request_matter.id %></div>
       </div>
-<div class="input-r" style="border:0px; padding:5px 8px; height:20px;">
-<% if moderater.result == 1 %>
-<font color="blue"><b>承認</b></font>
-<% elsif moderater.result == 2 %>
-<font color="red">却下</font>
-<% else %>
-未決
-<% end %>
+      <div class="item-tr">
+        <div class="item-mid">依頼者名</div>
+        <div class="input-mid"><%= h @requested_matter.request_matter.name %></div>
       </div>
-<% end %>
-    </div>
-    </div>
-<% end %>
-    <div class="item-mid">依頼日</div>
-<% if @requested_matter.request_matter.sent_at.present? %>
-    <div class="input-mid"><%= (Time.parse(@requested_matter.request_matter.sent_at.to_s)).strftime("%Y年%m月%d日%H時%M分%S秒") %>
-                           <br>
-    </div>
-<% elsif @requested_matter.request_matter.moderate_flag == nil %>
-    <div class="input-mid"><% if @requested_matter.request_matter.created_at -%>
-                             <%= (Time.parse(@requested_matter.request_matter.created_at.to_s)).strftime("%Y年%m月%d日%H時%M分%S秒") %>
-                           <% end -%><br>
-    </div>
-<% else %>
-    <div class="input-mid"><br>
-    </div>
-<% end -%>
-    <div class="item-mid">送信期限</div>
-<% if @requested_matter.request_matter.sent_at.present? %>
-    <div class="input-mid"><%= (Time.parse(@requested_matter.request_matter.sent_at.to_s) +
-                                @params_app_env['REQUEST_PERIOD'].to_i).strftime("%Y年%m月%d日%H時%M分%S秒") %>
-<br>
-<% elsif @requested_matter.request_matter.moderate_flag == nil %>
-    <div class="input-mid"><%= (Time.parse(@requested_matter.request_matter.created_at.to_s) +
-                                @params_app_env['REQUEST_PERIOD'].to_i).strftime("%Y年%m月%d日%H時%M分%S秒") %>
-<br>
-<% else %>
-    <div class="input-mid"><br>
-<% end -%>
-    </div>
-  </fieldset>
+      <div class="item-tr">
+        <div class="item-mid">依頼者者メールアドレス</div>
+        <div class="input-mid"><%= h @requested_matter.request_matter.mail_address %></div>
+      </div>
+      <div class="item-tr">
+        <div class="item-mid">メッセージ</div>
+        <div class="input-mid">
+        <%- if @requested_matter.request_matter.message.present? -%>
+          <%- message_count = 0 -%>
+          <%- for key_word in @requested_matter.request_matter.message.split(/\r\n|\r|\n/) -%>
+          <div><%= key_word -%></div>
+            <%- message_count += 1 -%>
+          <%- end -%>
+        <%- end -%>
+        </div>
+      </div>
+      <div class="item-tr">
+        <div class="item-mid">登録日</div>
+        <div class="input-mid">
+          <%= (Time.parse(@requested_matter.request_matter.created_at.to_s)).strftime("%Y年%m月%d日%H時%M分%S秒") %></div>
+      </div>
+      <div class="item-tr">
+        <div class="item-mid">決裁種別</div>
+        <div class="input-mid">
+        <%- @request_moderate = @requested_matter.request_matter.request_moderate -%>
+        <%- if @request_moderate == nil -%>
+          決裁無し
+        <%- else -%>
+          <%- if @request_moderate.type_flag == 0 -%>
+          通常決裁
+          <%- else -%>
+          簡易決裁
+          <%- end -%>
+        <%- end -%>
+        </div>
+      </div>
 
-  <h3>送信情報</h3>
-  <fieldset>
-  <div class="table-sys-a">
-    <div class="item-mid">依頼送信ＩＤ</div>
-    <div class="input-mid"><%= h @requested_matter.id %></div>
-    <div class="item-mid">送信者名</div>
-    <div class="input-mid"><%= h @requested_matter.name %></div>
-    <div class="item-mid">送信者メールアドレス</div>
-    <div class="input-mid"><%= h @requested_matter.mail_address %><br></div>
-    <div class="item-mid">パスワード通知</div>
-    <div class="input-mid"><%= @password_notice %><br></div>
-    <div class="item-mid">ダウンロードチェック</div>
-    <div class="input-mid"><%= @download_check %><br></div>
-    <div class="item-mid">ファイル保存期間</div>
-    <div class="input-mid"><%= @file_life_period %><br></div>
-    <div class="item-mid">メッセージ</div>
-    <div class="input-mid"><%= h @requested_matter.message %><br></div>
-    <div class="item-mid">ステータス</div>
-    <div class="input-mid"><%= @status %><br></div>
-    <div class="item-mid">送信日</div>
-    <div class="input-mid"><% if @requested_matter.file_up_date -%>
-                             <%= (Time.parse(@requested_matter.file_up_date.to_s)).strftime("%Y年%m月%d日%H時%M分%S秒") %>
-                           <% end -%><br>
-    </div>
-    <div class="item-mid">受信期限</div>
-    <div class="input-mid"><% if @requested_matter.file_life_period -%>
-                             <%= (Time.parse(@requested_matter.file_up_date.to_s) +
-                                 @requested_matter.file_life_period).strftime("%Y年%m月%d日%H時%M分%S秒") %>
-                           <% end -%><br>
+      <%- unless @request_moderate == nil -%>
+      <div class="item-tr">
+        <div class="item-mid">決裁結果</div>
+        <div class="input-mid">
+        <%- if @request_moderate.result == 1 -%>
+          <font color="blue"><b>承認</b></font>
+        <%- elsif @request_moderate.result == 2 -%>
+          <font color="red">却下</font>
+        <%- else -%>
+          未決
+        <%- end -%>
+        </div>
+      </div>
+      <div class="item-tr">
+        <div class="item-mid">決裁ルート</div>
+        <div class="input-mid">
+          <%- @request_moderaters = @request_moderate.request_moderaters -%>
+          <%- number = 0 -%>
+          <div class="table-i" style="border:0px;">
+            <% for moderater in @request_moderaters %>
+            <div class="input-l" style="border:0px; padding:5px 8px; height:20px;">
+              <%- number += 1 -%>
+              <%= number -%>.
+              <%= moderater.moderater.user.name -%>
+            </div>
+            <div class="input-r" style="border:0px; padding:5px 8px; height:20px;">
+            <%- if moderater.result == 1 -%>
+              <font color="blue"><b>承認</b></font>
+            <%- elsif moderater.result == 2 -%>
+              <font color="red">却下</font>
+            <%- else %>
+              未決
+            <%- end -%>
+            </div>
+          <%- end -%>
+          </div>
+        </div>
+      </div>
+      <%- end -%>
+      <div class="item-tr">
+        <div class="item-mid">依頼日</div>
+        <div class="input-mid">
+        <%- if @requested_matter.request_matter.sent_at.present? -%>
+          <%= (Time.parse(@requested_matter.request_matter.sent_at.to_s)).strftime("%Y年%m月%d日%H時%M分%S秒") -%>
+        <%- elsif @requested_matter.request_matter.moderate_flag == nil -%>
+          <%- if @requested_matter.request_matter.created_at -%>
+          <%= (Time.parse(@requested_matter.request_matter.created_at.to_s)).strftime("%Y年%m月%d日%H時%M分%S秒") -%>
+          <%- end -%>
+        <%- end -%>
+        </div>
+      </div>
+      <div class="item-tr">
+        <div class="item-mid">送信期限</div>
+        <div class="input-mid">
+        <%- if @requested_matter.request_matter.sent_at.present? -%>
+          <%= (Time.parse(@requested_matter.request_matter.sent_at.to_s) +
+              @params_app_env['REQUEST_PERIOD'].to_i).strftime("%Y年%m月%d日%H時%M分%S秒") -%>
+        <%- elsif @requested_matter.request_matter.moderate_flag == nil -%>
+          <%= (Time.parse(@requested_matter.request_matter.created_at.to_s) +
+              @params_app_env['REQUEST_PERIOD'].to_i).strftime("%Y年%m月%d日%H時%M分%S秒") -%>
+        <%- end -%>
+        </div>
+      </div>
     </div>
   </div>
-  </fieldset>
+</fieldset>
 
-  <h3>ファイル情報</h3>
-  <fieldset>
+<h3>送信情報</h3>
+<fieldset>
+  <div class="table-sys-a1">
+    <div class="item-body">
+      <div class="item-tr">
+        <div class="item-mid">依頼送信ＩＤ</div>
+        <div class="input-mid"><%= h @requested_matter.id %></div>
+      </div>
+      <div class="item-tr">
+        <div class="item-mid">送信者名</div>
+        <div class="input-mid"><%= h @requested_matter.name %></div>
+      </div>
+      <div class="item-tr">
+        <div class="item-mid">送信者メールアドレス</div>
+        <div class="input-mid"><%= h @requested_matter.mail_address %></div>
+      </div>
+      <div class="item-tr">
+        <div class="item-mid">パスワード通知</div>
+        <div class="input-mid"><%= @password_notice %></div>
+      </div>
+      <div class="item-tr">
+        <div class="item-mid">ダウンロードチェック</div>
+        <div class="input-mid"><%= @download_check %></div>
+      </div>
+      <div class="item-tr">
+        <div class="item-mid">ファイル保存期間</div>
+        <div class="input-mid"><%= @file_life_period %></div>
+      </div>
+      <div class="item-tr">
+        <div class="item-mid">メッセージ</div>
+        <div class="input-mid">
+        <%- if @requested_matter.message.present? -%>
+          <%- message_count = 0 -%>
+          <%- for key_word in @requested_matter.message.split(/\r\n|\r|\n/) -%>
+            <%- unless message_count == 0 -%>
+            <%- end -%>
+            <div><%= key_word -%></div>
+            <%- message_count += 1 -%>
+          <%- end -%>
+        <%- end -%>
+        </div>
+      </div>
+      <div class="item-tr">
+        <div class="item-mid">ステータス</div>
+        <div class="input-mid"><%= @status %></div>
+      </div>
+      <div class="item-tr">
+        <div class="item-mid">送信日</div>
+        <div class="input-mid">
+        <%- if @requested_matter.file_up_date -%>
+          <%= (Time.parse(@requested_matter.file_up_date.to_s)).strftime("%Y年%m月%d日%H時%M分%S秒") -%>
+        <%- end -%>
+        </div>
+      </div>
+      <div class="item-tr">
+        <div class="item-mid">受信期限</div>
+        <div class="input-mid">
+        <%- if @requested_matter.file_life_period -%>
+          <%= (Time.parse(@requested_matter.file_up_date.to_s) +
+              @requested_matter.file_life_period).strftime("%Y年%m月%d日%H時%M分%S秒") -%>
+        <%- end -%>
+        </div>
+      </div>
+    </div>
+  </div>
+</fieldset>
+
+<h3>ファイル情報</h3>
+<fieldset>
   <table border=1 cellspacing=0 cellpadding=3>
     <tr bordercolor=gray>
     <td nowrap bgcolor=#e5f0fe><br></td>

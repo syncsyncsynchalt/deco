@@ -1,3 +1,10 @@
+<script type="text/javascript">
+  var localDomains = "";
+  $(document).ready(function() {
+    $.validationEngineLanguage.newLang(localDomains);
+    $('#request_moderater').validationEngine();
+  });
+</script>
 <h2>決裁却下</h2>
 <p>却下理由を記載してください。</p>
 <%= form_for(:request_modertaer, :url => { :action => "create", :id => params[:id]},
@@ -5,7 +12,7 @@
 <%= f.hidden_field :result, {:value => 2} %>
 <div class="table-a">
   <div class="item-top">送信者へのメッセージ</div>
-  <div class="input-top"><%= f.text_area :content, :cols => "40", :rows => '5' -%>
+  <div class="input-top"><%= f.text_area :content, :cols => "40", :rows => '5', :class => "validate[maxSize[3000]]" -%>
   </div>
   <div class="item-mid"></div>
   <div class="input-mid">

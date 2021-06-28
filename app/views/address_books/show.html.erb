@@ -1,7 +1,7 @@
 <script type="text/javascript">
 $(function() {
     $("#address_back_button").click(function(){
-      location.href = '/address_books';
+      location.href = '<%= address_books_path %>';
     });
     $("#address_edit_button").click(function(){
       location.href = '<%= edit_address_book_path(@address_book) %>';

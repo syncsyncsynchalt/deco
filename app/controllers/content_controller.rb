@@ -20,8 +20,6 @@ class ContentController < ApplicationController
   def load
     @items = Array.new
     @master_frame = params[:id]
-#    @content_items = ContentItem.find(:all,
-#            :conditions => { :master_frame => @master_frame })
     @content_items =
         ContentItem
         .where(:master_frame => @master_frame)
@@ -32,8 +30,6 @@ class ContentController < ApplicationController
     @title = @self_frame.title
     if @self_frame.master_frame == 0
       if @self_frame.expression_flag == 1
-#        @content_frames = ContentFrame.find(:all,
-#                :conditions => { :master_frame => @self_frame.id })
         @content_frames =
             ContentFrame
             .where(:master_frame => @self_frame.id)
@@ -41,8 +37,6 @@ class ContentController < ApplicationController
         redirect_to :controller => :top
       end
     else
-#      @content_frames = ContentFrame.find(:all,
-#              :conditions => { :master_frame => @self_frame.master_frame })
       @content_frames =
           ContentFrame
           .where(:master_frame => @self_frame.master_frame)

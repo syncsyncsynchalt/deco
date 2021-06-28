@@ -1,14 +1,12 @@
 <script type="text/javascript">
-
-localDomains = ""
-
-$(document).ready(function() {
-  $.validationEngineLanguage.newLang(localDomains);
-  $("#content_frame").validationEngine({
-    success : function() { document.content_frame.submit(); },
-    failure : function() {}
-  })
-});
+  var localDomains = "";
+  $(document).ready(function() {
+    $.validationEngineLanguage.newLang(localDomains);
+    $("#content_frame").validationEngine({
+      success : function() { document.content_frame.submit(); },
+      failure : function() {}
+    });
+  });
 </script>
 
 説明の設定変更
@@ -20,7 +18,7 @@ $(document).ready(function() {
   <%#= f.error_messages %>
   <div class="item-mid"></div>
   <div class="input-mid">
-    <%= f.text_area :description, :cols => '35', :rows => '10', :value => @content_frame.description, :class => 'validate[required]' %></div>
+    <%= f.text_area :description, :cols => '35', :rows => '10', :value => @content_frame.description, :class => 'validate[maxSize[270]]' %></div>
   <div class="item-mid"></div>
   <div class="input-mid"><%= f.submit "　更新　" %></div>
 <% end %>

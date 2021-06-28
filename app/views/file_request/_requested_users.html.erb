@@ -1,4 +1,4 @@
-    <span class="left">宛先は最大 <%= h @params_app_env['RECEIVERS_LIMIT'] %> 名まで追加できます。<br /><br />
+    <span class="left">宛先は最大 <%= h @params_app_env['RECEIVERS_LIMIT'].to_i %> 名まで追加できます。<br /><br />
     <%= image_tag('common/name_s.jpg') %>&nbsp;相手のお名前<span class="required">※</span><br />
     <%= image_tag('common/mail_s.jpg') %>&nbsp;相手のメールアドレス<span class="required">※</span>&nbsp;&nbsp;<span class="note">例）name1@example.com</span>
     </span>
@@ -14,8 +14,8 @@
       <div class="item">ファイル送信者 1人目
       </div>
       <div class="input-l">
-        <%= image_tag('common/name.jpg', :align => "left") %><%= f2.text_field :name, :class => 'validate[required]', :size => 30, :index => i %> 様<br />
-        <%= image_tag('common/mail.jpg', :align => "left") %><%= f2.text_field :mail_address, :class => 'validate[required, custom[email]]', :size => 40, :index => i %>
+        <%= image_tag('common/name.jpg', :align => "left") %><%= f2.text_field :name, :class => 'validate[required, maxSize[72]]', :size => 30, :index => i %> 様<br />
+        <%= image_tag('common/mail.jpg', :align => "left") %><%= f2.text_field :mail_address, :class => 'validate[required, maxSize[255], custom[email]]', :size => 40, :index => i %>
       </div>
       <div class="input-r"></div>
       <div id="receiver_form"></div>

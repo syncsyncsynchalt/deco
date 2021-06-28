@@ -8,6 +8,18 @@ $(document).ready(function() {
     success : function() { document.announcement.submit(); },
     failure : function() {}
   })
+  $('.datetimepicker').datetimepicker({
+    beforeShow: function(input, inst) {
+      var calendar = inst.dpDiv;
+      setTimeout(function() {
+        calendar.position({
+          my: 'left bottom',
+          at: 'left top',
+          of: input
+        });
+      }, 1);
+    }
+  });
 });
 </script>
 
@@ -17,13 +29,37 @@ $(document).ready(function() {
   <h2>アナウンスの編集</h2>
   <%= form_for(@announcement, :url => { :action => "update", :id => @announcement.id}, 
               :html => {:id => 'announcement', :name=> "announcement" }) do |f| -%>
-    <div class="table-sys-a">
-      <div class="item-mid2">タイトル</div>
-      <div class="input-mid2"><%= f.text_field :title, :size => '50', :class => 'validate[required]' %></div>
-      <div class="item-mid2">内容</div>
-      <div class="input-mid2"><%= f.text_area :body, :cols => '40', :rows => '10', :class => 'validate[required]' %></div>
-      <div class="item-mid2"></div>
-      <div class="input-mid2" align="center"><%= f.submit "　更新　" %></div>
+    <div class="table-sys-a1">
+      <div class="item-body">
+        <div class="item-tr">
+          <div class="item-mid2">タイトル</div>
+          <div class="input-mid2"><%= f.text_field :title, :size => '50', :class => 'validate[required, maxSize[20]]' %></div>
+        </div>
+        <div class="item-tr">
+          <div class="item-mid2">内容</div>
+          <div class="input-mid2"><%= f.text_area :body, :cols => '40', :rows => '10', :class => 'validate[required, maxSize[3000]]' %></div>
+        </div>
+        <div class="item-tr">
+          <div class="item-mid2"></div>
+          <div class="input-mid2"><%= f.check_box :body_show_flg, {checked: @announcement.body_show_flg == 0}, 0, 1 %><%= f.label :body_show_flg, "タイトルのみ表示(タイトルクリックで内容を表示)" %></div>
+        </div>
+        <div class="item-tr">
+          <div class="item-mid2">表示期限</div>
+          <div class="input-mid2">
+            <%= f.text_field :begin_at, :size => '16', :class => 'validate[maxSize[16]] datetimepicker', :value => @announcement.begin_at.present? ? @announcement.begin_at.strftime("%Y/%m/%d %H:%M") : nil %>
+            ～
+            <%= f.text_field :end_at, :size => '16', :class => 'validate[maxSize[16]] datetimepicker', :value => @announcement.end_at.present? ? @announcement.end_at.strftime("%Y/%m/%d %H:%M") : nil %>
+          </div>
+        </div>
+        <div class="item-tr">
+          <div class="item-mid2"></div>
+          <div class="input-mid2"><%= f.check_box :show_flg, {checked: @announcement.show_flg == 1}, 1, 0 %><%= f.label :show_flg, "アナウンス内容を公開する" %></div>
+        </div>
+        <div class="item-tr">
+          <div class="item-mid2"></div>
+          <div class="input-mid2 input-mid2-button"><%= f.submit "　更新　" %></div>
+        </div>
+      </div>
     </div>
   <% end %>
   </fieldset>

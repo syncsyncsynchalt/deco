@@ -17,7 +17,8 @@
 # Filters added to this controller apply to all controllers in the application.
 # Likewise, all the methods added will be available for all controllers.
 class FileSendController < ApplicationController
-  protect_from_forgery :except => [:upload]
+#  protect_from_forgery :except => [:upload]
+#  protect_from_forgery with: :exception
   before_action :authorize, :except => [:upload, :result, :login, :auth, :result_ng]
   before_action :result_id_check, :only => [:result]
   before_action :result_authorize, :only => [:result]
@@ -80,17 +81,6 @@ class FileSendController < ApplicationController
     end
   end
 
-  # 入力フォーム flash
-  def index_flash
-    index()
-  end
-
-  # flashなしメッセージ画面
-  def noflash
-    flash[:notice] = 'Flash Player がインストールされていないか' +
-      '本サービスが利用できないバージョンです。'
-  end
-
   # 入力フォーム flashなし
   def index_noflash
     index()
@@ -114,6 +104,13 @@ class FileSendController < ApplicationController
           file_data = file.tempfile.read
           file_name = file.original_filename
         end
+      end
+
+      server_directory = @params_app_env['FILE_DIR']
+      if !File.exists?(server_directory)
+        raise "upload failure"
+      elsif !File.directory?(server_directory)
+        raise "upload failure"
       end
 
       tmp_path = @params_app_env['FILE_DIR'] if file_data
@@ -168,48 +165,6 @@ class FileSendController < ApplicationController
     end
   end
 
-  # アップロード処理
-  # render :plain => "success!"は、SWFupload のエラー対策
-  def upload
-    ActiveRecord::Base.transaction do
-      @attachment = Attachment.new
-      @attachment.name = params[:Filename]
-      @attachment.size = params[:Filedata].size
-      @attachment.save
-      @file = params[:Filedata]
-      file_path = @params_app_env['FILE_DIR'] + "/#{@attachment.id}"
-      if @file
-        File.open(file_path, "wb") do |f|
-          f.binmode
-          f.write(@file.read)
-        end
-      end
-      @attachment.file_save_pass = file_path
-      if MIME::Types.type_for(params[:Filedata].original_filename)[0].content_type
-        @attachment.content_type = MIME::Types.type_for(params[:Filedata].original_filename)[0].content_type
-      else
-        @attachment.content_type = ''
-      end
-      @attachment.relayid = params[:Relay_id]
-      @attachment.save
-      if @params_app_env['VIRUS_CHECK'] == '1'
-        # Virus Check
-        @virus_check_result = get_virus_status(file_path)
-        @attachment.virus_check = @virus_check_result
-        @attachment.save
-        if(@virus_check_result != '0')
-          if File.exist?(file_path)
-            File.delete(file_path)
-          end
-        end
-      else
-        @attachment.virus_check = '0'
-        @attachment.save
-      end
-    end
-    render :plain => "success!"
-  end
-
   # SendMatter, Receiverへの書き込み
   def create
     if session[:send_matter_id]
@@ -253,88 +208,177 @@ class FileSendController < ApplicationController
         flash[:notice] = '送信失敗しました。もう一度送信してください。'
           redirect_to :action => 'send_ng' and return
       end
-      ActiveRecord::Base.transaction do
-        @send_matter.save!
-        @virus_attachments = Array.new
-        @attachments.each do |attachment|
-          attachment.send_matter = @send_matter
-          attachment.save!
-          unless attachment.virus_check == '0' ||
-             attachment.virus_check == nil
-            @virus_attachments.push attachment
+
+#      ActiveRecord::Base.transaction do
+#        @send_matter.save!
+#        @virus_attachments = Array.new
+#        @attachments.each do |attachment|
+#          attachment.send_matter = @send_matter
+#          attachment.save!
+#          unless attachment.virus_check == '0' ||
+#             attachment.virus_check == nil
+#            @virus_attachments.push attachment
+#          end
+#        end
+#        params[:receiver].each do |key, value|
+#          @receiver = Receiver.new(receivers_params(value))
+#          @receiver.send_matter = @send_matter
+#          @receiver.url = generate_random_strings(@receiver.name)
+#          @receiver.save!
+#          @send_matter.attachments.each do |attachment|
+#            @file_dl_check = FileDlCheck.new
+#            @file_dl_check.receiver = @receiver
+#            @file_dl_check.attachment = attachment
+#            @file_dl_check.download_flg = 0
+#            @file_dl_check.save!
+#          end
+#        end
+#        if session[:user_id].present? && current_user.present?
+#          if current_user.moderate.present?
+#            @moderate = current_user.moderate
+#            @moderate_flag = 1
+#          else
+#            @moderate_flag = 0
+#          end
+#        else
+#          @moderate_value =
+#              AppEnv
+#              .where(["category = ?",
+#                      "`key` = ?"].join(" AND "),
+#                      0, 'MODERATE_DEFAULT').first
+#          if @moderate_value.present?
+#            @moderate =
+#                Moderate
+#                .where("id = ?",
+#                       @moderate_value.value).first
+#            if @moderate.present?
+#              @moderate_flag = 1
+#            else
+#              @moderate_flag = 0
+#            end
+#          else
+#            @moderate_flag = 0
+#          end
+#        end
+#        if @moderate_flag == 1
+#          @send_matter.moderate_flag = 1
+#          @send_matter.moderate_result = 0
+#          @send_moderate = SendModerate.new()
+#          @send_moderate.send_matter = @send_matter
+#          @send_moderate.moderate = @moderate
+#          @send_moderate.name = @moderate.name
+#          @send_moderate.type_flag = @moderate.type_flag
+#          @send_moderate.result = 0
+#          @send_moderate.save!
+#          for moderater in @moderate.moderaters
+#            send_moderater = SendModerater.new()
+#            send_moderater.moderater = moderater
+#            send_moderater.send_moderate = @send_moderate
+#            send_moderater.user = moderater.user
+#            send_moderater.user_name = moderater.user.name
+#            send_moderater.number = moderater.number
+#            send_moderater.send_flag = 0
+#            send_moderater.result = 0
+#            send_moderater.url =
+#                generate_random_strings(rand(10000).to_s)
+#            send_moderater.save!
+#          end
+#        else
+#          @send_matter.moderate_flag = 0
+#          @send_matter.moderate_result = 1
+#          @send_matter.sent_at = Time.now
+#        end
+#        @send_matter.save!
+#      end
+
+      begin
+        ActiveRecord::Base.transaction do
+          @send_matter.save!
+          @virus_attachments = Array.new
+          @attachments.each do |attachment|
+            attachment.send_matter = @send_matter
+            attachment.save!
+            unless attachment.virus_check == '0' ||
+               attachment.virus_check == nil
+              @virus_attachments.push attachment
+            end
           end
-        end
-        params[:receiver].each do |key, value|
-          @receiver = Receiver.new(receivers_params(value))
-          @receiver.send_matter = @send_matter
-          @receiver.url = generate_random_strings(@receiver.name)
-          @receiver.save!
-          @send_matter.attachments.each do |attachment|
-            @file_dl_check = FileDlCheck.new
-            @file_dl_check.receiver = @receiver
-            @file_dl_check.attachment = attachment
-            @file_dl_check.download_flg = 0
-            @file_dl_check.save!
+          params[:receiver].each do |key, value|
+            @receiver = Receiver.new(receivers_params(value))
+            @receiver.send_matter = @send_matter
+            @receiver.url = generate_random_strings(@receiver.name)
+            @receiver.save!
+            @send_matter.attachments.each do |attachment|
+              @file_dl_check = FileDlCheck.new
+              @file_dl_check.receiver = @receiver
+              @file_dl_check.attachment = attachment
+              @file_dl_check.download_flg = 0
+              @file_dl_check.save!
+            end
           end
-        end
-        if session[:user_id].present? && current_user.present?
-          if current_user.moderate.present?
-            @moderate = current_user.moderate
-            @moderate_flag = 1
-          else
-            @moderate_flag = 0
-          end
-        else
-          @moderate_value =
-              AppEnv
-              .where(["category = ?",
-                      "`key` = ?"].join(" AND "),
-                      0, 'MODERATE_DEFAULT').first
-          if @moderate_value.present?
-            @moderate =
-                Moderate
-                .where("id = ?",
-                       @moderate_value.value).first
-            if @moderate.present?
+          if session[:user_id].present? && current_user.present?
+            if current_user.moderate.present?
+              @moderate = current_user.moderate
               @moderate_flag = 1
             else
               @moderate_flag = 0
             end
           else
-            @moderate_flag = 0
+            @moderate_value =
+                AppEnv
+                .where(["category = ?",
+                        "`key` = ?"].join(" AND "),
+                        0, 'MODERATE_DEFAULT').first
+            if @moderate_value.present?
+              @moderate =
+                  Moderate
+                  .where("id = ?",
+                         @moderate_value.value).first
+              if @moderate.present?
+                @moderate_flag = 1
+              else
+                @moderate_flag = 0
+              end
+            else
+              @moderate_flag = 0
+            end
           end
-        end
-        if @moderate_flag == 1
-          @send_matter.moderate_flag = 1
-          @send_matter.moderate_result = 0
-          @send_moderate = SendModerate.new()
-          @send_moderate.send_matter = @send_matter
-          @send_moderate.moderate = @moderate
-          @send_moderate.name = @moderate.name
-          @send_moderate.type_flag = @moderate.type_flag
-          @send_moderate.result = 0
-          @send_moderate.save!
-          for moderater in @moderate.moderaters
-            send_moderater = SendModerater.new()
-            send_moderater.moderater = moderater
-            send_moderater.send_moderate = @send_moderate
-            send_moderater.user = moderater.user
-            send_moderater.user_name = moderater.user.name
-            send_moderater.number = moderater.number
-            send_moderater.send_flag = 0
-            send_moderater.result = 0
-            send_moderater.url =
-                generate_random_strings(rand(10000).to_s)
-            send_moderater.save!
+          if @moderate_flag == 1
+            @send_matter.moderate_flag = 1
+            @send_matter.moderate_result = 0
+            @send_moderate = SendModerate.new()
+            @send_moderate.send_matter = @send_matter
+            @send_moderate.moderate = @moderate
+            @send_moderate.name = @moderate.name
+            @send_moderate.type_flag = @moderate.type_flag
+            @send_moderate.result = 0
+            @send_moderate.save!
+            for moderater in @moderate.moderaters
+              send_moderater = SendModerater.new()
+              send_moderater.moderater = moderater
+              send_moderater.send_moderate = @send_moderate
+              send_moderater.user = moderater.user
+              send_moderater.user_name = moderater.user.name
+              send_moderater.number = moderater.number
+              send_moderater.send_flag = 0
+              send_moderater.result = 0
+              send_moderater.url =
+                  generate_random_strings(rand(10000).to_s)
+              send_moderater.save!
+            end
+          else
+            @send_matter.moderate_flag = 0
+            @send_matter.moderate_result = 1
+            @send_matter.sent_at = Time.now
           end
-        else
-          @send_matter.moderate_flag = 0
-          @send_matter.moderate_result = 1
-          @send_matter.sent_at = Time.now
+          @send_matter.save!
         end
-        @send_matter.save!
+      rescue => e
+        logger.error "#{e.class} (#{e.message}):\n#{Rails.backtrace_cleaner.clean(e.backtrace).join("\n").indent(1)}"
+        flash[:notice] = '送信失敗しました。もう一度送信してください。'
+        redirect_to :action => 'send_ng' and return
       end
-
+    
       session[:send_matter_id] = @send_matter.id
       redirect_to :action => 'result'
       @receivers = @send_matter.receivers
@@ -641,6 +685,10 @@ class FileSendController < ApplicationController
         end
       end
     end
+  rescue => e
+    logger.error "#{e.class} (#{e.message}):\n#{Rails.backtrace_cleaner.clean(e.backtrace).join("\n").indent(1)}"
+    flash[:notice] = '送信失敗しました。もう一度送信してください。'
+    redirect_to :action => 'send_ng' and return
   end
 
   def result

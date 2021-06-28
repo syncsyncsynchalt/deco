@@ -1,30 +1,112 @@
+<%
+edit_type = 0 # 編集タイプ（1:通常、2:期間、3:数値）
+validate_class = ''
+case @app_env.key
+when 'LOCAL_DOMAINS'
+  edit_type = 1
+  validate_class = 'validate[required, maxSize[253], custom[domain]]'
+when 'LOCAL_IPS'
+  edit_type = 1
+  validate_class = 'validate[required, custom[IPAddress]]'
+when 'URL'
+  edit_type = 1
+  validate_class = 'validate[required, maxSize[255]]'
+when 'FILE_DIR'
+  edit_type = 1
+  validate_class = 'validate[required, maxSize[255], funcCall[validateDirectory]]'
+when 'REQUEST_PERIOD'
+  edit_type = 2
+  validate_class = 'validate[required, custom[onlyNumber], funcCall[validateTermUnit]]'
+  @app_env.conv_value_to_term # value to term
+when 'FROM_MAIL_ADDRESS'
+  edit_type = 1
+  validate_class = 'validate[required, maxSize[255], custom[email]]'
+when 'SEND_MAIL_TITLE'
+  edit_type = 1
+  validate_class = 'validate[required, maxSize[20]]'
+when 'SEND_MAIL_CONTENT'
+  edit_type = 1
+  validate_class = 'validate[required, maxSize[20]]'
+when 'FILE_LIFE_PERIOD'
+  edit_type = 2
+  validate_class = 'validate[required, custom[onlyNumber], funcCall[validateTermUnit]]'
+  @app_env.conv_value_to_term # value to term
+when 'RECEIVERS_LIMIT'
+  edit_type = 3
+  validate_class = 'validate[required, custom[onlyNumber], min[1], max[100]]'
+when 'FILE_SEND_LIMIT'
+  edit_type = 3
+  validate_class = 'validate[required, custom[onlyNumber], min[1], max[100]]'
+when 'FILE_SIZE_LIMIT'
+  edit_type = 3
+  validate_class = 'validate[required, custom[onlyNumber], min[1], max[102400]]'
+when 'FILE_TOTAL_SIZE_LIMIT'
+  edit_type = 3
+  validate_class = 'validate[required, custom[onlyNumber], min[1], max[204800]]'
+when 'MESSAGE_LIMIT'
+  edit_type = 3
+  validate_class = 'validate[required, custom[onlyNumber], min[1], max[3000]]'
+when 'PW_LENGTH_MIN'
+  edit_type = 3
+  validate_class = 'validate[required, custom[onlyNumber], min[1], max[64], funcCall[validatePWLengthMinMax]]'
+when 'PW_LENGTH_MAX'
+  edit_type = 3
+  validate_class = 'validate[required, custom[onlyNumber], min[1], max[64], funcCall[validatePWLengthMinMax]]'
+else
+  edit_type = 1
+  validate_class = 'validate[required]'
+end
+data = {
+  key: @app_env.key, 
+  category: @app_env.category
+} 
+%>
+
 <script type="text/javascript">
-
-localDomains = ""
-
+var localDomains = "";
 $(document).ready(function() {
   $.validationEngineLanguage.newLang(localDomains);
   $("#app_env").validationEngine({
     success : function() { document.app_env.submit(); },
     failure : function() {}
-  })
+  });
 });
 </script>
 
 <%= $param_label[@app_env.key] %><% if $param_unit[@app_env.key].present? %>(単位：<%= $param_unit[@app_env.key] %>)<% end %>の設定変更
 <fieldset>
-<div class="table-sys-a">
+  <div class="table-sys-a">
+    <%= form_for(@app_env, :url => {:action => 'update', :id => @app_env.id},
+                          :html => {:id => 'app_env', :name=> "app_env" }) do |f| %>
+      <div class="item-mid"></div>
 
-<%= form_for(@app_env, :url => { :action => 'update', :id => @app_env.id},
-                      :html => {:id => 'app_env', :name=> "app_env" }) do |f| %>
-  <%#= f.error_messages %>
-  <div class="item-mid"></div>
-  <div class="input-mid"><%= f.text_field :value, :class => 'validate[required]', :size => '', :style => "width:150px;" %><% if $param_unit[@app_env.key].present? %><%= $param_unit[@app_env.key] %><% end %></div>
-  <div class="item-mid"></div>
-  <div class="input-mid"><%= f.submit "更　新" %></div>
-<% end %>
+      <% if edit_type == 2 %>
 
-</div>
+        <div class="input-mid">
+          <%= f.text_field :term, class: validate_class, size: 5, data: data %>
+          <%= f.select :unit, options_for_select([["日", 1], ["時間", 0]], f.object.unit), {}, {id: 'period_unit'} %>
+        </div>
+
+      <% elsif edit_type == 3 %>
+
+        <div class="input-mid">
+          <%= f.text_field :value, class: validate_class, size: 5, data: data %>
+          <%= $param_unit[@app_env.key] if $param_unit[@app_env.key].present?%>
+        </div>
+
+      <% else %>
+
+        <div class="input-mid">
+          <%= f.text_field :value, class: validate_class, style: "width:150px;", data: data %>
+          <%= $param_unit[@app_env.key] if $param_unit[@app_env.key].present?%>
+        </div>
+
+      <% end %>
+
+      <div class="item-mid"></div>
+      <div class="input-mid"><%= f.submit "更　新" %></div>
+    <% end %>
+  </div>
 </fieldset>
 
 <br>

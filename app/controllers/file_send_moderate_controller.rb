@@ -282,7 +282,7 @@ class FileSendModerateController < ApplicationController
     port = get_port()
     url = port + "://" + @params_app_env['URL']
     Notification.send_matter_moderate_result_report(@send_matter,
-                                    @send_moderate,
+                                    @send_moderater,
                                     url).deliver
     flash[:notice] = "決裁を却下しました"
     redirect_to :action => :message

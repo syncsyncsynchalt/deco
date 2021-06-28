@@ -289,10 +289,10 @@ class Notification < ActionMailer::Base
          :reply_to => send_matter.mail_address)
   end
 
-  def send_matter_moderate_result_report(send_matter, send_moderate, url)
+  def send_matter_moderate_result_report(send_matter, send_moderater, url)
     from_mail_address = get_from_mail_address()
     @send_matter = send_matter
-    @send_moderate = send_moderate
+    @send_moderater = send_moderater
     @url = url
     @mail_content = get_mail_content()
     title_text = get_mail_head_title()

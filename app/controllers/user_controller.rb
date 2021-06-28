@@ -63,6 +63,37 @@ class UserController < ApplicationController
 
   end
 
+  # 検証
+  def validate
+    validate_type = params[:validate_type]
+    field_id = params[:field_id]
+    value = params[:value]
+
+    message = nil
+    if validate_type.present? && field_id.present? && value.present?
+      case validate_type
+      when 'login'
+        id = params[:user_id]
+        message = User.
+          new(login: value, id: id).
+          validate_login(true)
+      else
+        message = "パラメータエラー"
+      end
+    else
+      message = "パラメータエラー"
+    end
+
+    result = Array.new
+    result << field_id
+    result << message.blank?
+    result << message
+
+    respond_to do |format|
+      format.json { render json: result }
+    end
+  end
+
   private
 
   def post_params_user

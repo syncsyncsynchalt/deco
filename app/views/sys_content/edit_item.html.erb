@@ -1,5 +1,13 @@
+<script type="text/javascript">
+  var localDomains = "";
+  $(document).ready(function() {
+    $.validationEngineLanguage.newLang(localDomains);
+    $("#content_item").validationEngine();
+  });
+</script>
+
 <%= form_for(:content_item, :url => { :action => "register_item"},
-  :html => {:multipart => true }) do |f| %>
+  :html => {:id => 'content_item', :name=> "content_item", :multipart => true }) do |f| %>
   <%= f.hidden_field :master_frame, {:value => @content_item.master_frame} %>
   <%= f.hidden_field :category, {:value => @content_item.category} %>
   <% if @edit_type == "update" -%><%= f.hidden_field :id, {:value => @content_item.id} %>
@@ -12,7 +20,8 @@
     <div class="table-sys-a">
       <div class="item-mid">タイトル</div>
       <div class="input-mid">
-      <%= f.text_field :string1, {:value => @content_item.string1} %>
+      <%= f.text_field :string1, 
+            {:value => @content_item.string1, class: 'validate[required, maxSize[50]]'} %>
       </div>
     </div>
     </fieldset>
@@ -20,7 +29,8 @@
     <fieldset>
     <h2><%= $content_item_category[@content_item.category - 1][0] %></h2>
     <div class="table-sys-a">
-    <%= f.text_area :text1, :cols => '60', :rows => '10', :value => @content_item.text1 %>
+      <%= f.text_area :text1, :cols => '60', :rows => '10', :value => @content_item.text1, 
+        class: 'validate[required, maxSize[3000]]', style: 'width:522px;margin:5px;' %>
       <div class="item-mid">自動的にbrタグを挿入</div>
       <div class="input-mid">
       <%= f.check_box :flg %>
@@ -32,7 +42,7 @@
     <div class="table-sys-a">
       <div class="item-mid">画像ファイル</div>
       <div class="input-mid">
-      <input id="image" size= "30" type="file" name="image">
+      <input id="image" size= "30" type="file" name="image" class="validate[required, funcCall[fileType[jpg|jpeg|JPG]], funcCall[fileMaxSize[12]]]" accept=".jpg,.jpeg,.JPG,.JPEG">
       </div>
     </div>
     </fieldset>
@@ -42,12 +52,12 @@
     <div class="table-sys-a">
       <div class="item-mid">表示文字</div>
       <div class="input-mid">
-      <%= f.text_field :string1, {:value => @content_item.string1} %>
+      <%= f.text_field :string1, {:value => @content_item.string1, class: 'validate[required, maxSize[40]]'} %>
       </div>
 
       <div class="item-mid">リンク先ＵＲＬ</div>
       <div class="input-mid">
-      <%= f.text_field :url, {:value => @content_item.url} %><br>(例：http://oooo.oo.jp)
+      <%= f.text_field :url, {:value => @content_item.url, class: 'validate[required, maxSize[255], custom[url]]'} %><br>(例：http://oooo.oo.jp)
       </div>
 
       <div class="item-mid">新しくウィンドウを開く</div>
@@ -62,12 +72,12 @@
     <div class="table-sys-a">
       <div class="item-mid">リンク用画像ファイル</div>
       <div class="input-mid">
-      <input id="image" size= "30" type="file" name="image">
+      <input id="image" size= "30" type="file" name="image" class="validate[required, funcCall[fileType[jpg|jpeg|JPG]], funcCall[fileMaxSize[12]]]" accept=".jpg,.jpeg,.JPG,.JPEG">
       </div>
 
       <div class="item-mid">リンク先ＵＲＬ</div>
       <div class="input-mid">
-      <%= f.text_field :url, {:value => @content_item.url} %><br>(例：http://oooo.oo.jp)
+      <%= f.text_field :url, {:value => @content_item.url, class: 'validate[required, maxSize[255], custom[url]]'} %><br>(例：http://oooo.oo.jp)
       </div>
 
       <div class="item-mid">新しくウィンドウを開く</div>

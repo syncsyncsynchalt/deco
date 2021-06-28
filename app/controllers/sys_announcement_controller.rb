@@ -78,7 +78,7 @@ class SysAnnouncementController < ApplicationController
 
   def post_params_announcements
     params.require(:announcement).permit(
-      :title, :body
+      :title, :body, :show_flg, :begin_at, :end_at, :body_show_flg
     )
   end
 end

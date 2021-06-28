@@ -41,6 +41,7 @@ class SysTotalController < ApplicationController
     s_time = Time.mktime @this_month.year, @this_month.month, 1
     e_time = Time.mktime @next_month.year, @next_month.month, 1
 
+=begin
     sqlstr = "SELECT " +
             "COUNT(id) AS amnt " +
             "FROM send_matters " +
@@ -50,9 +51,19 @@ class SysTotalController < ApplicationController
             (e_time.strftime("%Y/%m/%d %H:%M:%S")).to_s + "'"
 
     @send_matters = SendMatter.find_by_sql(sqlstr)
+=end
+
+#=begin
+    @send_matters =
+      SendMatter
+      .select(["COUNT(id) AS amnt",
+               ].join(", "))
+      .where(:created_at => s_time..s_time.at_end_of_month)
 
     @send_matter = @send_matters[0].amnt
+#=end
 
+=begin
     sqlstr = "SELECT " +
             "COUNT(id) AS amnt, " +
             "SUM(size) AS size " +
@@ -63,10 +74,21 @@ class SysTotalController < ApplicationController
             (e_time.strftime("%Y/%m/%d %H:%M:%S")).to_s + "'"
 
     @attachments = Attachment.find_by_sql(sqlstr)
+=end
+
+#=begin
+    @attachments =
+      Attachment
+      .select(["COUNT(id) AS amnt",
+               "SUM(size) AS size",
+               ].join(", "))
+      .where(:created_at => s_time..s_time.at_end_of_month)
+#=end
 
     @file_total = @attachments[0].amnt
     @file_size = @attachments[0].size.to_i / (1024 * 1024)
 
+=begin
     sqlstr1 = "SELECT " +
             "COUNT(file_dl_logs.id) AS amnt, " +
             "SUM(attachments.size) AS size " +
@@ -92,13 +114,34 @@ class SysTotalController < ApplicationController
 
     @download = FileDlLog.find_by_sql(sqlstr1)
     @download_request = RequestedFileDlLog.find_by_sql(sqlstr2)
+=end
+
+#=begin
+    @download =
+      FileDlCheck
+      .select(["COUNT(file_dl_logs.id) AS amnt",
+               "SUM(attachments.size) AS size",
+               ].join(", "))
+      .joins(:file_dl_logs, :attachment)
+      .where(:created_at => s_time..s_time.at_end_of_month,
+             :download_flg => 1)
+
+    @download_request =
+      RequestedAttachment
+      .select(["COUNT(requested_file_dl_logs.id) AS amnt",
+               "SUM(requested_attachments.size) AS size",
+               ].join(", "))
+      .joins(:requested_file_dl_logs)
+      .where(:created_at => s_time..s_time.at_end_of_month,
+             :download_flg => 1)
 
     @download_file_total = @download[0].amnt.to_i +
             @download_request[0].amnt.to_i
     @download_file_size = (@download[0].size.to_i +
             @download_request[0].size.to_i) / (1024 * 1024)
+#=end
 
-
+=begin
     sqlstr = "SELECT " +
             "COUNT(id) AS amnt " +
             "FROM request_matters " +
@@ -108,6 +151,14 @@ class SysTotalController < ApplicationController
             (e_time.strftime("%Y/%m/%d %H:%M:%S")).to_s + "'"
 
     @request_matters = RequestMatter.find_by_sql(sqlstr)
+=end
+#=begin
+    @request_matters =
+      RequestMatter
+      .select(["COUNT(id) AS amnt",
+               ].join(", "))
+      .where(:created_at => s_time..s_time.at_end_of_month)
+#=end
 
     @request_matter = @request_matters[0].amnt
   end

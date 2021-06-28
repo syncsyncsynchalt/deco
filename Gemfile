@@ -10,6 +10,7 @@ gem 'jQuery-Validation-Engine-rails'
 gem 'rb-readline'
 gem 'mime-types'
 gem 'kaminari'
+gem 'active_record_union'
 
 # Bundle edge Rails instead: gem 'rails', github: 'rails/rails'
 gem 'rails', '~> 5.1.4'

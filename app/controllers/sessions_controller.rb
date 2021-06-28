@@ -91,6 +91,8 @@ class SessionsController < ApplicationController
   def destroy
     cookies.delete :auth_token
     reset_session
+    cookies.delete :_deco_session
+
     flash[:notice] = "ログアウトしました。"
     redirect_to :action => 'new'
   end
@@ -98,6 +100,8 @@ class SessionsController < ApplicationController
   def logout_for_administrator
     cookies.delete :auth_token
     reset_session
+    cookies.delete :_deco_session
+
     redirect_to :action => 'new_for_administrator'
   end
 

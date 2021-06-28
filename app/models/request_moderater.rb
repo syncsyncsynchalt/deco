@@ -21,4 +21,10 @@ class RequestModerater < ActiveRecord::Base
   belongs_to :request_moderate
   belongs_to :moderater
   belongs_to :user
+  
+  # 依頼却下理由
+#  validates :content, presence: true
+  validates :content, allow_blank: true,
+    length: { maximum: 3000 }
+
 end

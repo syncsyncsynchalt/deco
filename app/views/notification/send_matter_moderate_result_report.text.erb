@@ -10,5 +10,8 @@
 承認
 <% elsif @send_matter.moderate_result == 2 %>
 却下
+
+■却下理由
+<%= @send_moderater.content %>
 <% end %>
 

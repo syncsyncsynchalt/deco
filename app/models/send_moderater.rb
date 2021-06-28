@@ -21,4 +21,10 @@ class SendModerater < ActiveRecord::Base
   belongs_to :send_moderate
   belongs_to :moderater
   belongs_to :user
+  
+  # 送信却下理由
+#  validates :content, presence: true
+  validates :content, allow_blank: true,
+    length: { maximum: 3000 }
+
 end

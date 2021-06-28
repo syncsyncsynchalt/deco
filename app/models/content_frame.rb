@@ -18,4 +18,15 @@
 # Likewise, all the methods added will be available for all controllers.
 class ContentFrame < ActiveRecord::Base
   # attr_accessible :title, :body
+  
+  # タイトル
+  validates :title, presence: true
+  validates :title, allow_blank: true, 
+    length: { maximum: 18 }
+  
+  # 説明
+#  validates :description, presence: true
+  validates :description, allow_blank: true, 
+    length: { maximum: 270 }
+  
 end

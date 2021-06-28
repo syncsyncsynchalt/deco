@@ -18,5 +18,25 @@
 # Likewise, all the methods added will be available for all controllers.
 class Receiver < ActiveRecord::Base
   belongs_to(:send_matter)
+  has_many :file_dl_checks
   has_many :attachments, :through => :file_dl_checks
+
+  # 送信情報ID
+  #validates :send_matter_id, presence: true
+  #validates :send_matter_id, allow_blank: true
+
+  # 受信者名
+  validates :name, presence: true
+  validates :name, allow_blank: true,
+    length: { maximum: 72 }
+  
+  # 受信者メールアドレス
+  validates :mail_address, presence: true
+  validates :mail_address, allow_blank: true, 
+    length: { maximum: 255 },
+    format: { with: /\A[a-zA-Z0-9.!#\$%&'*+\/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*\z/i, message: 'の値が不正です。正しいメールアドレスを入力してください。' }
+
+  # url（URLに付与するトークン）
+  #validates :url, presence: true
+  #validates :url, allow_blank: true
 end

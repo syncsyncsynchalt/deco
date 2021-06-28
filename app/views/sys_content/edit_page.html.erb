@@ -63,7 +63,8 @@
     :data =>{ :confirm => 'アイテムID:' + content_item.id.to_s + 'を削除してもよろしいですか？'},
     :method => :delete  %><br />
   
-  <%= raw @items[count] %>
+  <%#= @items[count] %>
+  <%= render 'pickup_content_item', content_item: content_item %>
   <div><br></div>
 
 <% end -%>

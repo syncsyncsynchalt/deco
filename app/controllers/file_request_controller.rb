@@ -77,64 +77,127 @@ class FileRequestController < ApplicationController
   def create
     recipients = Hash.new
 
-    ActiveRecord::Base.transaction do
-      @request_matter = RequestMatter.new(post_params_request_matters)
-      @request_matter.url = generate_random_strings(@request_matter.name)
-      if params[:mail_domain].present?
-        @request_matter.mail_address += '@' + params[:mail_domain]
-      end
-      if session[:user_id].present? && current_user.present?
-        @request_matter.user = current_user
-      end
-      @request_matter.save!
-      params[:requested_matter].each{ |key, value|
-        @requested_matter = RequestedMatter.new(requested_matters_params(value))
-        @requested_matter.request_matter = @request_matter
-        @requested_matter.url = generate_random_strings(@requested_matter.name)
-        @requested_matter.send_password =
-            generate_random_string_values(@requested_matter.mail_address).slice(1,8)
-        @requested_matter.save!
+#    ActiveRecord::Base.transaction do
+#      @request_matter = RequestMatter.new(post_params_request_matters)
+#      @request_matter.url = generate_random_strings(@request_matter.name)
+#      if params[:mail_domain].present?
+#        @request_matter.mail_address += '@' + params[:mail_domain]
+#      end
+#      if session[:user_id].present? && current_user.present?
+#        @request_matter.user = current_user
+#      end
+#      @request_matter.save!
+#      params[:requested_matter].each{ |key, value|
+#        @requested_matter = RequestedMatter.new(requested_matters_params(value))
+#        @requested_matter.request_matter = @request_matter
+#        @requested_matter.url = generate_random_strings(@requested_matter.name)
+#        @requested_matter.send_password =
+#            generate_random_string_values(@requested_matter.mail_address).slice(1,8)
+#        @requested_matter.save!
+#
+#        recipients[@requested_matter.id] = [ @requested_matter.mail_address,
+#                                             @requested_matter.name,
+#                                             @requested_matter.url,
+#                                             @requested_matter.send_password ]
+#      }
+#      @moderate_flag = get_moderate_flag()
+#      if @moderate_flag == 1
+#        @request_matter.moderate_flag = 1
+#        @request_matter.moderate_result = 0
+#        @request_moderate = RequestModerate.new()
+#        @request_moderate.request_matter = @request_matter
+#        @request_moderate.moderate = @moderate
+#        @request_moderate.name = @moderate.name
+#        @request_moderate.type_flag = @moderate.type_flag
+#        @request_moderate.result = 0
+#        @request_moderate.save!
+#        for moderater in @moderate.moderaters
+#          request_moderater = RequestModerater.new()
+#          request_moderater.moderater = moderater
+#          request_moderater.request_moderate = @request_moderate
+#          request_moderater.user = moderater.user
+#          request_moderater.user_name = moderater.user.name
+#          request_moderater.number = moderater.number
+#          request_moderater.send_flag = 0
+#          request_moderater.result = 0
+#          request_moderater.url =
+#              generate_random_strings(rand(10000).to_s)
+#          request_moderater.save!
+#        end
+#      else
+#        @request_matter.moderate_flag = 0
+#        @request_matter.moderate_result = 1
+#        @request_matter.sent_at = Time.now
+#      end
+#
+#      unless @request_matter.save!
+#        render :action => 'index'
+#      end
+#    end
 
-        recipients[@requested_matter.id] = [ @requested_matter.mail_address,
-                                             @requested_matter.name,
-                                             @requested_matter.url,
-                                             @requested_matter.send_password ]
-      }
-      @moderate_flag = get_moderate_flag()
-      if @moderate_flag == 1
-        @request_matter.moderate_flag = 1
-        @request_matter.moderate_result = 0
-        @request_moderate = RequestModerate.new()
-        @request_moderate.request_matter = @request_matter
-        @request_moderate.moderate = @moderate
-        @request_moderate.name = @moderate.name
-        @request_moderate.type_flag = @moderate.type_flag
-        @request_moderate.result = 0
-        @request_moderate.save!
-        for moderater in @moderate.moderaters
-          request_moderater = RequestModerater.new()
-          request_moderater.moderater = moderater
-          request_moderater.request_moderate = @request_moderate
-          request_moderater.user = moderater.user
-          request_moderater.user_name = moderater.user.name
-          request_moderater.number = moderater.number
-          request_moderater.send_flag = 0
-          request_moderater.result = 0
-          request_moderater.url =
-              generate_random_strings(rand(10000).to_s)
-          request_moderater.save!
+    begin
+      ActiveRecord::Base.transaction do
+        @request_matter = RequestMatter.new(post_params_request_matters)
+        @request_matter.url = generate_random_strings(@request_matter.name)
+        if params[:mail_domain].present?
+          @request_matter.mail_address += '@' + params[:mail_domain]
         end
-      else
-        @request_matter.moderate_flag = 0
-        @request_matter.moderate_result = 1
-        @request_matter.sent_at = Time.now
-      end
+        if session[:user_id].present? && current_user.present?
+          @request_matter.user = current_user
+        end
+        @request_matter.save!
+        params[:requested_matter].each{ |key, value|
+          @requested_matter = RequestedMatter.new(requested_matters_params(value))
+          @requested_matter.request_matter = @request_matter
+          @requested_matter.url = generate_random_strings(@requested_matter.name)
+          @requested_matter.send_password =
+              generate_random_string_values(@requested_matter.mail_address).slice(1,8)
+          @requested_matter.save!
 
-      unless @request_matter.save!
-        render :action => 'index'
+          recipients[@requested_matter.id] = [ @requested_matter.mail_address,
+                                               @requested_matter.name,
+                                               @requested_matter.url,
+                                               @requested_matter.send_password ]
+        }
+        @moderate_flag = get_moderate_flag()
+        if @moderate_flag == 1
+          @request_matter.moderate_flag = 1
+          @request_matter.moderate_result = 0
+          @request_moderate = RequestModerate.new()
+          @request_moderate.request_matter = @request_matter
+          @request_moderate.moderate = @moderate
+          @request_moderate.name = @moderate.name
+          @request_moderate.type_flag = @moderate.type_flag
+          @request_moderate.result = 0
+          @request_moderate.save!
+          for moderater in @moderate.moderaters
+            request_moderater = RequestModerater.new()
+            request_moderater.moderater = moderater
+            request_moderater.request_moderate = @request_moderate
+            request_moderater.user = moderater.user
+            request_moderater.user_name = moderater.user.name
+            request_moderater.number = moderater.number
+            request_moderater.send_flag = 0
+            request_moderater.result = 0
+            request_moderater.url =
+                generate_random_strings(rand(10000).to_s)
+            request_moderater.save!
+          end
+        else
+          @request_matter.moderate_flag = 0
+          @request_matter.moderate_result = 1
+          @request_matter.sent_at = Time.now
+        end
+
+        @request_matter.save!
       end
+    rescue => e
+      logger.error "#{e.class} (#{e.message}):\n#{Rails.backtrace_cleaner.clean(e.backtrace).join("\n").indent(1)}"
+      flash[:notice] = '依頼失敗しました。もう一度依頼してください。'
+      redirect_to :action => 'result_ng' and return
     end
-
+    
+    
     session[:request_matter_id] = @request_matter.id
 
     flash[:notice] = 'ファイル依頼を完了しました。'
@@ -186,7 +249,7 @@ class FileRequestController < ApplicationController
                                     @params_app_env['REQUEST_PERIOD'].to_i).deliver
       }
 
-      req_url = port + "://" + @params_app_env['URL'] + "/requested_file_send/login/"
+      req_url = port + "://" + @params_app_env['URL']
       @requested_matters = @request_matter.requested_matters
       Notification.request_copied_report(@request_matter,
                                          @requested_matters, req_url,

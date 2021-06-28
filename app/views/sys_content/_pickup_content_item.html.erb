@@ -1,0 +1,29 @@
+<%- case content_item.category 
+   when 1 -%>
+  <h3><%= content_item.string1 %></h3>
+<%- when 2 -%>
+  <%- if content_item.flg.to_i == 1 -%>
+    <% count = 0 %>
+    <% for key_word in content_item.text1.split(/\r\n|\r|\n/) %>
+      <%#= content_item.text1.gsub(/\r\n|\r|\n/,"<br>") -%>
+      <% unless count == 0 %>
+      <br>
+      <% end %>
+      <%= key_word -%>
+      <% count += 1 %>
+    <% end %>
+  <%- else -%>
+    <fieldset><%= content_item.text1 %></fieldset>
+  <%- end -%>
+<%- when 3 -%>
+  <%= image_tag(url_for(:controller => :create_images,
+                       :action => :content_items,
+                       :id => content_item.id.to_s)) %>
+<%- when 4 -%>
+  <%= link_to(content_item.string1, content_item.url, :target => content_item.flg.to_i == 1 ? "_blank" : nil) %>
+<%- when 5 -%>
+  <%= link_to(image_tag(url_for(:controller => :create_images,
+                       :action => :content_items,
+                       :id => content_item.id.to_s)), content_item.url, :target => content_item.flg.to_i == 1 ? "_blank" : nil) %>
+<%- end -%>
+

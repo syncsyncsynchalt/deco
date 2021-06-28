@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20171128015339) do
+ActiveRecord::Schema.define(version: 20210301071616) do
 
   create_table "address_books", id: :integer, force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8" do |t|
     t.integer "user_id"
@@ -26,6 +26,10 @@ ActiveRecord::Schema.define(version: 20171128015339) do
   create_table "announcements", id: :integer, force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8" do |t|
     t.string "title"
     t.text "body"
+    t.integer "show_flg", default: 1
+    t.timestamp "begin_at"
+    t.timestamp "end_at"
+    t.integer "body_show_flg", default: 0
     t.datetime "created_at"
     t.datetime "updated_at"
   end
@@ -42,13 +46,17 @@ ActiveRecord::Schema.define(version: 20171128015339) do
   create_table "attachments", id: :integer, force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8" do |t|
     t.integer "send_matter_id"
     t.string "name"
-    t.integer "size"
+    t.bigint "size"
     t.string "content_type"
     t.string "relayid"
     t.string "virus_check"
     t.string "file_save_pass"
     t.datetime "created_at"
     t.datetime "updated_at"
+    t.index ["id", "send_matter_id"], name: "attachments_index_keys_2"
+    t.index ["relayid"], name: "attachments_index_keys_3"
+    t.index ["send_matter_id", "id"], name: "attachments_index_keys_1"
+    t.index ["size", "created_at", "name", "send_matter_id", "id"], name: "attachments_index_keys_4"
   end
 
   create_table "content_frames", id: :integer, force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8" do |t|
@@ -80,12 +88,17 @@ ActiveRecord::Schema.define(version: 20171128015339) do
     t.integer "download_flg"
     t.datetime "created_at"
     t.datetime "updated_at"
+    t.index ["attachment_id", "receiver_id", "id", "download_flg"], name: "file_dl_checks_index_keys_2"
+    t.index ["id", "receiver_id", "attachment_id", "download_flg"], name: "file_dl_checks_index_keys_3"
+    t.index ["receiver_id", "attachment_id", "id", "download_flg"], name: "file_dl_checks_index_keys_1"
   end
 
   create_table "file_dl_logs", id: :integer, force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8" do |t|
     t.integer "file_dl_check_id"
     t.datetime "created_at"
     t.datetime "updated_at"
+    t.index ["file_dl_check_id", "created_at", "id"], name: "file_dl_logs_index_keys_1"
+    t.index ["file_dl_check_id", "id", "created_at"], name: "file_dl_logs_index_keys_2"
   end
 
   create_table "moderaters", id: :integer, force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8" do |t|
@@ -112,6 +125,11 @@ ActiveRecord::Schema.define(version: 20171128015339) do
     t.string "url"
     t.datetime "created_at"
     t.datetime "updated_at"
+    t.index ["id", "send_matter_id", "mail_address", "name"], name: "receivers_index_keys_3"
+    t.index ["id", "send_matter_id", "name", "mail_address"], name: "receivers_index_keys_4"
+    t.index ["send_matter_id", "mail_address", "name", "id"], name: "receivers_index_keys_2"
+    t.index ["send_matter_id", "name", "mail_address", "id"], name: "receivers_index_keys_1"
+    t.index ["url"], name: "receivers_index_keys_5"
   end
 
   create_table "request_matters", id: :integer, force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8" do |t|
@@ -125,6 +143,11 @@ ActiveRecord::Schema.define(version: 20171128015339) do
     t.integer "moderate_result"
     t.timestamp "sent_at"
     t.string "user_id"
+    t.index ["id", "mail_address", "name"], name: "request_matters_index_keys_4"
+    t.index ["id", "name", "mail_address"], name: "request_matters_index_keys_3"
+    t.index ["url"], name: "request_matters_index_keys_5"
+    t.index ["user_id", "id", "mail_address", "name"], name: "request_matters_index_keys_2"
+    t.index ["user_id", "id", "name", "mail_address"], name: "request_matters_index_keys_1"
   end
 
   create_table "request_moderaters", id: :integer, force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8" do |t|
@@ -156,7 +179,7 @@ ActiveRecord::Schema.define(version: 20171128015339) do
   create_table "requested_attachments", id: :integer, force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8" do |t|
     t.integer "requested_matter_id"
     t.string "name"
-    t.integer "size"
+    t.bigint "size"
     t.string "content_type"
     t.integer "download_flg"
     t.string "relayid"
@@ -164,12 +187,17 @@ ActiveRecord::Schema.define(version: 20171128015339) do
     t.string "file_save_pass"
     t.datetime "created_at"
     t.datetime "updated_at"
+    t.index ["id", "requested_matter_id", "name", "size", "created_at"], name: "requested_attachments_index_keys_2"
+    t.index ["requested_matter_id", "id", "name", "size", "created_at"], name: "requested_attachments_index_keys_1"
+    t.index ["size", "created_at", "name", "requested_matter_id", "id"], name: "requested_attachments_index_keys_3"
   end
 
   create_table "requested_file_dl_logs", id: :integer, force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8" do |t|
     t.integer "requested_attachment_id"
     t.datetime "created_at"
     t.datetime "updated_at"
+    t.index ["requested_attachment_id", "created_at", "id"], name: "requested_file_dl_logs_index_keys_1"
+    t.index ["requested_attachment_id", "id", "created_at"], name: "requested_file_dl_logs_index_keys_2"
   end
 
   create_table "requested_matters", id: :integer, force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8" do |t|
@@ -189,6 +217,10 @@ ActiveRecord::Schema.define(version: 20171128015339) do
     t.string "url_operation"
     t.datetime "created_at"
     t.datetime "updated_at"
+    t.index ["id", "request_matter_id", "name", "mail_address"], name: "requested_matters_index_keys_2"
+    t.index ["request_matter_id", "id", "name", "mail_address"], name: "requested_matters_index_keys_1"
+    t.index ["url"], name: "requested_matters_index_keys_3"
+    t.index ["url_operation"], name: "requested_matters_index_keys_4"
   end
 
   create_table "send_matters", id: :integer, force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8" do |t|
@@ -208,6 +240,11 @@ ActiveRecord::Schema.define(version: 20171128015339) do
     t.integer "moderate_result"
     t.timestamp "sent_at"
     t.string "user_id"
+    t.index ["id", "mail_address", "name"], name: "send_matters_index_keys_5"
+    t.index ["id", "name", "mail_address"], name: "send_matters_index_keys_4"
+    t.index ["relayid"], name: "send_matters_index_keys_1"
+    t.index ["user_id", "id", "mail_address", "name"], name: "send_matters_index_keys_3"
+    t.index ["user_id", "id", "name", "mail_address"], name: "send_matters_index_keys_2"
   end
 
   create_table "send_moderaters", id: :integer, force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8" do |t|

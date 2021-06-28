@@ -50,86 +50,70 @@ class SysLogController < ApplicationController
     condition2 = ""
     condition = ""
     @type = 0
-    if session[:search_type]
-      @type = session[:search_type]
-    end
 
     if params[:type]
       @type = params[:type]
-      session[:search_type] = @type
-    end
-
-    if session[:search_word]
-      @keyward = session[:search_word]
     end
 
     if params[:keyward]
       @keyward = params[:keyward]
-      session[:search_word] = @keyward
     end
 
-    case @type.to_i
-    when 1
-      condition1 = "send_matters.name LIKE '%" + @keyward.to_s + "%'"
-      sqlstr = "SELECT * FROM send_matters WHERE " + condition1
-#      @rs = db.query sqlstr
-      @rs = SendMatter.find_by_sql(sqlstr)
-      @total_data = @rs.length
-    when 2
-      condition1 = "send_matters.mail_address LIKE '%" +
-              @keyward.to_s + "%'"
-      sqlstr = "SELECT * FROM send_matters WHERE " + condition1
-#      @rs = db.query sqlstr
-      @rs = SendMatter.find_by_sql(sqlstr)
-      @total_data = @rs.length
-    when 3
-      condition2 = "receivers.name LIKE '%" + @keyward.to_s + "%'"
-      sqlstr = "SELECT DISTINCT(send_matters.id) " +
-              "FROM send_matters " +
-              "LEFT OUTER JOIN receivers " +
-              "ON send_matters.id = receivers.send_matter_id " +
-              "WHERE " + condition2
-#      @rs = db.query sqlstr
-      @rs = SendMatter.find_by_sql(sqlstr)
-      @total_data = @rs.length
-    when 4
-      condition2 = "receivers.mail_address LIKE '%" + @keyward.to_s + "%'"
-      sqlstr = "SELECT DISTINCT(send_matters.id) " +
-              "FROM send_matters " +
-              "LEFT OUTER JOIN receivers " +
-              "ON send_matters.id = receivers.send_matter_id " +
-              "WHERE " + condition2
-#      @rs = db.query sqlstr
-      @rs = SendMatter.find_by_sql(sqlstr)
-      @total_data = @rs.length
-    else
-      sqlstr = "SELECT * FROM send_matters "
-#      @rs = db.query sqlstr
-      @rs = SendMatter.find_by_sql(sqlstr)
-      @total_data = @rs.length
+    @select_month = Array.new
+    @select_month.push ["選んで下さい", 0]
+    @rs =
+      SendMatter
+      .select(["DISTINCT DATE_FORMAT(created_at, \'%Y%m\') AS m",
+               ].join(", "))
+      .order(["DATE_FORMAT(created_at, \'%Y%m\') DESC",
+              ].join(", "))
+    @rs.each do | data |
+      year = data.m.slice(0, 4).to_i
+      mon = data.m.slice(4, 2).to_i
+      @select_month.push [year.to_s + '年' + mon.to_s + '月', data.m]
     end
 
-    if condition == ""
-      unless condition1 == ""
-        condition = condition1
-      end
-
-      unless condition2 == ""
-        condition = condition2
-      end
-    else
-      unless condition1 == ""
-        condition += " AND " + condition1
-      end
-
-      unless condition2 == ""
-        condition += " AND " + condition2
+    if params[:keyward]
+      case @type.to_i
+      when 1
+        column = "send_matters.name"
+      when 2
+        column = "send_matters.mail_address"
+      when 3
+        column = "receivers.name"
+      when 4
+        column = "receivers.mail_address"
       end
     end
 
-    unless condition == ""
-      condition = " WHERE " + condition + " "
+    @rs =
+      SendMatter
+      .select(["send_matters.id AS send_matter_id",
+               "send_matters.created_at AS created_at",
+               "send_matters.name AS sender_name",
+               "send_matters.mail_address AS sender_mail_address",
+               "COUNT(attachments.id) AS total_file",
+               "SUM(attachments.size) AS total_size",
+               "1 AS data_order",
+               ].join(", "))
+      .left_joins(:receivers,
+             :attachments)
+      .order(["send_matters.created_at DESC",
+              ].join(", "))
+      .group(["send_matters.id",
+              "send_matters.created_at",
+              "send_matters.name",
+              "send_matters.mail_address",
+              ].join(", "))
+    if params[:keyward].present? && @type.to_i >= 1 && @type.to_i <= 4
+      @rs =
+        @rs.where([["#{column} LIKE :keyward",
+                 ].join(" AND "),
+                keyward: "%#{ActiveRecord::Base.send(:sanitize_sql_like, @keyward)}%",
+                ])
     end
+
+    @total_data = @rs.length
     @amt_data = 100
 
     @total_page = (@total_data/@amt_data).to_i
@@ -146,110 +130,13 @@ class SysLogController < ApplicationController
     @s_data = (@page - 1) * @amt_data + 1
     @e_data = @page * @amt_data
 
-    @select_month = Array.new
-    @select_month.push ["選んで下さい", 0]
-    sqlstr_for_csv = "SELECT DISTINCT DATE_FORMAT(created_at, \'%Y%m\') AS m " +
-            "FROM send_matters ORDER BY m DESC"
-    @rs = SendMatter.find_by_sql(sqlstr_for_csv)
-    @rs.each do | data |
-      year = data.m.slice(0, 4).to_i
-      mon = data.m.slice(4, 2).to_i
-      @select_month.push [year.to_s + '年' + mon.to_s + '月', data.m]
-    end
+    @rs =
+      @rs
+      .offset(@s_data - 1)
+      .limit(@amt_data)
 
-    @part_of_page = original_paginate('sys_log', 'send_log', @page,
-            @total_page, 4, 2)
-
-    case @type.to_i
-    when  3, 4
-      sqlstr = "SELECT " +
-          "tbl1.sub_id AS send_matter_id, " +
-          "tbl1.created_at AS created_at, " +
-          "tbl1.sender_name AS sender_name, " +
-          "tbl1.mail_address AS sender_mail_address, " +
-          "receivers.name AS receiver_name, " +
-          "receivers.mail_address AS receiver_mail_address, " +
-          "tbl1.total_file AS total_file, " +
-          "tbl1.total_size AS total_size, " +
-          "tbl1.data_order AS data_order " +
-          "FROM " +
-            "(SELECT " + 
-            "tbl2.id AS sub_id, " +
-            "tbl2.created_at AS created_at, " +
-            "tbl2.name AS sender_name, " +
-            "tbl2.mail_address AS mail_address, " +
-            "tbl2.data_order AS data_order, " +
-            "COUNT(attachments.id) AS total_file, " +
-            "SUM(attachments.size) AS total_size " +
-            "FROM " +
-              "(SELECT " +
-              "DISTINCT(send_matters.id) AS id, " +
-              "send_matters.created_at AS created_at, " +
-              "send_matters.name AS name, " +
-              "send_matters.mail_address AS mail_address, " +
-              "1 AS data_order " +
-              "FROM send_matters " +
-              "LEFT OUTER JOIN receivers " +
-              "ON send_matters.id = receivers.send_matter_id " +
-              condition +
-              "ORDER BY send_matters.created_at DESC " +
-              "limit " + (@s_data - 1).to_s + ", " + @amt_data.to_s + " " +
-              ") AS tbl2 " +
-            "LEFT OUTER JOIN attachments " +
-            "ON tbl2.id = attachments.send_matter_id " +
-            "GROUP BY " +
-            "tbl2.id, tbl2.created_at, sender_name, mail_address, data_order" +
-            ") AS tbl1 " +
-          "LEFT OUTER JOIN receivers " +
-          "ON tbl1.sub_id = receivers.send_matter_id " +
-          "WHERE " + condition2 +
-          "ORDER BY tbl1.created_at DESC"
-    else
-      sqlstr = "SELECT " +
-          "tbl1.sub_id AS send_matter_id, " +
-          "tbl1.created_at AS created_at, " +
-          "tbl1.sender_name AS sender_name, " +
-          "tbl1.mail_address AS sender_mail_address, " +
-          "receivers.name AS receiver_name, " +
-          "receivers.mail_address AS receiver_mail_address, " +
-          "tbl1.total_file AS total_file, " +
-          "tbl1.total_size AS total_size, " +
-          "tbl1.data_order AS data_order " +
-          "FROM " +
-            "(SELECT " + 
-            "tbl2.id AS sub_id, " +
-            "tbl2.created_at AS created_at, " +
-            "tbl2.name AS sender_name, " +
-            "tbl2.mail_address AS mail_address, " +
-            "tbl2.data_order AS data_order, " +
-            "COUNT(attachments.id) AS total_file, " +
-            "SUM(attachments.size) AS total_size " +
-            "FROM " +
-              "(SELECT " +
-              "id, created_at, name, mail_address, 1 AS data_order " +
-              "FROM send_matters " + condition +
-              "ORDER BY created_at DESC " +
-              "limit " + (@s_data - 1).to_s + ", " + @amt_data.to_s + " " +
-              ") AS tbl2 " +
-            "LEFT OUTER JOIN attachments " +
-            "ON tbl2.id = attachments.send_matter_id " +
-            "GROUP BY " +
-            "tbl2.id, tbl2.created_at, sender_name, mail_address, data_order" +
-            ") AS tbl1 " +
-          "LEFT OUTER JOIN receivers " +
-          "ON tbl1.sub_id = receivers.send_matter_id " +
-          "ORDER BY tbl1.created_at DESC"
-    end
-
-    session[:debug] = sqlstr
     @time2 = Time.now.strftime("%Y/%m/%d %H:%M:%S")
-    
-#    @rs = db.query sqlstr
-    @rs = SendMatter.find_by_sql(sqlstr)
-
-#    db.close if db
     @time3 = Time.now.strftime("%Y/%m/%d %H:%M:%S")
-
   end
 
   # 受信ログ
@@ -266,29 +153,77 @@ class SysLogController < ApplicationController
       @keyward = params[:keyward]
       case @type.to_i
       when 0
-        condition1 = " AND receivers.name LIKE '%" + @keyward.to_s + "%'"
-        condition2 = " AND request_matters.name LIKE '%" + @keyward.to_s + "%'"
+        send_column = "receivers.name"
+        request_column = "request_matters.name"
       when 1
-        condition1 = " AND receivers.mail_address LIKE '%" + @keyward.to_s + "%'"
-        condition2 = " AND request_matters.mail_address LIKE '%" +
-                @keyward.to_s + "%'"
+        send_column = "receivers.mail_address"
+        request_column = "request_matters.mail_address"
       end
     end
 
     @select_month = Array.new
     @select_month.push ["選んで下さい", 0]
-    sqlstr_for_csv = "SELECT DISTINCT DATE_FORMAT(created_at, \'%Y%m\') AS m " +
-            "FROM file_dl_logs " +
-            "union DISTINCT " +
-            "SELECT DISTINCT DATE_FORMAT(created_at, \'%Y%m\') AS m " +
-            "FROM requested_file_dl_logs " +
-            "ORDER BY m DESC"
-    @rs = Receiver.find_by_sql(sqlstr_for_csv)
+    @rs =
+      FileDlLog
+      .select(["DISTINCT DATE_FORMAT(created_at, \'%Y%m\') AS m",
+               ].join(", "))
+      .union(RequestedFileDlLog
+      .select(["DISTINCT DATE_FORMAT(created_at, \'%Y%m\') AS m",
+               ].join(", ")))
+      .order(["m DESC",
+              ].join(", "))
     @rs.each do | data |
       year = data.m.slice(0, 4).to_i
       mon = data.m.slice(4, 2).to_i
       @select_month.push [year.to_s + '年' + mon.to_s + '月', data.m]
     end
+
+    send_dl_logs =
+      FileDlCheck
+      .select(["file_dl_logs.created_at AS dl_at",
+               "'送信' AS flg",
+               "receivers.name AS receiver_name",
+               "receivers.mail_address AS receiver_mail_address",
+               "attachments.name AS file_name",
+               "attachments.size AS file_size",
+               ].join(", "))
+      .joins(:file_dl_logs, :attachment, :receiver)
+      .where(:download_flg => 1)
+    if params[:keyward].present? && @type.to_i >= 0 && @type.to_i <= 1
+      send_dl_logs =
+        send_dl_logs
+        .where([["#{send_column} LIKE :keyward",
+                 ].join(" AND "),
+                keyward: "%#{ActiveRecord::Base.send(:sanitize_sql_like, @keyward)}%",
+                ])
+    end
+
+    request_dl_logs =
+      RequestedAttachment
+      .select(["requested_file_dl_logs.created_at AS dl_at",
+               "'依頼' AS flg",
+               "request_matters.name AS receiver_name",
+               "request_matters.mail_address AS receiver_mail_address",
+               "requested_attachments.name AS file_name",
+               "requested_attachments.size AS file_size",
+               ].join(", "))
+      .joins(:requested_file_dl_logs, requested_matter: :request_matter)
+      .where(:download_flg => 1)
+
+    if params[:keyward].present? && @type.to_i >= 0 && @type.to_i <= 1
+      request_dl_logs =
+        request_dl_logs
+        .where([["#{request_column} LIKE :keyward",
+                 ].join(" AND "),
+                keyward: "%#{ActiveRecord::Base.send(:sanitize_sql_like, @keyward)}%",
+                ])
+    end
+
+    @rs =
+      send_dl_logs
+      .union(request_dl_logs)
+      .order(["dl_at DESC",
+              ].join(", "))
 
     if params[:id]
       @page = params[:id].to_i
@@ -301,49 +236,6 @@ class SysLogController < ApplicationController
     end
 
     @amt_data = 100
-
-    sqlstr_sub1 = "SELECT " +
-          "tbl1.dl_at AS dl_at, " +
-          "'送信' AS flg, " +
-          "receivers.name AS receiver_name, " +
-          "receivers.mail_address AS receiver_mail_address, " +
-          "attachments.name AS file_name, " +
-          "attachments.size AS file_size " +
-          "FROM attachments, receivers, send_matters, " +
-            "(SELECT " +
-            "file_dl_checks.id AS id, " +
-            "file_dl_logs.created_at AS dl_at, " +
-            "file_dl_checks.receiver_id AS receiver_id, " +
-            "file_dl_checks.attachment_id AS attachment_id " +
-            "FROM file_dl_logs " +
-            "LEFT OUTER JOIN file_dl_checks " +
-            "ON file_dl_logs.file_dl_check_id = file_dl_checks.id) AS tbl1 " +
-          "WHERE attachments.id = tbl1.attachment_id " +
-          "AND receivers.id = tbl1.receiver_id " +
-          "AND send_matters.id = attachments.send_matter_id" +
-          condition1
-
-    sqlstr_sub2 = "SELECT " +
-          "requested_file_dl_logs.created_at AS dl_at, " +
-          "'依頼' AS flg, " +
-          "request_matters.name AS receiver_name, " +
-          "request_matters.mail_address AS receiver_mail_address, " +
-          "requested_attachments.name AS file_name, " +
-          "requested_attachments.size AS file_size " +
-          "FROM request_matters, requested_matters, " +
-          " requested_file_dl_logs, requested_attachments " +
-          "WHERE requested_file_dl_logs.requested_attachment_id = " +
-          "requested_attachments.id " +
-          "AND requested_attachments.requested_matter_id = " +
-          "requested_matters.id " +
-          "AND requested_matters.request_matter_id = request_matters.id" +
-          condition2
-
-    sqlstr = sqlstr_sub1 + " UNION ALL " + sqlstr_sub2 + " ORDER BY dl_at DESC"
-
-    @sql = sqlstr
-#    @rs = db.query sqlstr
-    @rs = Receiver.find_by_sql(sqlstr)
 
     @total_data = @rs.length
 
@@ -358,11 +250,6 @@ class SysLogController < ApplicationController
 
     @s_data = (@page - 1) * @amt_data + 1
     @e_data = @page * @amt_data
-
-    @part_of_page = original_paginate('sys_log', 'receive_log', @page,
-            @total_page, 4, 2)
-
-#    db.close if db
   end
 
   # 依頼ログ
@@ -384,52 +271,33 @@ class SysLogController < ApplicationController
 
       case @type.to_i
       when 0
-        condition = "WHERE request_matters.name LIKE '%" + @keyward.to_s + "%'" +
-                condition
-
-        sqlstr = "SELECT * FROM request_matters " + condition
-#        @rs = db.query sqlstr
-        @rs = RequestMatter.find_by_sql(sqlstr)
-        @total_data = @rs.length
+        column = "request_matters.name"
       when 1
-        condition = "WHERE request_matters.mail_address LIKE '%" +
-                @keyward.to_s + "%'" + condition
-
-        sqlstr = "SELECT * FROM request_matters " + condition
-#        @rs = db.query sqlstr
-        @rs = RequestMatter.find_by_sql(sqlstr)
-        @total_data = @rs.length
+        column = "request_matters.mail_address"
       when 2
-        condition = "WHERE requested_matters.name LIKE '%" +
-                @keyward.to_s + "%'" + condition
-        sqlstr = "SELECT DISTINCT(request_matters.id) FROM request_matters " +
-               "LEFT OUTER JOIN requested_matters " +
-               "ON request_matters.id = requested_matters.request_matter_id " +
-                condition
-        @sql = sqlstr
-#        @rs = db.query sqlstr
-        @rs = RequestMatter.find_by_sql(sqlstr)
-        @total_data = @rs.length
+        column = "requested_matters.name"
       when 3
-        condition = "WHERE requested_matters.mail_address LIKE '%" +
-                @keyward.to_s + "%'" + condition
-        sqlstr = "SELECT DISTINCT(request_matters.id) FROM request_matters " +
-               "LEFT OUTER JOIN requested_matters " +
-               "ON request_matters.id = requested_matters.request_matter_id " +
-                condition
-        @sql = sqlstr
-#        @rs = db.query sqlstr
-        @rs = RequestMatter.find_by_sql(sqlstr)
-        @total_data = @rs.length
+        column = "requested_matters.mail_address"
       end
+      if @type.to_i >= 0 && @type.to_i <= 3
+        @rs = 
+          RequestMatter
+          .select(["DISTINCT(request_matters.id)",
+                   ].join(", "))
+          .where([["#{column} LIKE :keyward",
+                   ].join(" AND "),
+                  keyward: "%#{ActiveRecord::Base.send(:sanitize_sql_like, @keyward)}%",
+                  ])
+        if @type.to_i >= 2 && @type.to_i <= 3
+          @rs =
+            @rs.joins(:requested_matters)
+        end
+      else
+        @rs = RequestMatter.all
+      end
+      @total_data = @rs.length
     else
-      unless condition == ""
-        condition = " WHERE " + condition + " "
-      end
-
-      sqlstr = "SELECT * FROM request_matters" + condition
-#      @rs = db.query sqlstr
-      @rs = RequestMatter.find_by_sql(sqlstr)
+      @rs = RequestMatter.all
       @total_data = @rs.length
     end
 
@@ -459,10 +327,12 @@ class SysLogController < ApplicationController
 
     @select_month = Array.new
     @select_month.push ["選んで下さい", 0]
-    sqlstr_for_csv = "SELECT DISTINCT DATE_FORMAT(created_at, \'%Y%m\') AS m " +
-            "FROM request_matters ORDER BY m DESC"
-#    @rs = db.query sqlstr_for_csv
-    @rs = RequestMatter.find_by_sql(sqlstr_for_csv)
+    @rs =
+      RequestMatter
+      .select(["DISTINCT DATE_FORMAT(created_at, \'%Y%m\') AS m",
+               ].join(", "))
+      .order(["DATE_FORMAT(created_at, \'%Y%m\') DESC",
+              ].join(", "))
     @rs.each do | data |
       year = data.m.slice(0, 4).to_i
       mon = data.m.slice(4, 2).to_i
@@ -472,26 +342,26 @@ class SysLogController < ApplicationController
     @part_of_page = original_paginate('sys_log', 'request_log', @page,
             @total_page, 4, 2)
 
-    sqlstr = "SELECT " +
-            "request_matters.id AS request_matter_id, " +
-            "request_matters.name AS request_name, " +
-            "request_matters.mail_address AS request_mail_address, " +
-            "request_matters.created_at AS created_at, " +
-            "requested_matters.id AS requested_matter_id, " +
-            "requested_matters.name AS requested_name, " +
-            "requested_matters.mail_address AS requested_mail_address " +
-            "FROM request_matters " +
-            "LEFT OUTER JOIN requested_matters " +
-            "ON request_matters.id = " +
-              "requested_matters.request_matter_id " +
-            condition +
-            "ORDER BY request_matters.created_at DESC"
-
-#    @rs = db.query sqlstr
-    @rs = RequestMatter.find_by_sql(sqlstr)
-
-#    db.close if db
-
+    @rs =
+      RequestMatter
+      .select(["request_matters.id AS request_matter_id",
+               "request_matters.name AS request_name",
+               "request_matters.mail_address AS request_mail_address",
+               "request_matters.created_at AS created_at",
+               "requested_matters.id AS requested_matter_id",
+               "requested_matters.name AS requested_name",
+               "requested_matters.mail_address AS requested_mail_address",
+               ].join(", "))
+      .joins(:requested_matters)
+      .order(["request_matters.created_at DESC",
+              ].join(", "))
+    if params[:keyward].present? && @type.to_i >= 0 && @type.to_i <= 3
+      @rs =
+        @rs.where([["#{column} LIKE :keyward",
+                 ].join(" AND "),
+                keyward: "%#{ActiveRecord::Base.send(:sanitize_sql_like, @keyward)}%",
+                ])
+    end
   end
 
   # 送信ログをcsvファイルに出力
@@ -506,14 +376,18 @@ class SysLogController < ApplicationController
     else
       year = year_mon.slice(0, 4).to_i
       mon = year_mon.slice(4, 2).to_i
-      time = Time.mktime year, mon
-      if condition == ""
-        condition = "WHERE "
+      if year >= 1 && year <= 9999 && mon >=1 && mon <= 12
+        time = Time.mktime year, mon
+        if condition == ""
+          condition = "WHERE "
+        else
+          condition = condition + "AND "
+        end
+        condition = condition + "created_at BETWEEN '" + (time.strftime("%Y-%m-%d %H:%M:%S")) + "'" +
+                "AND '" + (time.at_end_of_month.strftime("%Y-%m-%d %H:%M:%S")) + "' "
       else
-        condition = condition + "AND "
+        rslt = 1
       end
-      condition = condition + "created_at BETWEEN '" + (time.strftime("%Y-%m-%d %H:%M:%S")) + "'" +
-              "AND '" + (time.at_end_of_month.strftime("%Y-%m-%d %H:%M:%S")) + "' "
     end
 
     deletefiles = Dir.glob(@params_app_env['FILE_DIR'] + '/log_send_' + '*')
@@ -522,6 +396,7 @@ class SysLogController < ApplicationController
     end
 
     if rslt == 0
+=begin
       sqlstr = "SELECT " +
             "tbl1.sub_id AS send_matter_id, " +
             "tbl1.created_at AS created_at, " +
@@ -557,6 +432,29 @@ class SysLogController < ApplicationController
             "ORDER BY tbl1.created_at DESC"
 
       @rs = RequestMatter.find_by_sql(sqlstr)
+=end
+#=begin
+        @rs =
+          SendMatter
+          .select(["send_matters.id AS send_matter_id",
+                   "send_matters.created_at AS created_at",
+                   "send_matters.name AS sender_name",
+                   "send_matters.mail_address AS sender_mail_address",
+                   "receivers.name AS receiver_name",
+                   "receivers.mail_address AS receiver_mail_address",
+                   "COUNT(attachments.id) AS total_file",
+                   "SUM(attachments.size) AS total_size",
+                   "1 AS data_order",
+                   ].join(", "))
+          .joins(receivers: :attachments)
+          .where(created_at: time..time.at_end_of_month)
+          .group(["send_matters.id",
+                  "receivers.id",
+                  ].join(", "))
+          .order(["send_matters.created_at DESC",
+                  "receivers.id DESC",
+                  ].join(", "))
+#=end
 
       filename = 'log_send_' + Time.now.strftime("%Y-%m-%d_%H:%M:%S")
       filename_ws_pass = @params_app_env['FILE_DIR'] + '/' + filename
@@ -582,10 +480,9 @@ class SysLogController < ApplicationController
         str += ","
         str += data.total_file.to_s + ","
         str += data.total_size.to_s + "\n"
-        str.encode(Encoding::Windows_31J, undef: :replace).encode(Encoding::UTF_8)
+#        str.encode(Encoding::Windows_31J, undef: :replace).encode(Encoding::UTF_8)
         MAPPINGS.each{|before, after| str = str.gsub(before, after) }
-
-        file << str
+        file << str.encode(Encoding::Windows_31J, undef: :replace)
       end
       file.close
 
@@ -611,11 +508,15 @@ class SysLogController < ApplicationController
     else
       year = year_mon.slice(0, 4).to_i
       mon = year_mon.slice(4, 2).to_i
-      time = Time.mktime year, mon
-      condition_day1 = "WHERE file_dl_logs.created_at BETWEEN '" + (time.strftime("%Y-%m-%d")) + "'" +
-              "AND '" + (time.at_end_of_month.strftime("%Y-%m-%d")) + "' "
-      condition2 = condition2 + " AND requested_file_dl_logs.created_at BETWEEN \'" + (time.strftime("%Y-%m-%d")) + "\'" +
-              "AND '" + (time.at_end_of_month.strftime("%Y-%m-%d")) + "' "
+      if year >= 1 && year <= 9999 && mon >=1 && mon <= 12
+        time = Time.mktime year, mon
+        condition_day1 = "WHERE file_dl_logs.created_at BETWEEN '" + (time.strftime("%Y-%m-%d")) + "'" +
+                "AND '" + (time.at_end_of_month.strftime("%Y-%m-%d")) + "' "
+        condition2 = condition2 + " AND requested_file_dl_logs.created_at BETWEEN \'" + (time.strftime("%Y-%m-%d")) + "\'" +
+                "AND '" + (time.at_end_of_month.strftime("%Y-%m-%d")) + "' "
+      else
+        rslt = 1
+      end
     end
 
     deletefiles = Dir.glob(@params_app_env['FILE_DIR'] + '/log_receive_' + '*')
@@ -624,6 +525,7 @@ class SysLogController < ApplicationController
     end
 
     if rslt == 0
+=begin
       sqlstr_sub1 = "SELECT " +
               "tbl1.dl_at AS dl_at, " +
               "'送信' AS flg, " +
@@ -663,16 +565,48 @@ class SysLogController < ApplicationController
               condition2
 
       sqlstr = sqlstr_sub1 + " UNION ALL " + sqlstr_sub2 + " ORDER BY dl_at DESC"
-      session[:debug] = sqlstr
       @rs = RequestMatter.find_by_sql(sqlstr)
+=end
+#=begin
+      send_dl_logs =
+        FileDlCheck
+        .select(["file_dl_logs.created_at AS dl_at",
+                 "'送信' AS flg",
+                 "receivers.name AS receiver_name",
+                 "receivers.mail_address AS receiver_mail_address",
+                 "attachments.name AS file_name",
+                 "attachments.size AS file_size",
+                 ].join(", "))
+        .joins(:file_dl_logs, :attachment, :receiver)
+        .where(created_at: time..time.at_end_of_month,
+               :download_flg => 1)
+      request_dl_logs =
+        RequestedAttachment
+        .select(["requested_file_dl_logs.created_at AS dl_at",
+                 "'依頼' AS flg",
+                 "request_matters.name AS receiver_name",
+                 "request_matters.mail_address AS receiver_mail_address",
+                 "requested_attachments.name AS file_name",
+                 "requested_attachments.size AS file_size",
+                 ].join(", "))
+        .joins(:requested_file_dl_logs, requested_matter: :request_matter)
+        .where(created_at: time..time.at_end_of_month,
+               :download_flg => 1)
+      @rs =
+        send_dl_logs
+        .union(request_dl_logs)
+        .order(["dl_at DESC",
+                ].join(", "))
+#=end
 
       filename = 'log_receive_' + Time.now.strftime("%Y-%m-%d_%H:%M:%S")
       filename_ws_pass = @params_app_env['FILE_DIR'] + '/' + filename
-      file = open(filename_ws_pass, 'w:shift_jis')
+      file = open(filename_ws_pass, 'w:CP932')
       file << 'ダウンロード日,区分,受信者,受信者メールアドレス,'
       file << 'ファイル名,ファイルサイズ' + "\n"
 
       @rs.each do | data |
+=begin
         file << (Time.parse(data.dl_at.to_s)).
                 strftime("%Y/%m/%d %H:%M:%S") + ","
         file << data.flg + ","
@@ -680,6 +614,18 @@ class SysLogController < ApplicationController
         file << data.receiver_mail_address + ","
         file << data.file_name + ","
         file << data.file_size.to_s + "\n"
+=end
+        str = ''
+        str += (Time.parse(data.dl_at.to_s)).
+                strftime("%Y/%m/%d %H:%M:%S") + ","
+        str += data.flg.to_s + ","
+        str += data.receiver_name.to_s + ","
+        str += data.receiver_mail_address.to_s + ","
+        str += data.file_name.to_s + ","
+        str += data.file_size.to_s + "\n"
+#        str.encode(Encoding::Windows_31J, undef: :replace).encode(Encoding::UTF_8)
+        MAPPINGS.each{|before, after| str = str.gsub(before, after) }
+        file << str.encode(Encoding::Windows_31J, undef: :replace)
       end
       file.close
 
@@ -703,14 +649,18 @@ class SysLogController < ApplicationController
     else
       year = year_mon.slice(0, 4).to_i
       mon = year_mon.slice(4, 2).to_i
-      time = Time.mktime year, mon
-      if condition == ""
-        condition = "WHERE "
+      if year >= 1 && year <= 9999 && mon >=1 && mon <= 12
+        time = Time.mktime year, mon
+        if condition == ""
+          condition = "WHERE "
+        else
+          condition = condition + "AND "
+        end
+        condition = condition + "request_matters.created_at BETWEEN '" + (time.strftime("%Y-%m-%d")) + "' " +
+                "AND '" + (time.at_end_of_month.strftime("%Y-%m-%d")) + "' "
       else
-        condition = condition + "AND "
+        rslt = 1
       end
-      condition = condition + "request_matters.created_at BETWEEN '" + (time.strftime("%Y-%m-%d")) + "' " +
-              "AND '" + (time.at_end_of_month.strftime("%Y-%m-%d")) + "' "
     end
 
     # 不要ログの削除
@@ -720,6 +670,7 @@ class SysLogController < ApplicationController
     end
 
     if rslt == 0
+=begin
       sqlstr = "SELECT " +
               "request_matters.id AS request_matter_id, " +
               "request_matters.name AS request_name, " +
@@ -735,14 +686,35 @@ class SysLogController < ApplicationController
               "ORDER BY request_matters.created_at DESC"
 
       @rs = RequestMatter.find_by_sql(sqlstr)
+=end
+
+#=begin
+      @rs =
+        RequestMatter
+        .select(["request_matters.id AS request_matter_id",
+                 "request_matters.name AS request_name",
+                 "request_matters.mail_address AS request_mail_address",
+                 "request_matters.created_at AS created_at",
+                 "requested_matters.id AS requested_matter_id",
+                 "requested_matters.name AS requested_name",
+                 "requested_matters.name AS requested_name",
+                 "requested_matters.mail_address AS requested_mail_address",
+                 ].join(", "))
+        .joins(:requested_matters)
+        .where(created_at: time..time.at_end_of_month)
+        .order(["request_matters.created_at DESC",
+                "requested_matters.id DESC",
+                ].join(", "))
+#=end
 
       filename = 'log_request_' + Time.now.strftime("%Y-%m-%d_%H:%M:%S")
       filename_ws_pass = @params_app_env['FILE_DIR'] + '/' + filename
-      file = open(filename_ws_pass, 'w:shift_jis')
+      file = open(filename_ws_pass, 'w:CP932')
       file << '登録日,依頼ＩＤ,依頼人,依頼人メールアドレス,'
       file << '送信者名,送信者メールアドレス' + "\n"
 
       @rs.each do | data |
+=begin
         file << (Time.parse(data.created_at.to_s)).
                 strftime("%Y/%m/%d %H:%M:%S") + ","
         file << data.request_matter_id.to_s + ","
@@ -750,6 +722,18 @@ class SysLogController < ApplicationController
         file << data.request_mail_address + ","
         file << data.requested_name + ","
         file << data.requested_mail_address + "\n"
+=end
+        str = ''
+        str += (Time.parse(data.created_at.to_s)).
+                strftime("%Y/%m/%d %H:%M:%S") + ","
+        str += data.request_matter_id.to_s + ","
+        str += data.request_name.to_s + ","
+        str += data.request_mail_address.to_s + ","
+        str += data.requested_name.to_s + ","
+        str += data.requested_mail_address.to_s + "\n"
+#        str.encode(Encoding::Windows_31J, undef: :replace).encode(Encoding::UTF_8)
+        MAPPINGS.each{|before, after| str = str.gsub(before, after) }
+        file << str.encode(Encoding::Windows_31J, undef: :replace)
       end
       file.close
 
@@ -763,15 +747,14 @@ class SysLogController < ApplicationController
 
   # 送信情報を表示
   def send_matter_info
-#    @send_matter = SendMatter.find(:first, :conditions => { :id => params['id'] })
     @send_matter =
         SendMatter
         .where(:id => params['id'])
         .first
-#    @receivers = Receiver.find(:all, :conditions => { :send_matter_id => params['id'] })
     @receivers =
         Receiver
         .where(:send_matter_id => params['id'])
+=begin
     sqlstr = "SELECT " +
           "attachments.id AS id, " +
           "attachments.created_at AS created_at, " +
@@ -786,6 +769,21 @@ class SysLogController < ApplicationController
           "ORDER BY attachments.id DESC"
 
     @attachments = Attachment.find_by_sql(sqlstr)
+=end
+    @attachments =
+      Attachment
+      .select(["attachments.id as id",
+               "attachments.created_at as created_at",
+               "attachments.name as name",
+               "attachments.size as size",
+               "attachments.content_type as content_type",
+               "attachments.virus_check as virus_check",
+               "file_dl_checks.download_flg as download_flg",
+               ].join(", "))
+      .left_joins(:file_dl_checks)
+      .where(:send_matter_id => params[:id])
+      .order(["attachments.id ASC",
+              ].join(", "))
 
     if @send_matter.download_check
       @download_check = transfer_download_check(@send_matter.download_check)
@@ -807,12 +805,10 @@ class SysLogController < ApplicationController
 
   # 受信情報を表示
   def requested_matter_info
-#    @requested_matter = RequestedMatter.find(:first,:conditions => { :id => params['id'] })
     @requested_matter =
         RequestedMatter
         .where(:id => params['id'])
         .first
-#    @requested_attachments = RequestedAttachment.find(:all, :conditions => { :requested_matter_id => @requested_matter.id })
     @requested_attachments =
         RequestedAttachment
         .where(:requested_matter_id => @requested_matter.id)

@@ -14,7 +14,7 @@ class UserEnvironmentController < ApplicationController
         flash[:notice] = t("user_environment.create..message.ok")
         format.html { redirect_to :action => 'index' }
       else
-        flash[:notice] = t("user_environment.create..message.ng")
+        flash[:error] = t("user_environment.create..message.ng")
         format.html { render action: "edit" }
       end
     end

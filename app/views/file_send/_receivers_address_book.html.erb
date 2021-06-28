@@ -5,7 +5,7 @@
     <span class="note">注意：CSVファイル読込みをすると、すでに入力されている受取人情報は削除されます。</span>
   </span>
   <br />
-  <span class="left">宛先は最大<%= h @params_app_env['RECEIVERS_LIMIT'] %> 名まで追加できます。<br /><br />
+  <span class="left">宛先は最大<%= h @params_app_env['RECEIVERS_LIMIT'].to_i %> 名まで追加できます。<br /><br />
     <%= image_tag('common/name_s.jpg') %>&nbsp;相手のお名前<span class="required">※</span><br />
     <%= image_tag('common/mail_s.jpg') %>&nbsp;相手のメールアドレス<span class="required">※</span>&nbsp;&nbsp;<span class="note">例）name1@example.com</span>
 </div>
@@ -32,12 +32,12 @@
     end
 %>
     <% if session[:user_id].present? && @show_receiver_flg == 0 -%>
-      <div class="re_address_p"><div class="re_address" onclick="open_modal_window('/address_books/index_sub?recipient_number=<%= i %>', 'modal');" title="アドレス帳"></div></div>
+      <div class="re_address_p"><div class="re_address" onclick="open_modal_window('<%= url_for(:controller => 'address_books', :action => 'index_sub', :recipient_number => i) %>', 'modal');" title="アドレス帳"></div></div>
     <% end %>
     </div>
     <div class="input-l">
-      <%= image_tag('common/name.jpg', :align => "left") %><%= f2.text_field :name, :class => 'validate[required]', :size => 30, :index => i %> 様<br />
-      <%= image_tag('common/mail.jpg', :align => "left") %><%= f2.text_field :mail_address, :class => 'validate[required, custom[email]]', :size => 40, :index => i %>
+      <%= image_tag('common/name.jpg', :align => "left") %><%= f2.text_field :name, :class => 'validate[required, maxSize[72]]', :size => 30, :index => i %> 様<br />
+      <%= image_tag('common/mail.jpg', :align => "left") %><%= f2.text_field :mail_address, :class => 'validate[required, maxSize[255], custom[email]]', :size => 40, :index => i %>
     </div>
     <div class="input-r"></div>
     <div id="receiver_form"></div>

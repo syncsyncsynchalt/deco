@@ -1,7 +1,7 @@
 <script type="text/javascript">
 $(function() {
     $("#address_back_button").click(function(){
-      location.href = '/address_books';
+      location.href = '<%= address_books_path %>';
     });
     $("#address_submit_button").click(function(){
       $("form").submit();
@@ -34,25 +34,25 @@ $(document).ready(function() {
       <%= f.label :organization %>
     </div>
     <div class="input-top">
-      <%= f.text_field :organization, :class => '', :size => 50 %>
+      <%= f.text_field :organization, :class => 'validate[maxSize[20]]', :size => 40 %>
     </div>
     <div class="item-mid">
       <%= f.label :name %><span class="required">※</span>
     </div>
     <div class="input-mid">
-      <%= f.text_field :name, :class => 'validate[required]', :size => 50 %>
+      <%= f.text_field :name, :class => 'validate[required, maxSize[50]]', :size => 40 %>
     </div>
     <div class="item-mid">
       <%= f.label :email %><span class="required">※</span>
     </div>
     <div class="input-mid">
-      <%= f.text_field :email, :class => 'validate[required, custom[email]]', :size => 50 %>
+      <%= f.text_field :email, :class => 'validate[required, maxSize[255], custom[email]]', :size => 40 %>
     </div>
     <div class="item-bot">
       <%= f.label :notes %>
     </div>
     <div class="input-bot">
-      <%= f.text_field :notes, :size => 50 %>
+      <%= f.text_field :notes, :class => 'validate[maxSize[100]]', :size => 40 %>
     </div>
   </div>
 

@@ -1,48 +1,37 @@
 <script type="text/javascript">
-
-localDomains = ""
-
-
-$(document).ready(function() {
-  $.validationEngineLanguage.newLang(localDomains);
-  $("#user").validationEngine({
-    success : function() { document.app_env1.submit(); },
-    failure : function() {}
-  })
-});
+  var localDomains = "";
+  $(document).ready(function() {
+    $.validationEngineLanguage.newLang(localDomains);
+    $("#user").validationEngine();
+  });
 </script>
+
 <fieldset>
-<h2>ユーザ登録</h2>
-
-<%#= error_messages_for :user %>
-<% for message in @user.errors.full_messages %>
-  <li><%= message %></li>
-<% end %>
-<%= form_for(:user, :url => { :controller => 'user', :action => 'create'}, 
-    :html => {:id => 'user', :name=> "user" }) do |f| -%>
-
-<%= f.hidden_field :category, {:value => @category} %>
-<div class="table-sys-a">
+  <h2>ユーザ登録</h2>
+  <%= form_for(:user, :url => { :controller => 'user', :action => 'create'}, 
+      :html => {:id => 'user', :name=> "user" }) do |f| -%>
+    <%= f.hidden_field :category, {:value => @category} %>
+    <div class="table-sys-a">
       <div class="item-mid2">ユーザＩＤ</div>
-      <div class="input-mid2"><%= f.text_field :login, :class => 'validate[required]' %></div>
+      <div class="input-mid2"><%= f.text_field :login, :class => "validate[required, maxSize[30], custom[onlyHalfWidthAlphanumeric], funcCall[validateLogin[]]]" %></div>
       <div class="item-mid2">ユーザ名</div>
-      <div class="input-mid2"><%= f.text_field :name, :class => 'validate[required]' %></div>
+      <div class="input-mid2"><%= f.text_field :name, :class => 'validate[required, maxSize[50]]' %></div>
       <div class="item-mid2">パスワード</div>
-      <div class="input-mid2"><%= f.password_field :password, :class => 'validate[required]' %></div>
+      <div class="input-mid2"><%= f.password_field :password, :class => 'validate[required, minSize[4], maxSize[40], custom[password]]' %></div>
       <div class="item-mid2">パスワード（確認）</div>
       <div class="input-mid2"><%= f.password_field :password_confirmation, :class => 'validate[required, equals[user_password]]' %></div>
       <div class="item-mid2">メールアドレス</div>
-      <div class="input-mid2"><%= f.text_field :email, :class => 'validate[required, custom[email]]' %></div>
+      <div class="input-mid2"><%= f.text_field :email, :class => 'validate[required, maxSize[255], custom[email]]' %></div>
       <div class="item-mid2">備考</div>
-      <div class="input-mid2"><%= f.text_area :note, :cols => '40', :rows => '10' %></div>
+      <div class="input-mid2"><%= f.text_area :note, :cols => '40', :rows => '10', :class => 'validate[maxSize[400]]'  %></div>
       <div class="item-mid2"></div>
       <div class="input-mid2" align="center"><%= submit_tag ' 登録 ' %></div>
-</div>
-<% end -%>
-
+    </div>
+  <% end -%>
 </fieldset>
 
 <br>
+<div align="left">
 <% if session[:target_for_back_id] -%>
 <%= link_to "戻る", {:controller => 'sys_user',
                      :action => session[:target_for_back],
@@ -51,4 +40,5 @@ $(document).ready(function() {
 <%= link_to "戻る", {:controller => 'sys_user',
                      :action => session[:target_for_back]} %><br />
 <% end -%>
+</div>
 <br><br>

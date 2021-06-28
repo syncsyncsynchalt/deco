@@ -13,7 +13,8 @@
 <br>
 
 データ数：<%= @total_data %>　
-[ <%= raw @part_of_page %> ]
+[ <%#= raw @part_of_page %>
+<%= render '/layouts/original_paginate', controller: 'sys_log', action: 'receive_log', page: @page, total_page: @total_page, w_in: 4, w_out: 2 %> ]
 　<%#= link_to 'CSV保存', {:action => 'get_csv_of_receive_log'} %><br>
 
 <% count = 0 -%>

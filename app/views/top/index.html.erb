@@ -3,14 +3,17 @@
 <%- for announcement in @announcements -%>
   <%- cnt = cnt + 1 -%>
 <script type="text/javascript">
-announcement_body_flg_<%= cnt %> = 0;
+<% if announcement.body_show_flg == 1
+     body_show_flg = 1
+   else
+     body_show_flg = 0
+   end %>
+announcement_body_flg_<%= cnt %> = <%= body_show_flg %>;
 
 function display_<%= cnt %> () {
   if (announcement_body_flg_<%= cnt %> == 0) {
-    $("#announcement_body_<%= cnt %>").css("display","block");
-    
-
     announcement_body_flg_<%= cnt %> = 1;
+    $("#announcement_body_<%= cnt %>").css("display","block");
   } else {
     announcement_body_flg_<%= cnt %> = 0;
     $("#announcement_body_<%= cnt %>").css("display","none");
@@ -18,7 +21,17 @@ function display_<%= cnt %> () {
 }
 </script>
       <div id="announcement_title" onclick="display_<%= cnt %>()"><%= announcement.updated_at.strftime('%Y/%m/%d %H:%M') %>　<%= announcement.title %></div><br>
-<div id='announcement_body_<%= cnt %>' style="display:none;"><%= simple_format(announcement.body, {}, wrapper_tag: "div") %><br><br></div>
+<div id='announcement_body_<%= cnt %>' style="display:<% if body_show_flg == 1 %>block<% else %>none<% end %>;">
+  <%#= simple_format(announcement.body, {}, wrapper_tag: "div") %>
+  <% count = 0 %>
+  <% for key_word in announcement.body.split(/\r\n|\r|\n/) %>
+    <% unless count == 0 %>
+    <% end %>
+    <div><%= key_word -%></div>
+    <% count += 1 %>
+  <% end %>
+  <br><br>
+</div>
 <%- end -%>
 <%- if cnt == 0 -%>
   現在、お知らせはありません。<br>

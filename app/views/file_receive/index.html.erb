@@ -43,7 +43,18 @@
   <% if @send_matter.message == '' %>
     <div class="input-mid">　</div>
   <% else %>
-    <div class="input-mid"><%= simple_format(@send_matter.message, {}, wrapper_tag: "div") %></div>
+    <div class="input-mid">
+      <%#= simple_format(@send_matter.message, {}, wrapper_tag: "div") -%>
+    <%- if @send_matter.message.present? -%>
+    <%- message_count = 0 -%>
+    <%- for key_word in @send_matter.message.split(/\r\n|\r|\n/) -%>
+      <%- unless message_count == 0 -%>
+      <%- end -%>
+      <div><%= key_word -%></div>
+      <%- message_count += 1 -%>
+    <%- end -%>
+    <%- end -%>
+    </div>
   <% end %>
   <div class="item-mid">ファイル保管期限</div>
 <% if @send_matter.sent_at.present? %>

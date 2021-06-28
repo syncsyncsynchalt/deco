@@ -19,15 +19,42 @@
     end
     if @show_sender_flg == 0
 %>
-    <div class="item-top">あなたの名前<span class="required">※</span></div>
-    <div class="input-top"><%= f.text_field :name, :class => 'validate[required]', :size => 30 %></div>
-    <div class="item-bot">あなたのメールアドレス<span class="required">※</span></div>
+      <div class="item-top">あなたの名前<span class="required">※</span></div>
+      <div class="input-top"><%= f.text_field :name, :class => 'validate[required, maxSize[72]]', :size => 30 %></div>
+      <div class="item-bot">あなたのメールアドレス<span class="required">※</span></div>
       <%- if @local_ips.select{ |local_ip| IPAddr.new(local_ip.value).include?(@access_ip) }.size > 0 -%>
-    <div class="input-bot"><%= f.text_field :mail_address, :class => 'validate[required]', :size => 20 %>@<%= select_tag 'mail_domain', options_for_select(@local_domain_list.each_with_index {| local_domain, i |  [ local_domain, local_domain ]}, @request_matter.mail_domain), :include_blank => true, :class => 'validate[required]' %>
-    <br /><span class="note">例）<% @local_domain_list.each_with_index do | local_domain, i | %> tokushima_tarou_1@<b><%= h local_domain %></b><% if i + 1 < @local_domain_list.size %>, <%- end -%><%- end -%></span></div>
+        <div class="input-bot">
+          <%= 
+          f.text_field :mail_address, 
+            :class => 'validate[required, funcCall[emailAccountMaxSize[255, mail_domain]], custom[emailAccount]]]', 
+            :size => 20 
+          %>
+          @
+          <%= 
+          select_tag 'mail_domain', 
+            options_for_select(@local_domain_list.each_with_index {|local_domain, i| [local_domain, local_domain]}, @request_matter.mail_domain), 
+            :include_blank => true, 
+            :class => 'validate[required]' 
+          %>
+          <br />
+          <span class="note">
+            例）
+            <% @local_domain_list.each_with_index do |local_domain, i| %> 
+              tokushima_tarou_1@<b><%= h local_domain %></b>
+              <% if i + 1 < @local_domain_list.size %>, <%- end -%>
+            <%- end -%>
+          </span>
+        </div>
       <%- else -%>
-    <div class="input-bot"><%= f.text_field :mail_address, :class => 'validate[required, custom[email]]', :size => 40 -%>
-      <br /><span class="note">例）name1@example.com</span>
+        <div class="input-bot">
+          <%= 
+          f.text_field :mail_address, 
+            :class => 'validate[required, maxSize[255], custom[email]]', 
+            :size => 40 
+          -%>
+          <br />
+          <span class="note">例）name1@example.com</span>
+        </div>
       <%- end -%>
     <%- end -%>
   </div>

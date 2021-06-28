@@ -17,7 +17,8 @@
 # Filters added to this controller apply to all controllers in the application.
 # Likewise, all the methods added will be available for all controllers.
 class RequestedFileSendController < ApplicationController
-  protect_from_forgery :except => [:upload]
+#  protect_from_forgery :except => [:upload]
+  protect_from_forgery with: :exception
   before_action :load_env
 
   def blank
@@ -94,10 +95,12 @@ class RequestedFileSendController < ApplicationController
         session[:"#{@url_code}"]['auth'] = "yes"
         redirect_to :action => 'index'
       else
+        session.delete(:"#{@url_code}")
         flash[:notice] = "ファイルの送信依頼期限を過ぎています。"
         redirect_to :action => 'blank'
       end
     else
+      session.delete(:"#{@url_code}")
       flash[:notice] = "パスワードが違います。"
       redirect_to :action => 'login', :params =>
               { :id => @requested_matter.url }
@@ -107,7 +110,7 @@ class RequestedFileSendController < ApplicationController
   # 依頼送信フォーム画面
   def index
     @url_code = session[:request_send_url_code]
-    if session[:"#{@url_code}"]['auth'] == 'yes'
+    if session[:"#{@url_code}"].present? && session[:"#{@url_code}"]['auth'] == 'yes'
 #      @file_life_period_vals = AppEnv.find(:all,
 #              :conditions => { :key => "FILE_LIFE_PERIOD" },
 #              :order => 'id ASC' )
@@ -143,20 +146,10 @@ class RequestedFileSendController < ApplicationController
     end
   end
 
-  def index_flash
-    index()
-  end
-
-  # flashなしメッセージ画面
-  def noflash
-    flash[:notice] = 'Flash Player がインストールされていないか本サービスが
-                      利用できないバージョンです。'
-  end
-
   # 入力フォーム flashなし
   def  index_noflash
     @url_code = session[:request_send_url_code]
-    if session[:"#{@url_code}"]['auth'] == 'yes'
+    if session[:"#{@url_code}"].present? && session[:"#{@url_code}"]['auth'] == 'yes'
 #      @file_life_period_vals = AppEnv.find(:all,
 #              :conditions => { :key => "FILE_LIFE_PERIOD" },
 #              :order => 'id ASC' )
@@ -218,6 +211,13 @@ class RequestedFileSendController < ApplicationController
             file_data = file.tempfile.read
             file_name = file.original_filename
           end
+        end
+
+        server_directory = @params_app_env['FILE_DIR']
+        if !File.exists?(server_directory)
+          raise "upload failure"
+        elsif !File.directory?(server_directory)
+          raise "upload failure"
         end
 
         tmp_path = @params_app_env['FILE_DIR'] if file_data
@@ -293,9 +293,15 @@ class RequestedFileSendController < ApplicationController
     session[:request_send_url_code] = @requested_matter.url
 
     unless @requested_matter.file_up_date
-      render :plain => "success!"
 
       ActiveRecord::Base.transaction do
+        server_directory = @params_app_env['FILE_DIR']
+        if !File.exists?(server_directory)
+          raise "upload failure"
+        elsif !File.directory?(server_directory)
+          raise "upload failure"
+        end
+
         @requested_attachment = RequestedAttachment.new()
         @requested_attachment.name = params[:Filename]
         @requested_attachment.size = params[:Filedata].size
@@ -332,6 +338,7 @@ class RequestedFileSendController < ApplicationController
           @requested_attachment.save
         end
       end
+      render :plain => "success!"
     end
   end
 
@@ -346,7 +353,7 @@ class RequestedFileSendController < ApplicationController
 
     @url_code =params[:requested_matter_url]
 
-    if session[:"#{@url_code}"]['requested_matter_id'] ==
+    if session[:"#{@url_code}"].present? && session[:"#{@url_code}"]['requested_matter_id'] ==
             @requested_matter.id
       session[:request_send_url_code] = @requested_matter.url
 
@@ -399,27 +406,50 @@ class RequestedFileSendController < ApplicationController
             end
             redirect_to :action => 'send_ng' and return
           end
-          ActiveRecord::Base.transaction do
-            @virus_attachments = Array.new
-            @requested_attachments.each do |attachment|
-              unless attachment.virus_check == '0' ||
-                      attachment.virus_check == nil
-                @virus_attachments.push attachment
+
+#          ActiveRecord::Base.transaction do
+#            @virus_attachments = Array.new
+#            @requested_attachments.each do |attachment|
+#              unless attachment.virus_check == '0' ||
+#                      attachment.virus_check == nil
+#                @virus_attachments.push attachment
+#              end
+#            end
+#            @requested_matter.update_attributes(requested_matters_params(params[:requested_matter]))
+#            @requested_matter.url_operation =
+#                    generate_random_strings(@requested_matter.name)
+#            @requested_matter.file_up_date = DateTime.now
+#            @requested_matter.save!
+#
+#            unless @requested_matter.save!
+#              render :action => 'index'
+#            end
+#
+#            redirect_to :action => 'result',
+#                    :id => @requested_matter.url_operation
+#          end
+
+          begin
+            ActiveRecord::Base.transaction do
+              @virus_attachments = Array.new
+              @requested_attachments.each do |attachment|
+                unless attachment.virus_check == '0' ||
+                        attachment.virus_check == nil
+                  @virus_attachments.push attachment
+                end
               end
+              @requested_matter.update_attributes(requested_matters_params(params[:requested_matter]))
+              @requested_matter.url_operation = generate_random_strings(@requested_matter.name)
+              @requested_matter.file_up_date = DateTime.now
+              @requested_matter.save!
             end
-            @requested_matter.update_attributes(requested_matters_params(params[:requested_matter]))
-            @requested_matter.url_operation =
-                    generate_random_strings(@requested_matter.name)
-            @requested_matter.file_up_date = DateTime.now
-            @requested_matter.save!
-
-            unless @requested_matter.save!
-              render :action => 'index'
-            end
-
-            redirect_to :action => 'result',
-                    :id => @requested_matter.url_operation
+          rescue => e
+            logger.error "#{e.class} (#{e.message}):\n#{Rails.backtrace_cleaner.clean(e.backtrace).join("\n").indent(1)}"
+            flash[:notice] = '送信失敗しました。もう一度送信してください。'
+            redirect_to :action => 'send_ng' and return
           end
+
+          redirect_to :action => 'result', :id => @requested_matter.url_operation
 
           port = get_port()
           full_url_dl = port + "://" + @params_app_env['URL'] +
@@ -481,7 +511,7 @@ class RequestedFileSendController < ApplicationController
 
     @url_code =params[:requested_matter_url]
 
-    if session[:"#{@url_code}"]['requested_matter_id'] ==
+    if session[:"#{@url_code}"].present? && session[:"#{@url_code}"]['requested_matter_id'] ==
             @requested_matter.id
       session[:request_send_url_code] = @requested_matter.url
 
@@ -514,101 +544,192 @@ class RequestedFileSendController < ApplicationController
             end
           end
 
-          ActiveRecord::Base.transaction do
-            @virus_attachments = Array.new
-
+#          ActiveRecord::Base.transaction do
+#            @virus_attachments = Array.new
+#
+##            @requested_matter.update_attributes(requested_matters_params(params[:requested_matter]))
+##            @requested_matter.url_operation =
+##                    generate_random_strings(@requested_matter.name)
+##            @requested_matter.file_up_date = DateTime.now
+##            @requested_matter.status = 1
+##            @requested_matter.save!
+#
+#            @requested_attachments = Array.new
+#            @virus_down_attachments = Array.new
+#            @virus_error_attachments = Array.new
+#
+#            params[:attachment].each do |key, value|
+#
+#              @requested_attachment = RequestedAttachment.new()
+#              @requested_attachment.name = value[:file].original_filename
+#              @requested_attachment.size = value[:file].size
+#              @requested_attachment.download_flg = 0
+#              @requested_attachment.requested_matter_id = @requested_matter.id
+#              @requested_attachment.save!
+#
+#              file_path = "#{@params_app_env['FILE_DIR']}/r#{@requested_attachment.id}"
+#              File.open(file_path, "w") do |f|
+#                f.binmode
+#                f.write(value[:file].read)
+#              end
+#              if (MIME::Types.type_for(value[:file].original_filename)[0])
+#                @requested_attachment.content_type = MIME::Types.
+#                        type_for(value[:file].original_filename)[0].content_type
+#              else
+#                @requested_attachment.content_type = ''
+#              end
+#              @requested_attachment.file_save_pass = file_path
+#              @requested_attachment.save!
+#              if @params_app_env['VIRUS_CHECK'] == '1'
+#                # Virus Check
+#                @virus_check_result = get_virus_status(file_path)
+#                @requested_attachment.virus_check = @virus_check_result
+#                @requested_attachment.save!
+#                unless @virus_check_result == '0'
+#                  if File.exist?(file_path)
+#                    File.delete(file_path)
+#                  end
+#                  @virus_attachments.push @requested_attachment
+#                end
+#              else
+#                @requested_attachment.virus_check = '0'
+#                @requested_attachment.save!
+#              end
+#
+#              @requested_attachments.push @requested_attachment
+#              unless @requested_attachment.virus_check == '0' ||
+#                 @requested_attachment.virus_check == nil
+#                if @requested_attachment.virus_check == t("virus_check_status.virus_check_down")
+#                  @virus_down_attachments.push @requested_attachment
+#                elsif @requested_attachment.virus_check == t("virus_check_status.error")
+#                  @virus_error_attachments.push @requested_attachment
+#                end
+#              end
+#            end
+#
+#            if @requested_attachments.length == @virus_down_attachments.length
+#              flash[:notice] = 'ウィルスチェック機能が正常に動作していません。'
+#              for requested_attachment in @requested_attachments
+#                filename = @params_app_env['FILE_DIR'] + "/r" + requested_attachment.id.to_s
+#                if File.exist?(filename)
+#                  File.delete(filename)
+#                end
+#                requested_attachment.destroy
+#              end
+#              redirect_to :action => 'send_ng2' and return
+#            elsif @requested_attachments.length == @virus_error_attachments.length
+#              flash[:notice] = '送信失敗しました。もう一度送信してください。'
+#              for requested_attachment in @requested_attachments
+#                filename = @params_app_env['FILE_DIR'] + "/r" + requested_attachment.id.to_s
+#                if File.exist?(filename)
+#                  File.delete(filename)
+#                end
+#                requested_attachment.destroy
+#              end
+#              redirect_to :action => 'send_ng' and return
+#            end
+#
 #            @requested_matter.update_attributes(requested_matters_params(params[:requested_matter]))
 #            @requested_matter.url_operation =
 #                    generate_random_strings(@requested_matter.name)
 #            @requested_matter.file_up_date = DateTime.now
 #            @requested_matter.status = 1
 #            @requested_matter.save!
+#          end
 
-            @requested_attachments = Array.new
-            @virus_down_attachments = Array.new
-            @virus_error_attachments = Array.new
+          begin
+            ActiveRecord::Base.transaction do
+              @virus_attachments = Array.new
 
-            params[:attachment].each do |key, value|
+              @requested_attachments = Array.new
+              @virus_down_attachments = Array.new
+              @virus_error_attachments = Array.new
 
-              @requested_attachment = RequestedAttachment.new()
-              @requested_attachment.name = value[:file].original_filename
-              @requested_attachment.size = value[:file].size
-              @requested_attachment.download_flg = 0
-              @requested_attachment.requested_matter_id = @requested_matter.id
-              @requested_attachment.save!
+              params[:attachment].each do |key, value|
 
-              file_path = "#{@params_app_env['FILE_DIR']}/r#{@requested_attachment.id}"
-              File.open(file_path, "w") do |f|
-                f.binmode
-                f.write(value[:file].read)
-              end
-              if (MIME::Types.type_for(value[:file].original_filename)[0])
-                @requested_attachment.content_type = MIME::Types.
-                        type_for(value[:file].original_filename)[0].content_type
-              else
-                @requested_attachment.content_type = ''
-              end
-              @requested_attachment.file_save_pass = file_path
-              @requested_attachment.save!
-              if @params_app_env['VIRUS_CHECK'] == '1'
-                # Virus Check
-                @virus_check_result = get_virus_status(file_path)
-                @requested_attachment.virus_check = @virus_check_result
+                @requested_attachment = RequestedAttachment.new()
+                @requested_attachment.name = value[:file].original_filename
+                @requested_attachment.size = value[:file].size
+                @requested_attachment.download_flg = 0
+                @requested_attachment.requested_matter_id = @requested_matter.id
                 @requested_attachment.save!
-                unless @virus_check_result == '0'
-                  if File.exist?(file_path)
-                    File.delete(file_path)
+
+                file_path = "#{@params_app_env['FILE_DIR']}/r#{@requested_attachment.id}"
+                File.open(file_path, "w") do |f|
+                  f.binmode
+                  f.write(value[:file].read)
+                end
+                if (MIME::Types.type_for(value[:file].original_filename)[0])
+                  @requested_attachment.content_type = MIME::Types.
+                          type_for(value[:file].original_filename)[0].content_type
+                else
+                  @requested_attachment.content_type = ''
+                end
+                @requested_attachment.file_save_pass = file_path
+                @requested_attachment.save!
+                if @params_app_env['VIRUS_CHECK'] == '1'
+                  # Virus Check
+                  @virus_check_result = get_virus_status(file_path)
+                  @requested_attachment.virus_check = @virus_check_result
+                  @requested_attachment.save!
+                  unless @virus_check_result == '0'
+                    if File.exist?(file_path)
+                      File.delete(file_path)
+                    end
+                    @virus_attachments.push @requested_attachment
                   end
-                  @virus_attachments.push @requested_attachment
+                else
+                  @requested_attachment.virus_check = '0'
+                  @requested_attachment.save!
                 end
-              else
-                @requested_attachment.virus_check = '0'
-                @requested_attachment.save!
+
+                @requested_attachments.push @requested_attachment
+                unless @requested_attachment.virus_check == '0' ||
+                   @requested_attachment.virus_check == nil
+                  if @requested_attachment.virus_check == t("virus_check_status.virus_check_down")
+                    @virus_down_attachments.push @requested_attachment
+                  elsif @requested_attachment.virus_check == t("virus_check_status.error")
+                    @virus_error_attachments.push @requested_attachment
+                  end
+                end
               end
 
-              @requested_attachments.push @requested_attachment
-              unless @requested_attachment.virus_check == '0' ||
-                 @requested_attachment.virus_check == nil
-                if @requested_attachment.virus_check == t("virus_check_status.virus_check_down")
-                  @virus_down_attachments.push @requested_attachment
-                elsif @requested_attachment.virus_check == t("virus_check_status.error")
-                  @virus_error_attachments.push @requested_attachment
+              if @requested_attachments.length == @virus_down_attachments.length
+                flash[:notice] = 'ウィルスチェック機能が正常に動作していません。'
+                for requested_attachment in @requested_attachments
+                  filename = @params_app_env['FILE_DIR'] + "/r" + requested_attachment.id.to_s
+                  if File.exist?(filename)
+                    File.delete(filename)
+                  end
+                  requested_attachment.destroy
                 end
+                redirect_to :action => 'send_ng2' and return
+              elsif @requested_attachments.length == @virus_error_attachments.length
+                flash[:notice] = '送信失敗しました。もう一度送信してください。'
+                for requested_attachment in @requested_attachments
+                  filename = @params_app_env['FILE_DIR'] + "/r" + requested_attachment.id.to_s
+                  if File.exist?(filename)
+                    File.delete(filename)
+                  end
+                  requested_attachment.destroy
+                end
+                redirect_to :action => 'send_ng' and return
               end
+
+              @requested_matter.update_attributes(requested_matters_params(params[:requested_matter]))
+              @requested_matter.url_operation =
+                      generate_random_strings(@requested_matter.name)
+              @requested_matter.file_up_date = DateTime.now
+              @requested_matter.status = 1
+              @requested_matter.save!
             end
-
-            if @requested_attachments.length == @virus_down_attachments.length
-              flash[:notice] = 'ウィルスチェック機能が正常に動作していません。'
-              for requested_attachment in @requested_attachments
-                filename = @params_app_env['FILE_DIR'] + "/r" + requested_attachment.id.to_s
-                if File.exist?(filename)
-                  File.delete(filename)
-                end
-                requested_attachment.destroy
-              end
-              redirect_to :action => 'send_ng2' and return
-            elsif @requested_attachments.length == @virus_error_attachments.length
-              flash[:notice] = '送信失敗しました。もう一度送信してください。'
-              for requested_attachment in @requested_attachments
-                filename = @params_app_env['FILE_DIR'] + "/r" + requested_attachment.id.to_s
-                if File.exist?(filename)
-                  File.delete(filename)
-                end
-                requested_attachment.destroy
-              end
-              redirect_to :action => 'send_ng' and return
-            end
-
-            @requested_matter.update_attributes(requested_matters_params(params[:requested_matter]))
-            @requested_matter.url_operation =
-                    generate_random_strings(@requested_matter.name)
-            @requested_matter.file_up_date = DateTime.now
-            @requested_matter.status = 1
-            @requested_matter.save!
+          rescue => e
+            logger.error "#{e.class} (#{e.message}):\n#{Rails.backtrace_cleaner.clean(e.backtrace).join("\n").indent(1)}"
+            flash[:notice] = '送信失敗しました。もう一度送信してください。'
+            redirect_to :action => 'send_ng' and return
           end
 
-          redirect_to :action => 'result',
-                  :id => @requested_matter.url_operation
+          redirect_to :action => 'result', :id => @requested_matter.url_operation
 
           @requested_attachments = @requested_matter.requested_attachments
 

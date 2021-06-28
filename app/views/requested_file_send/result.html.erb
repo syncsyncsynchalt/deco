@@ -50,13 +50,11 @@ function disp(message, link){
           <% end %>
         <% else %>
           <div class="input-r">
-            <%#= link_to image_tag('common/delete.jpg', {:border => '0', :alt => '削除'}),
-                                 {:action => 'delete', :id => attachment.id},
-                                 {:onclick => "disp('削除しますか？', '/requested_file_send/delete/#{attachment.id}'); return false;", :method => "post"} %>
             <%= link_to image_tag('common/delete.jpg',
             {:border => '0', :alt => '削除'}),
             {:action => 'delete', :id => attachment.id},
-             :data => {:confirm => '削除しますか？'} -%>
+             :data => {:confirm => '削除しますか？'},
+             method: :delete -%>
           </div>
         <% end %>
       <% end %>
@@ -78,7 +76,18 @@ function disp(message, link){
       <% if @requested_matter.message == '' %>
       <div class="input-mid">　</div>
       <% else %>
-      <div class="input-mid"><%= simple_format(@requested_matter.message, {}, wrapper_tag: "div") %></div>
+      <div class="input-mid">
+        <%#= simple_format(@requested_matter.message, {}, wrapper_tag: "div") %>
+        <%- if @requested_matter.message.present? -%>
+        <%- message_count = 0 -%>
+        <%- for key_word in @requested_matter.message.split(/\r\n|\r|\n/) -%>
+          <%- unless message_count == 0 -%>
+          <%- end -%>
+          <div><%= key_word -%></div>
+          <%- message_count += 1 -%>
+        <%- end -%>
+        <%- end -%>
+      </div>
       <% end %>
 
 <div class="item-mid">ダウンロードページ</div>

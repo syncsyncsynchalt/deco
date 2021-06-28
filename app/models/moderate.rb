@@ -22,4 +22,23 @@ class Moderate < ActiveRecord::Base
   has_many :send_moderates
   has_many :request_moderates
   has_many :user
+  
+  # 決済ルート名
+  validates :name, presence: true
+  validates :name, allow_blank: true,
+    length: { maximum: 30 }
+  
+  # ルート
+#  validates :route, presence: true
+#  validates :route, allow_blank: true
+  
+  # タイプフラグ
+  validates :type_flag, presence: true
+  validates :type_flag, allow_blank: true, 
+    inclusion: { in: [0, 1] }
+
+  # 使用フラグ
+#  validates :use_flag, presence: true
+#  validates :use_flag, allow_blank: true, 
+#    inclusion: { in: [0, 1] }
 end

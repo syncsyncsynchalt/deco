@@ -66,6 +66,7 @@ class RequestedFileReceiveController < ApplicationController
 
       redirect_to :action => 'index'
     else
+      session.delete(:"#{@url_code}")
       flash[:notice] = "パスワードが違います。"
       redirect_to :action => 'login',
               :params => { :id => @requested_matter.url }
@@ -76,7 +77,7 @@ class RequestedFileReceiveController < ApplicationController
   # ファイル受け取り画面
   def index
     @url_code = session[:request_receive_url_code]
-    if session[:"#{@url_code}"]['r_auth'] == 'yes'
+    if session[:"#{@url_code}"].present? && session[:"#{@url_code}"]['r_auth'] == 'yes'
 
       @requested_matter = RequestedMatter.
               find(session[:"#{@url_code}"]['requested_matter_id'])
@@ -104,7 +105,7 @@ class RequestedFileReceiveController < ApplicationController
   # ファイルのダウンロード
   def get
     @url_code = session[:request_receive_url_code]
-    if session[:"#{@url_code}"]['r_auth'] == 'yes'
+    if session[:"#{@url_code}"].present? && session[:"#{@url_code}"]['r_auth'] == 'yes'
       @requested_attachment = RequestedAttachment.find(params[:id])
 
       if @requested_attachment.requested_matter.id ==

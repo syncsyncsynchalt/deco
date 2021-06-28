@@ -172,14 +172,13 @@ module Nmt
                        :id => content_item.id.to_s) +
                "\" border=0>" + "<\/a>"
     when 7
-      string = "<div class=\"center\">" +
-        "<font color=\"#778899\">Powered by</font> " +
-        "<a href=\"http\:\/\/deco-project.org\">" +
-        "<img src=\"" +
-               url_for(:controller => :assets,
-                       :action => :common) +"/deco_s2.jpg\" alt=\"powerd by DECO\" " +
-        "align=\"bottom\" style=\"vertical-align\: middle\;\" border=0>" +
-        "</a></div>"
+#      string = "<div class=\"center\">" +
+#        "<font color=\"#778899\">Powered by</font> " +
+#        "<a href=\"http\:\/\/deco-project.org\">" +
+#        "<img src=\"" +
+#               image_tag("common/deco_s2.jpg", :alt => "powerd by DECO",
+#        :align => "bottom", :style => "vertical-align: middle;", :border => 0) +
+#        "</a></div>"
     end
 
     return string

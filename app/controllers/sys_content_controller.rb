@@ -87,10 +87,13 @@ class SysContentController < ApplicationController
       @parent_frame = ContentFrame.find(@content_frame.master_frame)
     end
 
-    @content_items.each.with_index do |content_item, count|
-      @items.push(pickup_content_item(content_item))
-    end
-  rescue
+#    @content_items.each.with_index do |content_item, count|
+#      @items.push(pickup_content_item(content_item))
+#    end
+  rescue => ex
+    logger.debug '--------------------------------------------------------------------------------'
+    logger.debug ex
+    logger.debug '--------------------------------------------------------------------------------'
     flash[:error] = "コンテンツページが存在しません。"
     render :action => "message"
   end
@@ -140,7 +143,10 @@ class SysContentController < ApplicationController
 
     flash[:notice] = '[ID:' + @content_item.id.to_s + '] を削除しました。'
     render :action => "message"
-  rescue
+  rescue => ex
+    logger.debug '--------------------------------------------------------------------------------'
+    logger.debug ex
+    logger.debug '--------------------------------------------------------------------------------'
     flash[:error] = "項目が存在しません。"
     render :action => "message"
   end
@@ -150,56 +156,36 @@ class SysContentController < ApplicationController
       @content_item = ContentItem.find(params[:content_item][:id])
     else
       @content_item = ContentItem.new(content_items_params(params[:content_item]))
-#      @content_items = ContentItem.find(:all, :conditions => { :master_frame => @content_item.master_frame })
-      @content_items =
-          ContentItem
-          .where(:master_frame => @content_item.master_frame)
+      @content_items = ContentItem.where(master_frame: @content_item.master_frame)
       @content_item.content_item_order = @content_items.length + 1
     end
 
     session[:target_for_back] = 'edit_page'
     session[:target_for_back_id] = params[:content_item][:master_frame]
 
-    @result = 0
-    if (params[:content_item][:category]).to_i == 3 ||
-       (params[:content_item][:category]).to_i == 5
-      if params[:image].present?
-        @check_content_type = params[:image].content_type
-        unless @check_content_type =~ /image/
-          flash[:error] = '画像データではありません。'
-          @result = 1
-        end
-        unless @check_content_type =~ /image/ &&
-            (@check_content_type =~ /jpeg/ ||
-             @check_content_type =~ /jpg/ ||
-             @check_content_type =~ /JPEG/ ||
-             @check_content_type =~ /JPG/)
-          flash[:error] = 'JPEG画像を選択してください。'
-          @result = 1
-        end
-      else
-        flash[:error] = '画像データがありません。'
-        @result = 1
-      end
-    end
+    ActiveRecord::Base.transaction do
+      @content_item.attributes = content_items_params(params[:content_item])
 
-    if @result == 0
-      ActiveRecord::Base.transaction do
-        @content_item.update_attributes(content_items_params(params[:content_item]))
-        if @content_item.category == 3 or
-           @content_item.category == 5
+      if (@content_item.category == 3 || @content_item.category == 5)
+        if params[:image].present?
+          @content_item.string1 = params[:image].original_filename
+          @content_item.text1 = params[:image].content_type
           @content_item.image = params[:image].read
         end
+      end
 
-        if @content_item.save!
-          flash[:notice] = '編集しました。'
-        else
-          flash[:error] = '失敗'
-        end
+      if @content_item.save!
+        flash[:notice] = '編集しました。'
+      else
+        flash[:error] = '失敗'
       end
     end
+
     render :action => "message"
-  rescue
+  rescue => ex
+    logger.debug '--------------------------------------------------------------------------------'
+    logger.debug ex
+    logger.debug '--------------------------------------------------------------------------------'
     flash[:error] = "項目が存在しません。"
     render :action => "message"
   end
@@ -255,7 +241,10 @@ class SysContentController < ApplicationController
 
     flash[:notice] = '[ID:' + @content_frame.id.to_s + '] を削除しました。'
     render :action => "message"
-  rescue
+  rescue => ex
+    logger.debug '--------------------------------------------------------------------------------'
+    logger.debug ex
+    logger.debug '--------------------------------------------------------------------------------'
     flash[:error] = "ページが存在しません。"
     render :action => "message"
   end
@@ -264,7 +253,10 @@ class SysContentController < ApplicationController
     @content_frame = ContentFrame.find(params[:id])
     session[:target_for_back] = 'edit_page'
     session[:target_for_back_id] = params[:id]
-  rescue
+  rescue => ex
+    logger.debug '--------------------------------------------------------------------------------'
+    logger.debug ex
+    logger.debug '--------------------------------------------------------------------------------'
     flash[:error] = "ページが存在しません。"
     render :action => "message"
   end
@@ -273,7 +265,10 @@ class SysContentController < ApplicationController
     @content_frame = ContentFrame.find(params[:id])
     session[:target_for_back] = 'edit_page'
     session[:target_for_back_id] = params[:id]
-  rescue
+  rescue => ex
+    logger.debug '--------------------------------------------------------------------------------'
+    logger.debug ex
+    logger.debug '--------------------------------------------------------------------------------'
     flash[:error] = "ページが存在しません。"
     render :action => "message"
   end
@@ -286,7 +281,10 @@ class SysContentController < ApplicationController
       flash[:error] = '失敗'
     end
     render :action => "message"
-  rescue
+  rescue => ex
+    logger.debug '--------------------------------------------------------------------------------'
+    logger.debug ex
+    logger.debug '--------------------------------------------------------------------------------'
     flash[:error] = "ページが存在しません。"
     render :action => "message"
   end
@@ -296,7 +294,10 @@ class SysContentController < ApplicationController
       @content_item = ContentItem.find(params[:id])
       send_data @content_item.image
     end
-  rescue
+  rescue => ex
+    logger.debug '--------------------------------------------------------------------------------'
+    logger.debug ex
+    logger.debug '--------------------------------------------------------------------------------'
     flash[:error] = "ファイルが存在しません。"
     render :action => "message"
   end

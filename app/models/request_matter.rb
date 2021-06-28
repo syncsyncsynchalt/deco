@@ -48,4 +48,65 @@ class RequestMatter < ActiveRecord::Base
     where(:user_id => user_id).
     with_order(conditions[:sort_select_1], conditions[:sort_select_2])
   }
+
+  # 依頼元名
+  validates :name, presence: true
+  validates :name, allow_blank: true,
+    length: { maximum: 72 }
+  
+  # 依頼元メールアドレス
+  validates :mail_address, presence: true
+  validates :mail_address, allow_blank: true, 
+    length: { maximum: 255 },
+    format: { with: /\A[a-zA-Z0-9.!#\$%&'*+\/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*\z/i, message: 'の値が不正です。正しいメールアドレスを入力してください。' }
+
+  # メッセージ
+  #validates :message, presence: true
+  #validates :message, allow_blank: true
+  validate :validate_message
+
+  # url（URLに付与するトークン）
+  #validates :url, presence: true
+  #validates :url, allow_blank: true
+  
+  # 決裁フラグ
+  #validates :moderate_flag, presence: true
+  #validates :moderate_flag, allow_blank: true
+
+  # 決裁結果
+  #validates :moderate_result, presence: true
+  #validates :moderate_result, allow_blank: true
+
+  # 送信日時
+  #validates :sent_at, presence: true
+  #validates :sent_at, allow_blank: true
+
+  # ユーザID
+  #validates :user_id, presence: true
+  #validates :user_id, allow_blank: true
+
+  # メッセージ検証（return_flag=true の場合はメッセージも返す）
+  def validate_message(return_flag = false)
+    return if self.message.blank?
+
+    result = ''
+
+    message = self.message.to_s
+    len = message.length
+    
+#    category = self.user_id.present? ? 2 : 3
+    category = (Thread.current[:user_category] || 3)
+
+    app_env = AppEnv.where(key: 'MESSAGE_LIMIT', category: category).first
+    limit = app_env.try(:value).to_i
+
+    if len > limit
+      # ファイル保存期間の指定が不正です
+      errors.add(:message, "は#{limit}文字以下にしてください")
+      result = "メッセージは#{limit}文字以下にしてください"
+    end
+
+    return result if return_flag
+  end
+  
 end

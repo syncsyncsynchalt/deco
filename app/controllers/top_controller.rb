@@ -23,8 +23,21 @@ class TopController < ApplicationController
   before_action :vacuum_data_for_file_exchange
   def index
     session[:site_category] = nil
+    conditions = Hash.new
+    conditions[:begin_at] = Time.now
+    conditions[:end_at] = Time.now
     @announcements =
         Announcement
+        .where([["show_flg = 1",
+                 ["(begin_at <= :begin_at",
+                  "begin_at IS NULL)",
+                  ].join(" OR "),
+                 ["(end_at >= :end_at",
+                  "end_at IS NULL)",
+                  ].join(" OR "),
+                 ].join(" AND "),
+                conditions,
+                ])
         .order('updated_at desc')
     if @announcements
     end

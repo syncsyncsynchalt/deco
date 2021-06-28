@@ -15,7 +15,18 @@
 <% if @request_matter.message == '' %>
 <div class="input-mid">　</div>
 <% else %>
-<div class="input-mid"><%= simple_format(@request_matter.message, {}, wrapper_tag: "div") %></div>
+<div class="input-mid">
+  <%#= simple_format(@request_matter.message, {}, wrapper_tag: "div") -%>
+  <%- if @request_matter.message.present? -%>
+  <%- message_count = 0 -%>
+  <%- for key_word in @request_matter.message.split(/\r\n|\r|\n/) -%>
+    <%- unless message_count == 0 -%>
+    <%- end -%>
+    <div><%= key_word -%></div>
+    <%- message_count += 1 -%>
+  <%- end -%>
+  <%- end -%>
+</div>
 <% end %>
   <div class="item-mid">決裁種別</div>
   <div class="input-mid">
@@ -70,7 +81,7 @@
     <div class="table-d" style="border:0px;">
       <div class="input-l" style="border:0px;">
 <%= button_to "承　認", {:action => :approval, :id => params[:id]},
- :data => {:confirm => 'この送信内容を承認します。よろしいですか？'}, :method => :get %>
+ :data => {:confirm => 'この送信内容を承認します。よろしいですか？'}, :method => :patch %>
       </div>
 <div class="input-r" style="border:0px;">
 <%= button_to "却　下", {:action => :new, :id => params[:id]}, :method => :get %>

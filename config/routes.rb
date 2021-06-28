@@ -1,3 +1,22 @@
+# -*- coding: utf-8 -*-
+# Copyright (C) 2010 NMT Co.,Ltd.
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>
+
+# Filters added to this controller apply to all controllers in the application.
+# Likewise, all the methods added will be available for all controllers.
+
 Rails.application.routes.draw do
 
   resources :top
@@ -28,11 +47,12 @@ Rails.application.routes.draw do
     get :send_ng2, :on => :collection
     post :create_noflash, :on => :collection
     get :login, :on => :collection
-    get :auth, :on => :collection
+#    get :auth, :on => :collection
     post :auth, :on => :collection
     get :result, :on => :collection
     get :result_ng, :on => :collection
-    get :delete, :on => :collection
+#    get :delete, :on => :collection
+    delete :delete, :on => :collection
     get :message, :on => :collection
   end
 
@@ -47,13 +67,13 @@ Rails.application.routes.draw do
 
   get 'file_send_moderate/index/:id', to: 'file_send_moderate#index'
   get 'file_send_moderate/login/:id', to: 'file_send_moderate#login'
-  get 'file_send_moderate/approval/:id', to: 'file_send_moderate#approval'
+  patch 'file_send_moderate/approval/:id', to: 'file_send_moderate#approval'
   get 'file_send_moderate/new/:id', to: 'file_send_moderate#new'
   resources :file_send_moderate do
     get :login, :on => :collection
     post :auth, :on => :collection
     get :get, :on => :collection
-    get :approval, :on => :collection
+    patch :approval, :on => :collection
     get :message, :on => :collection
   end
 
@@ -68,21 +88,22 @@ Rails.application.routes.draw do
 
   get 'file_request_moderate/index/:id', to: 'file_request_moderate#index'
   get 'file_request_moderate/login/:id', to: 'file_request_moderate#login'
-  get 'file_request_moderate/approval/:id', to: 'file_request_moderate#approval'
+  patch 'file_request_moderate/approval/:id', to: 'file_request_moderate#approval'
   get 'file_request_moderate/new/:id', to: 'file_request_moderate#new'
   resources :file_request_moderate do
     get :login, :on => :collection
     post :auth, :on => :collection
     get :get, :on => :collection
-    get :approval, :on => :collection
+    patch :approval, :on => :collection
     get :message, :on => :collection
   end
 
   get 'requested_file_send/login/:id', to: 'requested_file_send#login'
   get 'requested_file_send/blank/:id', to: 'requested_file_send#blank'
   get 'requested_file_send/result/:id', to: 'requested_file_send#result'
-  get 'requested_file_send/delete/:id', to: 'requested_file_send#delete'
-  post 'requested_file_send/delete/:id', to: 'requested_file_send#delete'
+#  get 'requested_file_send/delete/:id', to: 'requested_file_send#delete'
+#  post 'requested_file_send/delete/:id', to: 'requested_file_send#delete'
+  delete 'requested_file_send/delete/:id', to: 'requested_file_send#delete'
   get 'requested_file_send/result_login/:id', to: 'requested_file_send#result_login'
   resources :requested_file_send do
     get :login, :on => :collection
@@ -96,8 +117,9 @@ Rails.application.routes.draw do
     get :send_ng2, :on => :collection
     post :create_noflash, :on => :collection
     get :result, :on => :collection
-    get :delete, :on => :collection
-    post :delete, :on => :collection
+#    get :delete, :on => :collection
+#    post :delete, :on => :collection
+    delete :delete, :on => :collection
     get :result_ng, :on => :collection
     get :blank, :on => :collection
     get :message, :on => :collection
@@ -128,11 +150,10 @@ Rails.application.routes.draw do
   end
 
   resources :address_books do
-    get :index_result, :on => :collection
+#    get :index_result, :on => :collection
     get :index_sub, :on => :collection
-    get :index_sub_result, :on => :collection
-    get :edit_result, :on => :collection
-#    index_sub_result
+#    get :index_sub_result, :on => :collection
+#    get :edit_result, :on => :collection
   end
 
   get 'user_log/send_matter_info/:id', to: 'user_log#send_matter_info'
@@ -160,29 +181,30 @@ Rails.application.routes.draw do
     get :common_index, :on => :collection
     get :common_index2, :on => :collection
     get :user_type_index, :on => :collection
-    get :create, :on => :collection
-    post :create_term, :on => :collection
-    get :create2, :on => :collection
+#    get :create, :on => :collection
+#    post :create_term, :on => :collection
+#    get :create2, :on => :collection
     post :create2, :on => :collection
-    get :edit1_only_num, :on => :collection
+#    get :edit1_only_num, :on => :collection
     get :edit1, :on => :collection
-    get :edit2, :on => :collection
-    patch :update, :on => :collection
-    post :update_term, :on => :collection
-    get :update2, :on => :collection
+#    get :edit2, :on => :collection
+#    patch :update, :on => :collection
+#    post :update_term, :on => :collection
+#    get :update2, :on => :collection
     post :update2, :on => :collection
-    patch :update2, :on => :collection
+#    patch :update2, :on => :collection
+    post :validate, :on => :collection
   end
 
   resources :sys_user do
     get :chg_pw, :on => :collection
     get :chg_moderate, :on => :collection
-    get :chg_moderate, :on => :collection
   end
 
   resources :user do
-    get :pw_update, :on => :collection
+#    get :pw_update, :on => :collection
     post :pw_update, :on => :collection
+    post :validate, :on => :collection
   end
 
   resources :sys_moderate do
@@ -194,7 +216,8 @@ Rails.application.routes.draw do
     get :edit_page, :on => :collection
     patch :update_content_frame, :on => :collection
     get :add_subpage, :on => :collection
-    get :delete_page, :on => :collection
+#    get :delete_page, :on => :collection
+    delete :delete_page, :on => :collection
     get :edit_title, :on => :collection
     get :edit_description, :on => :collection
     get :edit_item, :on => :collection
@@ -218,7 +241,6 @@ Rails.application.routes.draw do
   resources :sys_log do
     get :send_log, :on => :collection
     post :get_csv_of_send_log, :on => :collection
-    get :send_matter_info, :on => :collection
     get :receive_log, :on => :collection
     post :get_csv_of_receive_log, :on => :collection
     get :request_log, :on => :collection

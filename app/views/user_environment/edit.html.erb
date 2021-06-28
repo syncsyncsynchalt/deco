@@ -11,7 +11,7 @@ $(function() {
 localDomains = "<%= @local_domains %>";
 $(document).ready(function() {
   $.validationEngineLanguage.newLang(localDomains);
-  $("form").validationEngine({promptPosition: "centerRight", binded: false})
+  $("form").validationEngine({promptPosition: "centerRight"})
 });
 </script>
 
@@ -26,7 +26,7 @@ $(document).ready(function() {
     <div class="input-topx2">
       <div class="inner-box">
       <% if current_user.present? %>
-        <%= text_field_tag 'conditions[from_organization_add]', current_user.from_organization_add, :style => 'width:330px;' %>
+        <%= text_field_tag 'conditions[from_organization_add]', current_user.from_organization_add, :style => 'width:330px;', :class => 'validate[maxSize[20]]' %>
       <% end %>
       </div>
     </div>
@@ -36,8 +36,8 @@ $(document).ready(function() {
     <div class="input-botx2">
       <div class="inner-box">
       <% if current_user.present? %>
-        <%= t('views.enable') %>：<%= radio_button_tag 'conditions[to_organization_add]', 'true', (current_user.to_organization_add) %>
-        <%= t('views.disable') %>：<%= radio_button_tag 'conditions[to_organization_add]', 'false', (!current_user.to_organization_add) %>
+        <%= t('views.enable') %>：<%= radio_button_tag 'conditions[to_organization_add]', 'true', (current_user.to_organization_add), :class => 'validate[required]' %>
+        <%= t('views.disable') %>：<%= radio_button_tag 'conditions[to_organization_add]', 'false', (!current_user.to_organization_add), :class => 'validate[required]' %>
       <% else %>
         &nbsp;
       <% end %>

@@ -8,42 +8,91 @@ $(document).ready(function() {
     success : function() { document.announcement.submit(); },
     failure : function() {}
   })
+  $('.datetimepicker').datetimepicker({
+    beforeShow: function(input, inst) {
+      var calendar = inst.dpDiv;
+      setTimeout(function() {
+        calendar.position({
+          my: 'left bottom',
+          at: 'left top',
+          of: input
+        });
+      }, 1);
+    }
+  });
 });
 </script>
 
 
 
-  <fieldset>
+<fieldset>
   <%= form_for(:announcement, :url => { :action => "create"}, 
               :html => {:id => 'announcement', :name=> "announcement" }) do |f| -%>
-    <div class="table-sys-a">
-      <div class="item-mid2">タイトル</div>
-      <div class="input-mid2"><%= f.text_field :title, :size => '50', :class => 'validate[required]' %></div>
-      <div class="item-mid2">内容</div>
-      <div class="input-mid2"><%= f.text_area :body, :cols => '40', :rows => '10', :class => 'validate[required]' %></div>
-      <div class="item-mid2"></div>
-      <div class="input-mid2" align="center"><%= f.submit "登　録" %></div>
+    <div class="table-sys-a1">
+      <div class="item-body">
+        <div class="item-tr">
+          <div class="item-mid2">タイトル</div>
+          <div class="input-mid2"><%= f.text_field :title, :size => '50', :class => 'validate[required, maxSize[20]]' %></div>
+        </div>
+        <div class="item-tr">
+          <div class="item-mid2">内容</div>
+          <div class="input-mid2"><%= f.text_area :body, :cols => '40', :rows => '10', :class => 'validate[required, maxSize[3000]]' %></div>
+        </div>
+        <div class="item-tr">
+          <div class="item-mid2"></div>
+          <div class="input-mid2"><%= f.check_box :body_show_flg, {checked: true}, 0, 1 %><%= f.label :body_show_flg, "タイトルのみ表示(タイトルクリックで内容を表示)" %></div>
+        </div>
+        <div class="item-tr">
+          <div class="item-mid2">表示期限</div>
+          <div class="input-mid2"><%= f.text_field :begin_at, :size => '16', :class => 'validate[maxSize[16]] datetimepicker' %> ～ <%= f.text_field :end_at, :size => '16', :class => 'validate[maxSize[16]] datetimepicker' %></div>
+        </div>
+        <div class="item-tr">
+          <div class="item-mid2"></div>
+          <div class="input-mid2"><%= f.check_box :show_flg, {checked: true}, 1, 0 %><%= f.label :show_flg, "アナウンス内容を公開する" %></div>
+        </div>
+        <div class="item-tr">
+          <div class="item-mid2"></div>
+          <div class="input-mid2 input-mid2-button"><%= f.submit "登　録" %></div>
+        </div>
+      </div>
     </div>
   <% end %>
-  </fieldset>
+</fieldset>
 
-  <br>
+<br>
 
-  <fieldset>
+<fieldset>
   <h2>現在登録されているアナウンス</h2>
-  <div class="table-sys-a">
-    <div class="item-mid3-1">更新時間</div>
-    <div class="item-mid3-2">タイトル</div>
-    <div class="item-mid3-3">　</div>
-
-    <% for announcement in @announcements -%>
-      <div class="input-mid3-1"><%= announcement.updated_at.strftime('%Y/%m/%d %H:%M') %></div>
-      <div class="input-mid3-2"><%= announcement.title %></div>
-      <div class="input-mid3-3"><%= link_to '[編集]', {:action => 'edit', :id => announcement.id } %>
-      <%= link_to '[削除]', {:action => 'destroy', :id => announcement.id},
-                             :data => {:confirm => '削除します。よろしいですか?'}, :method => :delete %></div>
-    <% end -%>
+  <div class="table-sys-a1">
+    <div class="item-head">
+      <div class="item-tr">
+        <div class="item-mid3-1">更新時間</div>
+        <div class="item-mid3-2">タイトル</div>
+        <div class="item-mid3-3">　</div>
+      </div>
+    </div>
+    <div class="item-body">
+      <% for announcement in @announcements -%>
+<% show_flg = 0
+   if announcement.show_flg == 1
+     show_flg = 1
+   end
+   if announcement.begin_at.present? && announcement.begin_at > Time.now
+     show_flg = 0
+   end
+   if announcement.end_at.present? && announcement.end_at < Time.now
+     show_flg = 0
+   end %>
+      <div class="item-tr">
+        <div class="input-mid3-1<% if show_flg == 0 %> no_show<% end %>"><%= announcement.updated_at.strftime('%Y/%m/%d %H:%M') %></div>
+        <div class="input-mid3-2<% if show_flg == 0 %> no_show<% end %>"><%= announcement.title %></div>
+        <div class="input-mid3-3<% if show_flg == 0 %> no_show<% end %>"><%= link_to '[編集]', {:action => 'edit', :id => announcement.id } %>
+        <%= link_to '[削除]', {:action => 'destroy', :id => announcement.id},
+                               :data => {:confirm => '削除します。よろしいですか?'}, :method => :delete %></div>
+      </div>
+      <% end -%>
+    </div>
   </div>
-  </fieldset>
+</fieldset>
 
 <br><br>

@@ -18,4 +18,25 @@
 # Likewise, all the methods added will be available for all controllers.
 class Announcement < ActiveRecord::Base
   # attr_accessible :title, :body
+  
+  # タイトル
+  validates :title, presence: true
+  validates :title, allow_blank: true,
+    length: { maximum: 20 }
+
+  # 内容
+  validates :body, presence: true
+  validates :body, allow_blank: true,
+    length: { maximum: 3000 }
+
+  validates :show_flg, presence: true
+  validates :show_flg, allow_blank: true,
+    numericality: { only_integer: true }, 
+    inclusion: { in: [0, 1] }
+
+  validates :body_show_flg, presence: true
+  validates :body_show_flg, allow_blank: true,
+    numericality: { only_integer: true }, 
+    inclusion: { in: [0, 1] }
+
 end

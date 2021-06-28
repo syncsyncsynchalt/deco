@@ -1,8 +1,8 @@
 <script type="text/javascript">
 $(function() {
   $(".address_name,.address_email,.address_notes").click(function() {
-    location.href = '/user_log/send_matter_info/' + $(this).parent().attr('id').replace('send_matter_item_','');
-//    window.open('/send_matter_info/' + $(this).parent().attr('id').replace('send_matter_item_',''));
+    id = $(this).parent().data('id');
+    $("a#show_send_matter_" + id)[0].click();
   });
 })
 </script>
@@ -29,10 +29,35 @@ $(function() {
   <% tmp_id  = "" %>
   <% @user_logs.each do |record| %>
     <% unless record.id == tmp_id %>
-    <tr id="send_matter_item_<%= record.id %>">
-      <td class="address_name"><%= record.created_at.strftime("%Y-%m-%d %H:%M:%S") %></td>
-      <td class="address_name"><%= raw(get_receivers(record.id, 'name').join('<br/>'))  %></td>
-      <td class="address_email"><%= raw(get_receivers(record.id, 'mail_address').join('<br/>')) %></td>
+    <tr id="send_matter_item_<%= record.id %>" data-id="<%= record.id %>">
+      <td class="address_name">
+        <%= record.created_at.strftime("%Y-%m-%d %H:%M:%S") %>
+        <%= link_to '',
+            { :controller => :user_log, :action => :send_matter_info, :id => record.id },
+            :id => "show_send_matter_#{record.id}", 
+            :class => 'show_send_matter', 
+            :style => 'visibility:hidden;' %>
+      </td>
+      <td class="address_name">
+        <%- count = 0 -%>
+        <%- for tmp_receiver in get_receivers(record.id, 'name') -%>
+          <%- if count > 0 -%>
+           <br/>
+          <%- end -%>
+          <%= tmp_receiver %>
+          <%- count += 1 -%>
+        <%- end -%>
+      </td>
+      <td class="address_email">
+        <%- count = 0 -%>
+        <%- for tmp_receiver in get_receivers(record.id, 'mail_address') -%>
+          <%- if count > 0 -%>
+           <br/>
+          <%- end -%>
+          <%= tmp_receiver %>
+          <%- count += 1 -%>
+        <%- end -%>
+      </td>
     </tr>
     <% end %>
     <% tmp_id = record.id %>

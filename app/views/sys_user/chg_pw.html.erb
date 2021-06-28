@@ -18,10 +18,9 @@ $(document).ready(function() {
       <div class="item-mid2">メールアドレス</div>
       <div class="input-mid2"><%= @user.email %></div>
       <div class="item-mid2">パスワード</div>
-      <div class="input-mid2"><%= f.password_field :password, :style => "width:150px;", :class => 'validate[required]' %></div>
+      <div class="input-mid2"><%= f.password_field :password, :style => "width:150px;", :class => 'validate[required, minSize[4], maxSize[40], custom[password]]' %></div>
       <div class="item-mid2">パスワード（確認）</div>
-      <div class="input-mid2"><%= f.password_field :password_confirmation, :style => "width:150px;", :class => 'validate[required, equals[user_password]]' -%>
-</div>
+      <div class="input-mid2"><%= f.password_field :password_confirmation, :style => "width:150px;", :class => 'validate[required, equals[user_password]]' -%></div>
       <div class="item-mid2"></div>
       <div class="input-mid2" align="center"><%= f.submit "変　更" -%></div>
     </div>

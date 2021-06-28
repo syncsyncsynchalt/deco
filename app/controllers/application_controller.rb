@@ -38,7 +38,8 @@ class ApplicationController < ActionController::Base
   #moduleの動作を書き換えた上で再度includeする必要がある。
   include ActionController::DataStreaming
 
-  self.allow_forgery_protection = false
+#  self.allow_forgery_protection = false
+  self.allow_forgery_protection = true
 #  include AuthenticatedSystem
   include Nmt
   helper_method :current_user
@@ -47,7 +48,9 @@ class ApplicationController < ActionController::Base
 
   $content_item_category = Array.new
 
-  protect_from_forgery
+#  protect_from_forgery
+
+  protect_from_forgery with: :exception
 
   def check_access_ip
 #=begin
@@ -240,6 +243,9 @@ class ApplicationController < ActionController::Base
       user_category = 3
     end
 
+    # ここでセットしたユーザカテゴリをモデルのバリデーションでも使用する
+    Thread.current[:user_category] = user_category
+
     @app_envs =
         AppEnv
         .where('category IN (0, ?)',
@@ -396,11 +402,16 @@ class ApplicationController < ActionController::Base
               "and requested_attachments.id is not null " +
               "and requested_attachments.created_at < ADDDATE(LOCALTIME(), -1)")
 
-    @repare_data_request_files.each do | requested_matter_id |
-      @requested_matter = RequestedMatter.find_by(id: requested_matter_id)
+    @repare_data_request_files.each do | repare_data_request_file |
+      @requested_matter = RequestedMatter.find_by(id: repare_data_request_file.id)
       if @requested_matter.present?
-        @requested_matter.file_life_period = 0
+        @requested_matter.file_life_period = 3600
         @requested_matter.file_up_date = @requested_matter.created_at
+        app_env = AppEnv.where(key: 'PW_LENGTH_MIN', category: 3).first
+        min = app_env.try(:value).to_i
+        @requested_matter.receive_password = generate_random_string_values(rand(10000).to_s).slice(1,min)
+        @requested_matter.password_notice = 1
+        @requested_matter.download_check = 1
         @requested_matter.save
       end
     end

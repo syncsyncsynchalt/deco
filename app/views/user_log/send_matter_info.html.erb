@@ -18,7 +18,19 @@
     <div class="item-mid"><%= t('activerecord.attributes.send_matters.file_life_period') %></div>
     <div class="input-mid"><%= @file_life_period %><br></div>
     <div class="item-mid"><%= t('activerecord.attributes.send_matters.message') %></div>
-    <div class="input-mid"><%= simple_format(@send_matter.message, {}, wrapper_tag: "div") %><br></div>
+    <div class="input-mid">
+    <%#= simple_format(@send_matter.message, {}, wrapper_tag: "div") -%>
+    <% if @send_matter.message.present? %>
+      <%- message_count = 0 -%>
+      <%- for key_word in @send_matter.message.split(/\r\n|\r|\n/) -%>
+        <%- unless message_count == 0 -%>
+        <%- end -%>
+        <div><%= key_word -%></div>
+        <%- message_count += 1 -%>
+      <%- end -%>
+    <%- end -%>
+    <br>
+    </div>
     <div class="item-mid"><%= t('activerecord.attributes.send_matters.status') %></div>
     <div class="input-mid"><%= @status %><br></div>
     <div class="item-mid"><%= t('activerecord.attributes.send_matters.created_at') %></div>

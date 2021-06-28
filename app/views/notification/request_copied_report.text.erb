@@ -10,9 +10,11 @@
 ■送信者一覧
 <% @requested_matters.each.with_index do | receiver, count | %>
 <%= count + 1 %> <%= receiver.name %> 様（<%= receiver.mail_address %>）
-<%= @url %><%= receiver.url %> (pw:<%= receiver.send_password %>)
+<%= @url %>/requested_file_send/login/<%= receiver.url %> (pw:<%= receiver.send_password %>)
 
 <% end -%>
 ■送信者へのメッセージ
 <%= @request_matter.message %>
 
+■依頼内容を確認したい場合はこちらのURLをクリックしてください
+<%= @url %>/file_request/result/<%= @request_matter.url %>

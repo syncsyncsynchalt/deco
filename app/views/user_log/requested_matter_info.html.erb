@@ -11,7 +11,19 @@
     <div class="item-mid"><%= t('activerecord.attributes.request_matters.mail_address') %></div>
     <div class="input-mid"><%= h @requested_matter.request_matter.mail_address %></div>
     <div class="item-mid"><%= t('activerecord.attributes.request_matters.message') %></div>
-    <div class="input-mid"><%= simple_format(@requested_matter.request_matter.message, {}, wrapper_tag: "div") %><br></div>
+    <div class="input-mid">
+    <%#= simple_format(@requested_matter.request_matter.message, {}, wrapper_tag: "div") -%>
+    <% if @requested_matter.request_matter.message.present? %>
+      <%- message_count = 0 -%>
+      <%- for key_word in @requested_matter.request_matter.message.split(/\r\n|\r|\n/) -%>
+        <%- unless message_count == 0 -%>
+        <%- end -%>
+        <div><%= key_word -%></div>
+        <%- message_count += 1 -%>
+      <%- end -%>
+    <%- end -%>
+    <br>
+    </div>
     <div class="item-mid"><%= t('activerecord.attributes.request_matters.created_at') %></div>
     <div class="input-mid">
       <%= (Time.parse(@requested_matter.request_matter.created_at.to_s)).strftime("%Y年%m月%d日%H時%M分%S秒") %></div>
@@ -110,7 +122,19 @@
     <div class="item-mid"><%= t('activerecord.attributes.requested_matters.file_life_period') %></div>
     <div class="input-mid"><%= @file_life_period %><br></div>
     <div class="item-mid"><%= t('activerecord.attributes.requested_matters.message') %></div>
-    <div class="input-mid"><%= simple_format(@requested_matter.message, {}, wrapper_tag: "div") %><br></div>
+    <div class="input-mid">
+    <%#= simple_format(@requested_matter.message, {}, wrapper_tag: "div") -%>
+    <% if @requested_matter.message.present? %>
+      <%- message_count = 0 -%>
+      <%- for key_word in @requested_matter.message.split(/\r\n|\r|\n/) -%>
+        <%- unless message_count == 0 -%>
+        <%- end -%>
+        <div><%= key_word -%></div>
+        <%- message_count += 1 -%>
+      <%- end -%>
+    <%- end -%>
+    <br>
+    </div>
     <div class="item-mid"><%= t('activerecord.attributes.requested_matters.status') %></div>
     <div class="input-mid"><%= @status %><br></div>
     <div class="item-mid"><%= t('activerecord.attributes.send_matters.sent_at') %></div>
