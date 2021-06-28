@@ -141,15 +141,14 @@ class FileSendController < ApplicationController
         @attachment.content_type = file.content_type
       end
       @attachment.relayid = params[:relay_id]
+      @attachment.file_save_pass = file_path
       @attachment.save
       if @params_app_env['VIRUS_CHECK'] == '1'
         # Virus Check
-        @clamav = ClamAV.instance
-        @clamav.loaddb()
-        @virus_check_result = @clamav.scanfile(file_path)
+        @virus_check_result = get_virus_status(file_path)
         @attachment.virus_check = @virus_check_result
         @attachment.save
-        if(@virus_check_result != 0)
+        if @virus_check_result != '0'
           if File.exist?(file_path)
             File.delete(file_path)
           end
@@ -159,7 +158,7 @@ class FileSendController < ApplicationController
         @attachment.save
       end
     rescue
-      render :json => {  :error => file_name, :id => "00000" }
+      render :json => { :error => file_name, :id => "00000" }
     else
       if is_ie
         render :plain => %{<textarea id="upload_result">{ success:true, id:"", description:""}</textarea>}
@@ -178,13 +177,14 @@ class FileSendController < ApplicationController
       @attachment.size = params[:Filedata].size
       @attachment.save
       @file = params[:Filedata]
+      file_path = @params_app_env['FILE_DIR'] + "/#{@attachment.id}"
       if @file
-        File.open(@params_app_env['FILE_DIR'] + "/#{@attachment.id}", "wb") do |f|
+        File.open(file_path, "wb") do |f|
           f.binmode
           f.write(@file.read)
         end
       end
-      @attachment.file_save_pass = @params_app_env['FILE_DIR'] + "/#{@attachment.id}"
+      @attachment.file_save_pass = file_path
       if MIME::Types.type_for(params[:Filedata].original_filename)[0].content_type
         @attachment.content_type = MIME::Types.type_for(params[:Filedata].original_filename)[0].content_type
       else
@@ -194,15 +194,12 @@ class FileSendController < ApplicationController
       @attachment.save
       if @params_app_env['VIRUS_CHECK'] == '1'
         # Virus Check
-        @clamav = ClamAV.instance
-        @clamav.loaddb()
-        @virus_check_result = @clamav.scanfile(@params_app_env['FILE_DIR'] +
-                                               "/#{@attachment.id}")
+        @virus_check_result = get_virus_status(file_path)
         @attachment.virus_check = @virus_check_result
         @attachment.save
-        if(@virus_check_result != 0)
-          if File.exist?(@params_app_env['FILE_DIR'] + "/#{@attachment.id }")
-            File.delete(@params_app_env['FILE_DIR'] + "/#{@attachment.id }")
+        if(@virus_check_result != '0')
+          if File.exist?(file_path)
+            File.delete(file_path)
           end
         end
       else
@@ -427,11 +424,12 @@ class FileSendController < ApplicationController
           @attachment.name = value[:file].original_filename
           @attachment.size = value[:file].size
           @attachment.save
-          File.open(@params_app_env['FILE_DIR'] + "/#{@attachment.id}", "wb") do |f|
+          file_path = @params_app_env['FILE_DIR'] + "/#{@attachment.id}"
+          File.open(file_path, "wb") do |f|
             f.binmode
             f.write(value[:file].read)
           end
-          @attachment.file_save_pass = @params_app_env['FILE_DIR'] + "/#{@attachment.id}"
+          @attachment.file_save_pass = file_path
           if MIME::Types.type_for(value[:file].original_filename)[0]
             @attachment.content_type = MIME::Types.type_for(value[:file].original_filename)[0]
           else
@@ -441,18 +439,15 @@ class FileSendController < ApplicationController
           @attachment.save
           if @params_app_env['VIRUS_CHECK'] == '1'
             # Virus Check
-            @clamav = ClamAV.instance
-            @clamav.loaddb()
-            @virus_check_result = @clamav.scanfile(@params_app_env['FILE_DIR'] +
-                                                   "/#{@attachment.id}")
+            @virus_check_result = get_virus_status(file_path)
             @attachment.virus_check = @virus_check_result
             @attachment.save!
-            if(@virus_check_result != 0)
-              if File.exist?(@params_app_env['FILE_DIR'] + "/#{@attachment.id}")
-                File.delete(@params_app_env['FILE_DIR'] + "/#{@attachment.id}")
+            if(@virus_check_result != '0')
+              if File.exist?(file_path)
+                File.delete(file_path)
               end
             end
-            unless @virus_check_result == 0
+            unless @virus_check_result == '0'
               @virus_attachments.push @attachment
             end
           else

@@ -274,6 +274,24 @@ class ApplicationController < ActionController::Base
     end
   end
 
+  def get_virus_status(tmp_path)
+    virus_status = nil
+    begin
+      output, err, status = Open3.capture3("clamdscan #{tmp_path}")
+      for str in output.split(/\n|\r\n|\r/)
+        if str.include?(tmp_path)
+          if str.include?("#{tmp_path}: OK")
+            virus_status = '0'
+          else
+            virus_status = str.sub!(/#{tmp_path}:\ /, '').sub!(/\ FOUND/, '')
+          end
+        end
+      end
+    rescue
+    end
+    return virus_status
+  end
+
   def initialize_value_for_operation
     $content_item_category = [['見出し', 1], ['文', 2], ['画像', 3],
             ['リンク', 4], ['画像リンク', 5]]

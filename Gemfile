@@ -9,7 +9,6 @@ gem 'jquery-rails'
 gem 'jQuery-Validation-Engine-rails'
 gem 'rb-readline'
 gem 'mime-types'
-gem 'clamav'
 gem 'kaminari'
 
 # Bundle edge Rails instead: gem 'rails', github: 'rails/rails'

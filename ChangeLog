@@ -1,5 +1,9 @@
+2019-04: Version 2.0.5
+        ClamAVバージョンアップに伴う動作不具合の修正対応
+        上記修正に伴うINSTALLのClamAV導入手順の修正
+
 2019-04: Version 2.0.4
-        INSTALL手順のClamAV導入手順の修正
+        INSTALLのClamAV導入手順の修正
         ログイン・ログアウト関連不具合修正対応
 
 2019-02: Version 2.0.3

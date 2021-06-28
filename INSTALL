@@ -37,20 +37,7 @@ epelリポジトリをインストールします。
 # yum install epel-release
 
 clamav 本体とデーモン、アップデートツール等をインストールします。
-# cd /usr/local/src
-# wget http://springdale.math.ias.edu/data/puias/unsupported/7/x86_64//clamav-filesystem-0.100.2-2.sdl7.noarch.rpm
-# wget http://springdale.math.ias.edu/data/puias/unsupported/7/x86_64//clamav-lib-0.100.2-2.sdl7.x86_64.rpm
-# wget http://springdale.math.ias.edu/data/puias/unsupported/7/x86_64//clamav-0.100.2-2.sdl7.x86_64.rpm
-# wget http://springdale.math.ias.edu/data/puias/unsupported/7/x86_64//clamd-0.100.2-2.sdl7.x86_64.rpm
-# wget http://springdale.math.ias.edu/data/puias/unsupported/7/x86_64//clamav-update-0.100.2-2.sdl7.x86_64.rpm
-# wget http://springdale.math.ias.edu/data/puias/unsupported/7/x86_64//clamav-devel-0.100.2-2.sdl7.x86_64.rpm
-
-rpm -ivh clamav-filesystem-0.100.2-2.sdl7.noarch.rpm
-rpm -ivh clamav-lib-0.100.2-2.sdl7.x86_64.rpm
-rpm -ivh clamav-0.100.2-2.sdl7.x86_64.rpm
-rpm -ivh clamd-0.100.2-2.sdl7.x86_64.rpm
-rpm -ivh clamav-update-0.100.2-2.sdl7.x86_64.rpm
-rpm -ivh clamav-devel-0.100.2-2.sdl7.x86_64.rpm
+# yum install clamav clamav-scanner-systemd clamav-update clamav-devel
 
 設定ファイルを編集します。
 vi /etc/clamd.d/scan.conf
@@ -268,6 +255,8 @@ JS, CSS, 画像ファイルのコンパイルを実行します。
 # mkdir -p /var/deco/files
 # chown -R apache:apache /var/deco/files
 
+apacheをclamAVのグループに追加します。
+# usermod -G virusgroup apache
 
 Webサーバの起動と自動起動を設定します。
 # systemctl start httpd
