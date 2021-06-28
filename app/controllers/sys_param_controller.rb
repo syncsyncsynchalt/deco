@@ -240,11 +240,17 @@ class SysParamController < ApplicationController
   # edit1（値の編集）
   def edit1
     @app_env = AppEnv.find(params[:id])
+  rescue ActiveRecord::RecordNotFound
+    flash[:error] = "不正なアクセスです。"
+    render :action => "message"
   end
 
   # edit1（値の編集　数字のみ）
   def edit1_only_num
     @app_env = AppEnv.find(params[:id])
+  rescue ActiveRecord::RecordNotFound
+    flash[:error] = "不正なアクセスです。"
+    render :action => "message"
   end
 
   # edit2（値、備考の編集）
@@ -261,6 +267,9 @@ class SysParamController < ApplicationController
       @term = @app_env.value.to_i / @hour_in_sec
       @unit = 0
     end
+  rescue ActiveRecord::RecordNotFound
+    flash[:error] = "不正なアクセスです。"
+    render :action => "message"
   end
 
   # update
@@ -311,6 +320,9 @@ class SysParamController < ApplicationController
     end
 
     render :action => "message"
+  rescue ActiveRecord::RecordNotFound
+    flash[:error] = "不正なアクセスです。"
+    render :action => "message"
   end
 
   def update2
@@ -329,6 +341,9 @@ class SysParamController < ApplicationController
       end
     end
 
+    render :action => "message"
+  rescue ActiveRecord::RecordNotFound
+    flash[:error] = "不正なアクセスです。"
     render :action => "message"
   end
 
@@ -375,6 +390,9 @@ class SysParamController < ApplicationController
 
     render :action => "message"
 
+  rescue ActiveRecord::RecordNotFound
+    flash[:error] = "不正なアクセスです。"
+    render :action => "message"
   end
 
   # destroy

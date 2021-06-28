@@ -430,6 +430,9 @@ class FileSendController < ApplicationController
 
       ActiveRecord::Base.transaction do
         @send_matter = SendMatter.new(post_params_send_matters)
+        if session[:user_id].present? && current_user.present?
+          @send_matter.user = current_user
+        end
         @send_matter.url = generate_random_strings(rand(1000).to_s)
         @send_matter.status = 1
         if params[:mail_domain].present?
@@ -577,10 +580,10 @@ class FileSendController < ApplicationController
               .where(["send_moderate_id = ?",
                       "number = 1"].join(" AND "),
                      @send_moderate.id).first
-            url = port + "://" + @params_app_env['URL']
-            Notification
-                .send_matter_moderate_report(@send_matter, @send_moderater,
-                    @send_moderater.user, url).deliver
+          url = port + "://" + @params_app_env['URL']
+          Notification
+              .send_matter_moderate_report(@send_matter, @send_moderater,
+                  @send_moderater.user, url).deliver
           @send_moderater.send_flag = 1
           @send_moderater.save
         else
@@ -597,6 +600,10 @@ class FileSendController < ApplicationController
             send_moderater.save
           end
         end
+        url = port + "://" + @params_app_env['URL']
+        Notification
+            .send_matter_moderate_copied_report(@send_matter, @send_moderate,
+                url).deliver
       else
         flash[:notice] = 'ファイル送信を完了しました。'
 
@@ -621,18 +628,18 @@ class FileSendController < ApplicationController
                                         @receivers, @attachments,
                                         url_dl).deliver
       end
-        if @virus_attachments.length > 0
-          if @params_app_env['VIRUS_CHECK_NOTICE'] == '1'
-#            @admin_users = User.find(:all, :conditions => {:category => 1})
-            @admin_users =
-                User
-                .where(:category => 1)
-            for user in @admin_users
-              Notification.send_virus_info_report(@send_matter,
-                                          @virus_attachments, @receivers, user).deliver
-            end
+      if @virus_attachments.length > 0
+        if @params_app_env['VIRUS_CHECK_NOTICE'] == '1'
+#          @admin_users = User.find(:all, :conditions => {:category => 1})
+          @admin_users =
+              User
+              .where(:category => 1)
+          for user in @admin_users
+            Notification.send_virus_info_report(@send_matter,
+                                        @virus_attachments, @receivers, user).deliver
           end
         end
+      end
     end
   end
 
@@ -755,6 +762,10 @@ class FileSendController < ApplicationController
       flash[:notice] = "選択されたファイルはすでに削除されています。"
       redirect_to(:action => "result")
     end
+  rescue ActiveRecord::RecordNotFound
+    flash[:notice] = "不正なアクセスです。
+                     （アクセスの集中，ブラウザの操作上の問題が考えられます。）"
+    redirect_to :action => "result_ng"
   end
 
   private

@@ -705,7 +705,7 @@ class RequestedFileSendController < ApplicationController
 
     if session[:requested_matter_id]
       @requested_matter = RequestedMatter.find(session[:requested_matter_id])
-      @attachment = RequestedAttachment.find(params[:id])
+      @attachment = RequestedAttachment.find_by(id: params[:id])
       if @attachment.present?
         if @attachment.requested_matter_id == session[:requested_matter_id]
           filename = @params_app_env['FILE_DIR'] + "/r" + @attachment.id.to_s
@@ -729,13 +729,16 @@ class RequestedFileSendController < ApplicationController
           redirect_to(:action => "blank")
         end
       else
-        flash[:notice] = "#{@attachment.name} はすでに削除されています。"
+        flash[:notice] = "すでに削除されています。"
         redirect_to(:action => "result", :id => @requested_matter.url_operation)
       end
     else
       flash[:notice] = "不正なアクセスです。"
       redirect_to(:action => "blank")
     end
+  rescue ActiveRecord::RecordNotFound
+    flash[:notice] = "不正なアクセスです。"
+    redirect_to(:action => "blank")
   end
 
   # 認証画面(メールのリンク先)

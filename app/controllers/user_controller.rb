@@ -53,6 +53,14 @@ class UserController < ApplicationController
     redirect_to :controller => :sys_user,
                 :action => :index,
                 :id => session[:user_category]
+  rescue ActiveRecord::RecordNotFound
+    flash[:error] = "不正なアクセスです。"
+    render :action => "message"
+  end
+
+  # MESSAGE
+  def message
+
   end
 
   private

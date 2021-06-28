@@ -41,6 +41,9 @@ class SysAnnouncementController < ApplicationController
   # edit
   def edit
     @announcement = Announcement.find(params[:id])
+  rescue ActiveRecord::RecordNotFound
+    flash[:error] = "不正なアクセスです。"
+    render :action => "message"
   end
 
   # update
@@ -52,6 +55,9 @@ class SysAnnouncementController < ApplicationController
       flash[:error] = '失敗'
     end
     render :action => "message"
+  rescue ActiveRecord::RecordNotFound
+    flash[:error] = "不正なアクセスです。"
+    render :action => "message"
   end
 
   # destroy
@@ -59,6 +65,9 @@ class SysAnnouncementController < ApplicationController
     @announcement = Announcement.find(params[:id])
     @announcement.destroy
     flash[:notice] = '「' + @announcement.title + '」 を削除しました。'
+    render :action => "message"
+  rescue ActiveRecord::RecordNotFound
+    flash[:error] = "不正なアクセスです。"
     render :action => "message"
   end
 

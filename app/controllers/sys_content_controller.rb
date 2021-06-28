@@ -51,7 +51,7 @@ class SysContentController < ApplicationController
     end
 
     if @stat == 9
-      flash[:notice] = "初期化しました"
+      flash[:notice] = "初期化しました。"
     end
   end
 
@@ -65,8 +65,11 @@ class SysContentController < ApplicationController
       @content_frame.expression_flag = params[:expression].to_i
       @content_frame.save!
     end
-    flash[:notice] = "コンテンツの表示を変更しました"
+    flash[:notice] = "コンテンツの表示を変更しました。"
     redirect_to :action => :index
+  rescue
+    flash[:error] = "存在しません。"
+    render :action => "message"
   end
 
   def edit_page
@@ -87,6 +90,9 @@ class SysContentController < ApplicationController
     @content_items.each.with_index do |content_item, count|
       @items.push(pickup_content_item(content_item))
     end
+  rescue
+    flash[:error] = "コンテンツページが存在しません。"
+    render :action => "message"
   end
 
   def edit_item
@@ -100,6 +106,9 @@ class SysContentController < ApplicationController
 
     session[:target_for_back] = 'edit_page'
     session[:target_for_back_id] = @content_item.master_frame
+  rescue
+    flash[:error] = "項目が存在しません。"
+    render :action => "message"
   end
 
   def delete_item
@@ -131,6 +140,9 @@ class SysContentController < ApplicationController
 
     flash[:notice] = '[ID:' + @content_item.id.to_s + '] を削除しました。'
     render :action => "message"
+  rescue
+    flash[:error] = "項目が存在しません。"
+    render :action => "message"
   end
 
   def register_item
@@ -154,7 +166,7 @@ class SysContentController < ApplicationController
       if params[:image].present?
         @check_content_type = params[:image].content_type
         unless @check_content_type =~ /image/
-          flash[:error] = '画像データではありません'
+          flash[:error] = '画像データではありません。'
           @result = 1
         end
         unless @check_content_type =~ /image/ &&
@@ -162,11 +174,11 @@ class SysContentController < ApplicationController
              @check_content_type =~ /jpg/ ||
              @check_content_type =~ /JPEG/ ||
              @check_content_type =~ /JPG/)
-          flash[:error] = 'JPEG画像を選択してください'
+          flash[:error] = 'JPEG画像を選択してください。'
           @result = 1
         end
       else
-        flash[:error] = '画像データがありません'
+        flash[:error] = '画像データがありません。'
         @result = 1
       end
     end
@@ -186,6 +198,9 @@ class SysContentController < ApplicationController
         end
       end
     end
+    render :action => "message"
+  rescue
+    flash[:error] = "項目が存在しません。"
     render :action => "message"
   end
 
@@ -240,18 +255,27 @@ class SysContentController < ApplicationController
 
     flash[:notice] = '[ID:' + @content_frame.id.to_s + '] を削除しました。'
     render :action => "message"
+  rescue
+    flash[:error] = "ページが存在しません。"
+    render :action => "message"
   end
 
   def edit_title
+    @content_frame = ContentFrame.find(params[:id])
     session[:target_for_back] = 'edit_page'
     session[:target_for_back_id] = params[:id]
-    @content_frame = ContentFrame.find(params[:id])
+  rescue
+    flash[:error] = "ページが存在しません。"
+    render :action => "message"
   end
 
   def edit_description
+    @content_frame = ContentFrame.find(params[:id])
     session[:target_for_back] = 'edit_page'
     session[:target_for_back_id] = params[:id]
-    @content_frame = ContentFrame.find(params[:id])
+  rescue
+    flash[:error] = "ページが存在しません。"
+    render :action => "message"
   end
 
   def update_content_frame
@@ -262,6 +286,9 @@ class SysContentController < ApplicationController
       flash[:error] = '失敗'
     end
     render :action => "message"
+  rescue
+    flash[:error] = "ページが存在しません。"
+    render :action => "message"
   end
 
   def show_image
@@ -269,6 +296,9 @@ class SysContentController < ApplicationController
       @content_item = ContentItem.find(params[:id])
       send_data @content_item.image
     end
+  rescue
+    flash[:error] = "ファイルが存在しません。"
+    render :action => "message"
   end
 
   private

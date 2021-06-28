@@ -50,17 +50,26 @@ class SysUserController < ApplicationController
   # edit（編集）
   def edit
     @user = User.find(params[:id])
+  rescue ActiveRecord::RecordNotFound
+    flash[:error] = "不正なアクセスです。"
+    render :action => "message"
   end
 
   #パスワード変更
   def chg_pw
     @user = User.find(params[:id])
+  rescue ActiveRecord::RecordNotFound
+    flash[:error] = "不正なアクセスです。"
+    render :action => "message"
   end
 
   #決裁ルート変更
   def chg_moderate
     @user = User.find(params[:id])
     @moderates = Moderate.all
+  rescue ActiveRecord::RecordNotFound
+    flash[:error] = "不正なアクセスです。"
+    render :action => "message"
   end
 
   # update
@@ -73,6 +82,9 @@ class SysUserController < ApplicationController
       flash[:error] = '失敗'
     end
     render :action => "message"
+  rescue ActiveRecord::RecordNotFound
+    flash[:error] = "不正なアクセスです。"
+    render :action => "message"
   end
 
   # destroy
@@ -81,6 +93,9 @@ class SysUserController < ApplicationController
     @user.destroy
 
     flash[:notice] = @user.login + '[' + @user.email + '] を削除しました。'
+    render :action => "message"
+  rescue ActiveRecord::RecordNotFound
+    flash[:error] = "不正なアクセスです。"
     render :action => "message"
   end
 

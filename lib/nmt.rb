@@ -126,7 +126,7 @@ module Nmt
          "\">></a> "
         string = string +
          "<a href=\"" +
-         url_for(:controller => controller, :action => action, :id => page.to_i + 1) +
+         url_for(:controller => controller, :action => action, :id => total_page.to_i) +
          "\">>></a>"
       end
     end

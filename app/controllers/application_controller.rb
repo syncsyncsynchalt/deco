@@ -114,7 +114,7 @@ class ApplicationController < ActionController::Base
 
   # ログインユーザ取得
   def current_user
-    @current_user ||= User.find(session[:user_id]) if session[:user_id]
+    @current_user ||= User.find_by(id: session[:user_id]) if session[:user_id]
   end
 
   # check IP and login user
@@ -151,7 +151,12 @@ class ApplicationController < ActionController::Base
           session[:user_category] = 3
         else
           if session[:user_id].present?
-            session[:user_category] = 2
+            if User.find_by(id: session[:user_id]).present?
+              session[:user_category] = 2
+            else
+              redirect_to :controller => "sessions", :action => "new"
+              cookies.delete :auth_token
+            end
           else
             redirect_to :controller => "sessions", :action => "new"
           end
@@ -280,6 +285,7 @@ class ApplicationController < ActionController::Base
     clamd_service_down_status = false
     clamd_service_down_status1 = false
     clamd_service_down_status2 = false
+    clamd_service_down_status3 = false
     clamd_service_error = false
     output_str = ""
     begin
@@ -294,6 +300,9 @@ class ApplicationController < ActionController::Base
         end
         if str.include?("clamd.sock: No such file or directory")
           clamd_service_down_status2 = true
+        end
+        if str.include?("ERROR: Could not lookup : Servname not supported for ai_socktype")
+          clamd_service_down_status3 = true
         end
       end
       for str in output.split(/\n|\r\n|\r/)
@@ -315,6 +324,9 @@ class ApplicationController < ActionController::Base
         virus_status = t("virus_check_status.virus_check_down")
       end
       if clamd_service_down_status == true && clamd_service_error == true
+        virus_status = t("virus_check_status.virus_check_down")
+      end
+      if clamd_service_down_status3 == true
         virus_status = t("virus_check_status.virus_check_down")
       end
     rescue
@@ -385,10 +397,12 @@ class ApplicationController < ActionController::Base
               "and requested_attachments.created_at < ADDDATE(LOCALTIME(), -1)")
 
     @repare_data_request_files.each do | requested_matter_id |
-      @requested_matter = RequestedMatter.find(requested_matter_id)
-      @requested_matter.file_life_period = 0
-      @requested_matter.file_up_date = @requested_matter.created_at
-      @requested_matter.save
+      @requested_matter = RequestedMatter.find_by(id: requested_matter_id)
+      if @requested_matter.present?
+        @requested_matter.file_life_period = 0
+        @requested_matter.file_up_date = @requested_matter.created_at
+        @requested_matter.save
+      end
     end
 
 #    @vaccumed_send_files1 = Attachment.find(:all,

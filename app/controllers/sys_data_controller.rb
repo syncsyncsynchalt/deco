@@ -101,10 +101,21 @@ class SysDataController < ApplicationController
                :type => @attachment.content_type,
                :x_sendfile => true
     else
+      session[:section_title] = '登録データ確認'
+      session[:target_for_back_controller] = 'sys_data'
+      session[:target_for_back] = 'index'
+      session[:target_for_back_id] = nil
       flash[:error] = @params_app_env['FILE_DIR'] +
              "/#{@attachment.id}　が存在しません"
       render :action => "message"
     end
+  rescue
+    session[:section_title] = '登録データ確認'
+    session[:target_for_back_controller] = 'sys_data'
+    session[:target_for_back] = 'index'
+    session[:target_for_back_id] = nil
+    flash[:error] = "ファイルが存在しません"
+    render :action => "message"
   end
 
   # 依頼送信ファイルのダウンロード
@@ -130,10 +141,21 @@ class SysDataController < ApplicationController
                :type => @requested_attachment.content_type,
                :x_sendfile => true
     else
+      session[:section_title] = '登録データ確認'
+      session[:target_for_back_controller] = 'sys_data'
+      session[:target_for_back] = 'index'
+      session[:target_for_back_id] = nil
       flash[:error] = @params_app_env['FILE_DIR'] +
               "/r#{@requested_attachment.id}　が存在しません"
       render :action => "message"
     end
+  rescue
+    session[:section_title] = '登録データ確認'
+    session[:target_for_back_controller] = 'sys_data'
+    session[:target_for_back] = 'index'
+    session[:target_for_back_id] = nil
+    flash[:error] = "ファイルが存在しません"
+    render :action => "message"
   end
 
   def message

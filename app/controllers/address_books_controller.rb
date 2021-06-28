@@ -39,6 +39,8 @@ class AddressBooksController < ApplicationController
   def edit_result
     @recipient_number = params[:recipient_number]
     @address_book = AddressBook.find(params[:id])
+  rescue ActiveRecord::RecordNotFound
+    redirect_to :action => "index"
   end
 
   def new_result
@@ -47,6 +49,8 @@ class AddressBooksController < ApplicationController
 
   def destroy_result
     @address_book = AddressBook.find(params[:id])
+  rescue ActiveRecord::RecordNotFound
+    redirect_to :action => "index"
   end
 
   # GET /address_books
@@ -65,11 +69,21 @@ class AddressBooksController < ApplicationController
   # GET /address_books/1.json
   def show
     @address_book = AddressBook.find(params[:id])
-
-    respond_to do |format|
-      format.html # show.html.erb
-      format.json { render json: @address_book }
+    @permit_flg = 0
+    if @address_book.present? &&
+        @address_book.user_id.to_i == current_user.id
+      @permit_flg = 1
     end
+    if @permit_flg == 1
+      respond_to do |format|
+        format.html # show.html.erb
+        format.json { render json: @address_book }
+      end
+    else
+      redirect_to :action => :index
+    end
+  rescue ActiveRecord::RecordNotFound
+    redirect_to :action => "index"
   end
 
   # GET /address_books/new
@@ -86,6 +100,21 @@ class AddressBooksController < ApplicationController
   # GET /address_books/1/edit
   def edit
     @address_book = AddressBook.find(params[:id])
+    @permit_flg = 0
+    if @address_book.present? &&
+        @address_book.user_id.to_i == current_user.id
+      @permit_flg = 1
+    end
+    if @permit_flg == 1
+      respond_to do |format|
+        format.html # edit.html.erb
+        format.json { render json: @address_book }
+      end
+    else
+      redirect_to :action => :index
+    end
+  rescue ActiveRecord::RecordNotFound
+    redirect_to :action => "index"
   end
 
   # POST /address_books
@@ -108,28 +137,52 @@ class AddressBooksController < ApplicationController
   # PUT /address_books/1.json
   def update
     @address_book = AddressBook.find(params[:id])
-    respond_to do |format|
-      if @address_book.update_attributes(address_books_params(params[:address_book]))
-#        format.html { redirect_to '/address_books/index_result/?recipient_address=1', notice: 'Address book was successfully updated.' }
-        format.html { redirect_to @address_book, notice: t("address_books.update.message") }
-        format.json { head :no_content }
-      else
-        format.html { render action: "edit" }
-        format.json { render json: @address_book.errors, status: :unprocessable_entity }
-      end
+    @permit_flg = 0
+    if @address_book.present? &&
+        @address_book.user_id.to_i == current_user.id
+      @permit_flg = 1
     end
+    if @permit_flg == 1
+      respond_to do |format|
+        if @address_book.update_attributes(address_books_params(params[:address_book]))
+#          format.html { redirect_to '/address_books/index_result/?recipient_address=1', notice: 'Address book was successfully updated.' }
+          format.html { redirect_to @address_book, notice: t("address_books.update.message") }
+          format.json { head :no_content }
+        else
+          format.html { render action: "edit" }
+          format.json { render json: @address_book.errors, status: :unprocessable_entity }
+        end
+      end
+    else
+      flash[:notice] = "不正なアクセスです。"
+      redirect_to :action => :index
+    end
+  rescue ActiveRecord::RecordNotFound
+    redirect_to :action => "index"
   end
 
   # DELETE /address_books/1
   # DELETE /address_books/1.json
   def destroy
     @address_book = AddressBook.find(params[:id])
-    @address_book.destroy
-
-    respond_to do |format|
-      format.html { redirect_to address_books_url }
-      format.json { head :no_content }
+    @permit_flg = 0
+    if @address_book.present? &&
+        @address_book.user_id.to_i == current_user.id
+      @permit_flg = 1
     end
+    if @permit_flg == 1
+      @address_book.destroy
+
+      respond_to do |format|
+        format.html { redirect_to address_books_url }
+        format.json { head :no_content }
+      end
+    else
+      flash[:notice] = "不正なアクセスです。"
+      redirect_to :action => :index
+    end
+  rescue ActiveRecord::RecordNotFound
+    redirect_to :action => "index"
   end
 
   private

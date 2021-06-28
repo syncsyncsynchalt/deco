@@ -85,6 +85,9 @@ class SysModerateController < ApplicationController
         @moderaters_lists.push moderater.user_id
       end
     end
+  rescue ActiveRecord::RecordNotFound
+    flash[:error] = "不正なアクセスです。"
+    render :action => "message"
   end
 
   def update
@@ -163,6 +166,9 @@ class SysModerateController < ApplicationController
       flash[:error] = '決裁情報が見つかりません(既に削除されたか不正なアクセスです)'
       render :action => "message"
     end
+  rescue ActiveRecord::RecordNotFound
+    flash[:error] = "不正なアクセスです。"
+    render :action => "message"
   end
 
   def destroy
@@ -191,6 +197,9 @@ class SysModerateController < ApplicationController
       flash[:notice] = '決裁ルートを削除しました。'
       render :action => "message"
     end
+  rescue ActiveRecord::RecordNotFound
+    flash[:error] = "不正なアクセスです。"
+    redirect_to :action => "index"
   end
 
   private

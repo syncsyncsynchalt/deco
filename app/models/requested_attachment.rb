@@ -18,6 +18,6 @@
 # Likewise, all the methods added will be available for all controllers.
 class RequestedAttachment < ActiveRecord::Base
   # attr_accessible :title, :body
-  belongs_to :requested_matter
+  belongs_to :requested_matter, optional: true
   has_many :requested_file_dl_logs
 end

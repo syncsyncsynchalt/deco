@@ -360,7 +360,7 @@ $(document).ready(function() {
   <% @app_envs.each do | app_env | %>
     <% if app_env.key == 'MODERATE_DEFAULT' -%>
       <%= form_for(:app_env, :url => { :action => 'update', :id => app_env.id},
-                :html => {:id => 'app_env11', :name=> "app_env11" }) do |f| %>
+                :html => {:id => 'app_env11', :name=> "app_env11", :method => 'PUT' }) do |f| %>
       <div class="item-mid"><%= $param_label['MODERATE_DEFAULT'] %></div>
       <div class="input-mid">
       設定値：<%= moderate_def_value %><br>

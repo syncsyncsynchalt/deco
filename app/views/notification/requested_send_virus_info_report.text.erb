@@ -1,6 +1,12 @@
 このメールは，<%= @mail_content %>「DECO」から発信しております。
 
+<% null_virus_check_status = 0 -%>
+<% for attachment in @virus_attachments -%>
 <% if attachment.virus_check == nil -%>
+<% null_virus_check_status = 1 -%>
+<% end -%>
+<% end -%>
+<% if null_virus_check_status == 1 -%>
 ファイル依頼送信時に、以下のファイルで送信時に
 問題が発生した可能性がございます。
 (ウィルスチェックが正常に終了しなかった等)

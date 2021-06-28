@@ -31,11 +31,15 @@ class ContentController < ApplicationController
     @self_frame = ContentFrame.find(@master_frame)
     @title = @self_frame.title
     if @self_frame.master_frame == 0
-#      @content_frames = ContentFrame.find(:all,
-#              :conditions => { :master_frame => @self_frame.id })
-      @content_frames =
-          ContentFrame
-          .where(:master_frame => @self_frame.id)
+      if @self_frame.expression_flag == 1
+#        @content_frames = ContentFrame.find(:all,
+#                :conditions => { :master_frame => @self_frame.id })
+        @content_frames =
+            ContentFrame
+            .where(:master_frame => @self_frame.id)
+      else
+        redirect_to :controller => :top
+      end
     else
 #      @content_frames = ContentFrame.find(:all,
 #              :conditions => { :master_frame => @self_frame.master_frame })
@@ -44,10 +48,16 @@ class ContentController < ApplicationController
           .where(:master_frame => @self_frame.master_frame)
       if @content_frames.length > 0
         @parent_frame = ContentFrame.find(@self_frame.master_frame)
-        @title = "<a href=\"" + url_for(:controller => :content, :action => :load, :id => @parent_frame.id.to_s) + 
-            "\">" + @parent_frame.title + "</a>" + " > " + @self_frame.title
  
+        if @parent_frame.expression_flag == 1
+          @title = "<a href=\"" + url_for(:controller => :content, :action => :load, :id => @parent_frame.id.to_s) + 
+              "\">" + @parent_frame.title + "</a>" + " > " + @self_frame.title
+        else
+          redirect_to :controller => :top
+        end
       end
     end
+  rescue ActiveRecord::RecordNotFound
+    redirect_to :controller => :top
   end
 end
