@@ -1,4 +1,4 @@
-class CreateRequestMatters < ActiveRecord::Migration
+class CreateRequestMatters < ActiveRecord::Migration[4.2]
   def change
     create_table :request_matters do |t|
       t.string :name

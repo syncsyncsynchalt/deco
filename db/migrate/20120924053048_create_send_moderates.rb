@@ -1,4 +1,4 @@
-class CreateSendModerates < ActiveRecord::Migration
+class CreateSendModerates < ActiveRecord::Migration[4.2]
   def change
     create_table :send_moderates do |t|
       t.integer :send_matter_id

@@ -1,17 +1,37 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
-
+<!DOCTYPE html>
 <script type="text/javascript">
 script_url = "<%= url_options[:script_name] %>";
 </script>
 
 <html>
-<head>
-  <title>システム管理 - DECO Drive</title>
-  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-  <%= stylesheet_link_tag "application" %>
-  <%= javascript_include_tag "application" %>
-</head>
-
+  <head>
+    <title>システム管理 - DECO Drive</title>
+    <%= csrf_meta_tags %>
+    <%
+    links = Array.new 
+    # パッケージ用スタイル定義
+    links << "application"
+    # Engine用スタイル定義
+    Dir.glob("vendor/engines/*/").each do |path|
+      links << "#{File.basename(path)}/application"
+    end
+    %>
+    <% links.each do |link| %>
+    <%= stylesheet_link_tag link, media: 'all' %>
+    <% end %> 
+    <%
+    links = Array.new 
+    # パッケージ用スクリプト定義
+    links << "application"
+    # Engine用スクリプト定義
+    Dir.glob("vendor/engines/*/").each do |path|
+      links << "#{File.basename(path)}/application"
+    end
+    %>
+    <% links.each do |link| %>
+    <%= javascript_include_tag link %>
+    <% end %> 
+  </head>
 <% if controller.controller_name == 'top' %>
   <body class="top">
 <% elsif controller.controller_name == 'file_send'%>
@@ -30,74 +50,96 @@ script_url = "<%= url_options[:script_name] %>";
   <body>
 <% end %>
 
-<div id="header">
-<%= image_tag('common/deco_logo01.jpg', :alt => "DECO Drive", :border => 0) %>
-</div>
-
-<div id="status">
-[<%= `hostname`.chop -%>]
-接続IPアドレス:<%= @access_ip %>
-<% if session[:user_id] -%>
-  利用状況:外部アクセス( ユーザID: <%= current_user.login %> )
-  <%= link_to '[ログアウト]', :controller => :sessions, :action => :logout_for_administrator %>
-<% else -%>
-  利用状況:ローカルアクセス又は外部から
-<% end -%>
-</div>
-
-
-<div id="main">
-
-
-<div id="sys-main">
-  <div id="sys-menu">
-  <br>
-  <ul><li><%= link_to "トップ", :controller => :sys_top %><br></li></ul>
-  アナウンス管理
-  <ul><li><%= link_to "アナウンス管理", :controller => :sys_announcement %></li></ul>
-  パラメータ管理
-  <ul><li><%= link_to "共通項目", :controller => :sys_param, :action => :common_index %></li>
-  <li><%= link_to "ローカルユーザ", :controller => :sys_param, :action => :user_type_index, :id => :local %></li>
-  <li><%= link_to "リモートユーザ", :controller => :sys_param, :action => :user_type_index, :id => :remote %></li></ul>
-  ユーザ管理
-  <ul><li><%= link_to "システム管理者", :controller => :sys_user, :id => 1 %></li>
-  <li><%= link_to "リモートユーザ", :controller => :sys_user, :id => 2 %></li></ul>
-  決裁管理
-  <ul><li><%= link_to "決裁登録", :controller => :sys_moderate %></li></ul>
-  コンテンツ管理
-  <ul><li><%= link_to "コンテンツ管理", :controller => :sys_content %></li></ul>
-  登録データ確認
-  <ul><li><%= link_to "登録データ確認", :controller => :sys_data %></li></ul>
-  ログ閲覧
-  <ul><li><%= link_to "送信ログ", :controller => :sys_log, :action => :send_log %></li>
-  <li><%= link_to "受信ログ", :controller => :sys_log, :action => :receive_log %></li>
-  <li><%= link_to "依頼ログ", :controller => :sys_log, :action => :request_log %></li></ul>
-  実績集計
-  <ul><li><%= link_to "実績集計", :controller => :sys_total %></li></ul>
-  </div>
-
-  <div id="sys-cont">
-
-  <% if session[:section_title] -%>
-    <h1><%= session[:section_title] %></h1>
-  <% end -%>
-
-  <% if flash[:error] -%>
-    <div id="err-sys">
-  <%= flash[:error] %>
+    <div id="header">
+      <%= image_tag('common/deco_logo01.jpg', :alt => "DECO Drive", :border => 0) %>
     </div>
-  <% end -%>
-  <% if flash[:notice] -%>
-    <div id="hint-sys">
-  <%= flash[:notice] %>
+
+    <div id="status">
+      [<%= `hostname`.chop -%>]
+      接続IPアドレス:<%= @access_ip %>
+      <% if session[:user_id] -%>
+      利用状況:外部アクセス( ユーザID: <%= current_user.login %> )
+      <%= link_to '[ログアウト]', :controller => :sessions, :action => :logout_for_administrator %>
+      <% else -%>
+      利用状況:ローカルアクセス又は外部から
+      <% end -%>
     </div>
-  <% end -%>
 
-  <%= yield %>
-  </div>
-</div>
+    <div id="main">
+      <div id="sys-main">
+        <div id="sys-menu">
+          <br>
+          <ul>
+            <li><%= link_to "トップ", :controller => :sys_top %><br></li>
+          </ul>
+          アナウンス管理
+          <ul>
+            <li><%= link_to "アナウンス管理", :controller => :sys_announcement %></li>
+          </ul>
+          パラメータ管理
+          <ul>
+            <li><%= link_to "共通項目", :controller => :sys_param, :action => :common_index %></li>
+            <li><%= link_to "共通項目2", :controller => :sys_param, :action => :common_index2 %></li>
+<%
+            Dir.glob("vendor/engines/*/").each do |path|
+              engine = path.split("\/")[2]
+              if eval("ApplicationHelper.method_defined?(:#{engine}_show_sys_param_menu)")
+-%>
+                <%= eval("#{engine}_show_sys_param_menu") %>
+<%
+              end
+            end
+-%>
+            <li><%= link_to "ローカルユーザ", :controller => :sys_param, :action => :user_type_index, :id => :local %></li>
+            <li><%= link_to "リモートユーザ", :controller => :sys_param, :action => :user_type_index, :id => :remote %></li>
+          </ul>
+          ユーザ管理
+          <ul>
+            <li><%= link_to "システム管理者", :controller => :sys_user, :id => 1 %></li>
+            <li><%= link_to "リモートユーザ", :controller => :sys_user, :id => 2 %></li>
+          </ul>
+          決裁管理
+          <ul>
+            <li><%= link_to "決裁登録", :controller => :sys_moderate %></li>
+          </ul>
+          コンテンツ管理
+          <ul>
+            <li><%= link_to "コンテンツ管理", :controller => :sys_content %></li>
+          </ul>
+          登録データ確認
+          <ul>
+            <li><%= link_to "登録データ確認", :controller => :sys_data %></li>
+          </ul>
+          ログ閲覧
+          <ul>
+            <li><%= link_to "送信ログ", :controller => :sys_log, :action => :send_log %></li>
+            <li><%= link_to "受信ログ", :controller => :sys_log, :action => :receive_log %></li>
+            <li><%= link_to "依頼ログ", :controller => :sys_log, :action => :request_log %></li>
+          </ul>
+          実績集計
+          <ul>
+            <li><%= link_to "実績集計", :controller => :sys_total %></li>
+          </ul>
+        </div>
+        <div id="sys-cont">
+        <% if session[:section_title] -%>
+          <h1><%= session[:section_title] %></h1>
+        <% end -%>
 
-</div>
+        <% if flash[:error] -%>
+          <div id="err-sys">
+            <%= flash[:error] %>
+          </div>
+        <% end -%>
+        <% if flash[:notice] -%>
+          <div id="hint-sys">
+            <%= flash[:notice] %>
+          </div>
+        <% end -%>
+          <%= yield %>
+        </div>
+      </div>
+    </div>
 
-</body>
+  </body>
 </html>

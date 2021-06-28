@@ -1,169 +1,269 @@
-1. MySQLのインストール
+DECO 導入手順書
 
-# yum -y install mysql mysql-server
+1. データベースのインストール・設定
 
-(/etc/my.cnf)の「[mysqld]」内に以下を追加する
------------------------------------------------------------------------------------------------------
-symbolic-links=0
-character-set-server=utf8
------------------------------------------------------------------------------------------------------
+MariaDB(MySQL)をインストールします。
 
-# yum -y install mysql mysql-devel
+# yum install -y mariadb mariadb-server mariadb-devel
 
-# /etc/init.d/mysqld start
+/etc/my.cnfに以下行を追加します。
 
-# mysql
+# vi /etc/my.cnf
+--------------------------------------------------------------------------------
+[mysqld]
++character-set-server=utf8
+
++[client]
++default-character-set = utf8
+--------------------------------------------------------------------------------
+
+MariaDBの起動と自動起動を設定します。
+# systemctl start mariadb
+# systemctl enable mariadb
+
+MariaDBにDECOで使用するユーザの登録およびデータベースを作成します。
+# mysql -u root
 
 > GRANT ALL PRIVILEGES ON deco_production.* TO deco@'127.0.0.0/255.255.255.0' IDENTIFIED BY '********';
 > GRANT ALL PRIVILEGES ON deco_production.* TO deco@'localhost' IDENTIFIED BY '********';
 > create database deco_production;
 
-2. ライブラリのインストール
+2. DECOに必要なパッケージのインストール・設定
 
-# yum -y install zlib-devel
-# yum -y install openssl-devel
-# yum -y install curl-devel
+必要なパッケージをインストールします。
+# yum -y install zlib-devel openssl-devel curl-devel make gcc-c++ wget
 
-3. yamlのインストール
+epelリポジトリをインストールします。
+# yum install epel-release
 
-# cd /usr/local/src
-# wget http://pyyaml.org/download/libyaml/yaml-0.1.4.tar.gz
-# tar zxvf yaml-0.1.4.tar.gz
-# ./configure
-# make
-# make install
+clamav 本体とデーモン、アップデートツール等をインストールします。
+# yum install clamav clamav-scanner-systemd clamav-update clamav-devel
 
-4. Rubyのインストール
+設定ファイルを編集します。
+vi /etc/clamd.d/scan.conf
 
-# cd /usr/local/src
-# wget ftp://ftp.ruby-lang.org/pub/ruby/1.9/ruby-1.9.3-p125.tar.gz
-# tar zxvf ruby-1.9.3-p125.tar.gz
-# cd ruby-1.9.3-p125
-# ./configure
-# make
-# make install
+--------------------------------------------------------------------------------
+Exampleをコメントにします。
+-Example
++#Example
 
-5. RubyGemのインストール
+# 該当部分のコメントを外して有効化にします。(ログの有効化)
+-#LogFile /var/log/clamd.scan
++LogFile /var/log/clamd.scan
 
-# cd /usr/local/src
-# wget http://rubyforge.org/frs/download.php/75475/rubygems-1.8.11.tgz
-# tar zxvf rubygems-1.8.11.tgz
-# cd rubygems-1.8.11
-# ruby setup.rb
+-#LogFileMaxSize 2M
++LogFileMaxSize 2M
 
-6. clamAVのインストール
+-#LogTime yes
++LogTime yes
 
-レポジトリを追加する
+-#LogRotate yes
++LogRotate yes
 
-# wget http://packages.sw.be/rpmforge-release/rpmforge-release-0.5.2-2.el6.rf.x86_64.rpm
-# rpm --import http://apt.sw.be/RPM-GPG-KEY.dag.txt
-# rpm -K rpmforge-release-0.5.2-2.el6.rf.x86_64.rpm
-# rpm -i rpmforge-release-0.5.2-2.el6.rf.x86_64.rpm
+# ローカルソケット設定のコメントを外して有効化します。
+-#LocalSocket /var/run/clamd.scan/clamd.sock
++LocalSocket /var/run/clamd.scan/clamd.sock
 
-ClamAVをパッケージでインストールする
+-#FixStaleSocket yes
++FixStaleSocket yes
 
-# yum -y install clamav clamd clamav-devel clamav-db
+# ユーザーをコメントアウトして root で動作させるよう設定します。
+-User clamscan
++#User clamscan
+--------------------------------------------------------------------------------
 
-(/etc/clamd.conf)の以下の記述を変更する
+シンボリックリンクの設定追加します。
+# ln -s /etc/clamd.d/scan.conf /etc/clamd.conf
 
------------------------------------------------------------------------------------------------------
--User clamav
-+User root
------------------------------------------------------------------------------------------------------
+データベース更新用の設定ファイルを編集します。(/etc/freshclam.conf・/etc/sysconfig/freshclam)
 
-clamAVを起動させる
-# /etc/init.d/clamd start
+# vi /etc/freshclam.conf
+--------------------------------------------------------------------------------
+#Exampleをコメントにします。
+-Example
++#Example
 
-OS起動時に起動するように設定する
-# chkconfig clamd on
+# 該当部分のコメントを外して有効化にします。(ログの有効化)
+-#UpdateLogFile /var/log/freshclam.log
++UpdateLogFile /var/log/freshclam.log
 
-ウィルス定義ファイルを更新する
+-#LogFileMaxSize 2M
++LogFileMaxSize 2M
+
+-#LogTime yes
++LogTime yes
+
+-#LogRotate yes
++LogRotate yes
+--------------------------------------------------------------------------------
+
+# vi /etc/sysconfig/freshclam
+--------------------------------------------------------------------------------
+(「FRESHCLAM_DELAY=disabled-warn # REMOVE ME」がない場合はそのままにしてください。)
+-FRESHCLAM_DELAY=disabled-warn # REMOVE ME
++# FRESHCLAM_DELAY=disabled-warn # REMOVE ME
+--------------------------------------------------------------------------------
+
+clamav起動を設定します。(起動に失敗する場合、ウィルス定義ファイルを更新してから再度実行します。)
+
+# systemctl start clamd@scan #clamd起動
+# systemctl status clamd@scan #clamd稼働状況
+# systemctl enable clamd@scan #clamd自動起動設定
+
+ウィルス定義ファイルを更新します。
 # freshclam
 
+yamlをインストールします。
 
-7. ApacheとPassengerのインストール
+# cd /usr/local/src
+# wget http://pyyaml.org/download/libyaml/yaml-0.1.7.tar.gz
+# tar zxvf yaml-0.1.7.tar.gz
+# cd yaml-0.1.7
+# ./configure
+# make
+# make install
+
+Rubyをインストールにします。
+
+# cd /usr/local/src
+# wget ftp://ftp.ruby-lang.org/pub/ruby/2.4/ruby-2.4.2.tar.gz
+# tar zxvf ruby-2.4.2.tar.gz
+# cd ruby-2.4.2
+# ./configure
+# make
+# make install
+
+RubyGemをインストールします。
+
+# cd /usr/local/src
+# wget https://rubygems.org/rubygems/rubygems-2.7.3.tgz
+# tar zxvf rubygems-2.7.3.tgz
+# cd rubygems-2.7.3
+# ruby setup.rb
+
+DECOに必要なモジュールをインストールします。
+(/usr/local)にDECOの圧縮ファイルを置きます。
+# cd /usr/local
+# tar xzvf (DECOプログラムファイル)
+# cd deco
+# gem install bundler
+# bundle install
+
+環境変数にsecret_key_baseおよびデータベースのパスワードを設定します。
+
+# rake secret
+(keyが生成表示されます。)
+
+環境変数に必要なパラメータを設定します。
+# export SECRET_KEY_BASE=(生成したkeyをセットします。)
+# export DECO_DATABASE_PASSWORD=(データベースに登録したDECOユーザのパスワードをセットします。)
+
+再起動後も環境変数に反映する場合は、以下のファイルに追記してください。
+# vi /etc/bashrc
+--------------------------------------------------------------------------------
+・・・
+SECRET_KEY_BASE=(生成したkeyをセットします。)
+
+export SECRET_KEY_BASE
+
+DECO_DATABASE_PASSWORD=(データベースに登録したDECOユーザのパスワードをセットします。)
+
+export DECO_DATABASE_PASSWORD
+--------------------------------------------------------------------------------
+
+ApacheとPassengerをインストールします。
 
 # yum -y install httpd httpd-devel
-
 # gem install passenger
 # passenger-install-apache2-module
 
-(/etc/httpd/conf.d/rails.conf)を作成し以下を追加する
+「/etc/httpd/conf.d/passenger.conf」を作成し以下を記述します。
+下記内容は「passenger-install-apache2-module」実行時に表示されるメッセージ内容
+ですので、下記と異なる場合はは表示されたメッセージの内容を優先してください。
+# vi /etc/httpd/conf.d/passenger.conf
+--------------------------------------------------------------------------------
+LoadModule passenger_module /usr/local/lib/ruby/gems/2.4.0/gems/passenger-5.1.12/buildout/apache2/mod_passenger.so
+<IfModule mod_passenger.c>
+  PassengerRoot /usr/local/lib/ruby/gems/2.4.0/gems/passenger-5.1.12
+  PassengerDefaultRuby /usr/local/bin/ruby
+</IfModule>
+--------------------------------------------------------------------------------
 
------------------------------------------------------------------------------------------------------
-   LoadModule passenger_module /usr/local/lib/ruby/gems/1.9.1/gems/passenger-3.0.18/ext/apache2/mod_passenger.so
-   PassengerRoot /usr/local/lib/ruby/gems/1.9.1/gems/passenger-3.0.18
-   PassengerRuby /usr/local/bin/ruby
------------------------------------------------------------------------------------------------------
-
-(/etc/httpd/conf/httpd.conf)に以下を追加する
-
------------------------------------------------------------------------------------------------------
+「/etc/httpd/conf.d/deco.conf」に以下を追加します。
+# vi /etc/httpd/conf.d/deco.conf
+--------------------------------------------------------------------------------
 <VirtualHost *:80>
   ServerName deco
   DocumentRoot /usr/local/deco/public
   RailsEnv production
+  SetEnv SECRET_KEY_BASE (生成したkeyをセットします。)
+  SetEnv DECO_DATABASE_PASSWORD (データベースに登録したDECOユーザのパスワードをセットします。)
   <Directory /usr/local/deco/public>
-    AllowOverride all
+    Require all granted
     Options -MultiViews
   </Directory>
 </VirtualHost>
------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
 
+xsendfileをインストールします。
+# cd /usr/local/src
 # wget --no-check-certificate https://tn123.org/mod_xsendfile/mod_xsendfile.c
-# sudo apxs -cia mod_xsendfile.c
+# apxs -cia mod_xsendfile.c
 
-(/etc/httpd/conf.d/xsendfile.conf)を作成し以下を追加する
------------------------------------------------------------------------------------------------------
+「/etc/httpd/conf.d/xsendfile.conf」を作成し以下を追加します。
+# vi /etc/httpd/conf.d/xsendfile.conf
+--------------------------------------------------------------------------------
 <IfModule mod_xsendfile.c>
     XsendFile on
     XsendFilePath /var/deco/files
 </IfModule>
------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+DECOをインストールします。
 
-8. DECOのインストール
+# cd /usr/local/deco
 
-(/usr/local)にDECOの圧縮ファイルを置いておく
-# cd /usr/local
-# tar xzvf deco.tar.gz
-# cd deco
-# gem install bundler
-# bundle install
-(config/database.yml)の「production」の設定を編集する
-
------------------------------------------------------------------------------------------------------
+DECOにデータベースの登録した内容を設定します。
+# cp config/database.yml.sample config/database.yml
+# vi config/database.yml
+--------------------------------------------------------------------------------
+※production 項目の設定を実環境に合わせます。(問題無い場合はそのままです。)
+・・・
 production:
-  adapter: mysql
-  encoding: utf8
+  <<: *default
   database: deco_production
-  pool: 5
-  host: localhost
   username: deco
-  password: ********
-  socket: /var/lib/mysql/mysql.sock
------------------------------------------------------------------------------------------------------
+  password: <%= ENV['DECO_DATABASE_PASSWORD'] %>
+--------------------------------------------------------------------------------
 
+テーブルの作成と初期データの挿入を実行します。
 # rake db:migrate RAILS_ENV=production
 # rake db:seed RAILS_ENV=production
 
-(config/environments/production.rb)にメールサーバ情報の記述を追加する
------------------------------------------------------------------------------------------------------
+「config/environments/production.rb」に送信用メールサーバー情報の記述を追加します。
+# cp config/environments/production.rb.sample config/environments/production.rb
+# vi config/environments/production.rb
+--------------------------------------------------------------------------------
   ActionMailer::Base.smtp_settings[:address] = "localhost"
   ActionMailer::Base.smtp_settings[:domain] = "example.com"
------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
 
-# rake assets:precompile RAILS_ENV=production
+JS, CSS, 画像ファイルのコンパイルを実行します。
+# bundle exec rake assets:precompile RAILS_ENV=production
+
+ディレクトリの作成/設定します。
 # chown -R apache:apache /usr/local/deco
-
-ファイル保存ディレクトリの作成
 # mkdir -p /var/deco/files
 # chown -R apache:apache /var/deco/files
 
-Webサーバの起動
-# /etc/rc.d/init.d/httpd start
 
-以下のURLで管理画面で設定を行う
+Webサーバの起動と自動起動を設定します。
+# systemctl start httpd
+# systemctl enable httpd
+
+以下のURLにアクセスすると管理画面が表示されますので必要な設定を行います。
+
 (DECOサーバのURL)/sys_top
 
-設定が完了したら以下のURLでシステムにアクセス
+設定が完了したら以下のURLにアクセスするとDECOの利用ができます。
+
 (DECOサーバのURL)/

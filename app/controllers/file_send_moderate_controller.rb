@@ -17,12 +17,16 @@
 # Filters added to this controller apply to all controllers in the application.
 # Likewise, all the methods added will be available for all controllers.
 class FileSendModerateController < ApplicationController
-  before_filter :load_env
-  before_filter :url_check_for_send_moderater, :except => [:message]
-  before_filter :check_auth, :except => [:login, :auth, :message]
+  before_action :load_env
+  before_action :url_check_for_send_moderater, :except => [:message]
+  before_action :check_auth, :except => [:login, :auth, :message]
 
   def index
-    @send_moderater = SendModerater.find(:first, :conditions => {:url => params[:id]})
+#    @send_moderater = SendModerater.find(:first, :conditions => {:url => params[:id]})
+    @send_moderater =
+        SendModerater
+        .where(:url => params[:id])
+        .first
     @send_moderate = @send_moderater.send_moderate
     @moderate_user = @send_moderater.user
     @send_matter = @send_moderate.send_matter
@@ -33,11 +37,19 @@ class FileSendModerateController < ApplicationController
   end
 
   def login
-    @send_moderater = SendModerater.find(:first, :conditions => {:url => params[:id]})
+#    @send_moderater = SendModerater.find(:first, :conditions => {:url => params[:id]})
+    @send_moderater =
+        SendModerater
+        .where(:url => params[:id])
+        .first
 
     @moderate_user = @send_moderater.user
-    login_user = User.find(:first,
-          :conditions => {:id => session[:user_id].to_i})
+#    login_user = User.find(:first,
+#          :conditions => {:id => session[:user_id].to_i})
+    login_user =
+        User
+        .where(:id => session[:user_id].to_i)
+        .first
     if @moderate_user == nil
       flash[:notice] = "不正なアクセスかURLが間違っております。"
       redirect_to :action => :message
@@ -70,7 +82,11 @@ class FileSendModerateController < ApplicationController
   end
 
   def auth
-    @send_moderater = SendModerater.find(:first, :conditions => {:id => session[:send_moderater_id]})
+#    @send_moderater = SendModerater.find(:first, :conditions => {:id => session[:send_moderater_id]})
+    @send_moderater =
+        SendModerater
+        .where(:id => session[:send_moderater_id])
+        .first
     @moderate_user = @send_moderater.user
     if @moderate_user && @moderate_user.authenticate(params[:password])
       session[:user_id] = @moderate_user.id
@@ -87,39 +103,46 @@ class FileSendModerateController < ApplicationController
   end
 
   def get
-    @attachment = Attachment.find(:first, :conditions => {:id => params[:attachment].to_i})
+#    @attachment = Attachment.find(:first, :conditions => {:id => params[:attachment].to_i})
+    @attachment =
+        Attachment
+        .where(:id => params[:attachment].to_i)
+        .first
     if @attachment == nil
       flash[:notice] = "ファイルが存在しません。"
       redirect_to :action => :message
       return
     end
     if @attachment.virus_check == '0'
-      if request.user_agent =~ /Windows/i
-        @filename = @attachment.name.encode("Windows-31J")
-      elsif request.user_agent =~ /Mac/i
-        @filename = @attachment.name
-      else
-        @filename = @attachment.name
-      end
-      send_file $app_env['FILE_DIR'] + "/#{@attachment.id}",
+#      if request.user_agent =~ /Windows/i
+#        @filename = @attachment.name.encode(Encoding::Windows_31J, undef: :replace)
+#      elsif request.user_agent =~ /Mac/i
+#        @filename = @attachment.name
+#      else
+#        @filename = @attachment.name
+#      end
+      @filename = @attachment.name
+      send_file @params_app_env['FILE_DIR'] + "/#{@attachment.id}",
                 :filename => @filename,
                 :type => @attachment.content_type,
                 :x_sendfile => true
-=begin
-      send_file $app_env['FILE_DIR'] + "/#{@attachment.id}",
-                :filename => @filename,
-                :type => @attachment.content_type
-=end
     end
   end
 
   def new
-    @send_moderater = SendModerater.find(:first,
-            :conditions => {:url => params[:id]})
+#    @send_moderater = SendModerater.find(:first, :conditions => {:url => params[:id]})
+    @send_moderater =
+        SendModerater
+        .where(:url => params[:id])
+        .first
   end
 
   def approval
-    @send_moderater = SendModerater.find(:first, :conditions => {:url => params[:id]})
+#    @send_moderater = SendModerater.find(:first, :conditions => {:url => params[:id]})
+    @send_moderater =
+        SendModerater
+        .where(:url => params[:id])
+        .first
     @send_moderate = @send_moderater.send_moderate
     @send_matter = @send_moderate.send_matter
     @receivers = @send_matter.receivers
@@ -143,9 +166,10 @@ class FileSendModerateController < ApplicationController
           @send_matter.save!
           flash[:notice] = "決裁が完了しました"
           if @attachments.select{ |attachment|
-              attachment.virus_check == '0'}.size > 0
+              (attachment.virus_check == '0' ||
+               attachment.virus_check == nil)}.size > 0
             @receivers.each do |receiver|
-              full_url_dl = port + "://" + $app_env['URL'] +
+              full_url_dl = port + "://" + @params_app_env['URL'] +
                       "/file_receive/login/" +
                       "#{receiver.url}"
               Notification.send_report(@send_matter, receiver,
@@ -156,7 +180,7 @@ class FileSendModerateController < ApplicationController
               end
             end
           end
-          url_dl = port + "://" + $app_env['URL']
+          url_dl = port + "://" + @params_app_env['URL']
           Notification.send_result_report(@send_matter,
                                           @receivers, @attachments,
                                           url_dl).deliver
@@ -170,7 +194,7 @@ class FileSendModerateController < ApplicationController
                       "number = ?"].join(" AND "),
                       @send_moderate.id, moderater_count).first
           if @next_moderater.present?
-            url = port + "://" + $app_env['URL']
+            url = port + "://" + @params_app_env['URL']
             Notification
                 .send_matter_moderate_report(@send_matter, @next_moderater,
                     @next_moderater.user, url).deliver
@@ -179,7 +203,7 @@ class FileSendModerateController < ApplicationController
             flash[:notice] = "決裁が完了しました"
           else
             @receivers.each do |receiver|
-              full_url_dl = port + "://" + $app_env['URL'] +
+              full_url_dl = port + "://" + @params_app_env['URL'] +
                       "/file_receive/login/" +
                       "#{receiver.url}"
               Notification.send_report(@send_matter, receiver,
@@ -189,7 +213,7 @@ class FileSendModerateController < ApplicationController
                                          @attachments,full_url_dl).deliver
               end
             end
-            url_dl = port + "://" + $app_env['URL']
+            url_dl = port + "://" + @params_app_env['URL']
             Notification.send_result_report(@send_matter,
                                             @receivers, @attachments,
                                             url_dl).deliver
@@ -198,44 +222,47 @@ class FileSendModerateController < ApplicationController
         end
       # 簡易決裁
       else
-          # 決裁終了
-          @send_moderater.result = 1
-          @send_moderater.save!
-          @send_moderate.result = 1
-          @send_moderate.moderated_at = Time.now
-          @send_moderate.save!
-          # 決裁結果を更新
-          @send_matter.moderate_result = 1
-          @send_matter.sent_at = Time.now
-          @send_matter.save!
-          flash[:notice] = "決裁が完了しました"
-          if @attachments.select{ |attachment|
-              attachment.virus_check == '0'}.size > 0
-            @receivers.each do |receiver|
-              full_url_dl = port + "://" + $app_env['URL'] +
-                      "/file_receive/login/" +
-                      "#{receiver.url}"
-              Notification.send_report(@send_matter, receiver,
+        # 決裁終了
+        @send_moderater.result = 1
+        @send_moderater.save!
+        @send_moderate.result = 1
+        @send_moderate.moderated_at = Time.now
+        @send_moderate.save!
+        # 決裁結果を更新
+        @send_matter.moderate_result = 1
+        @send_matter.sent_at = Time.now
+        @send_matter.save!
+        if @attachments.select{ |attachment|
+            (attachment.virus_check == '0' ||
+             attachment.virus_check == nil)}.size > 0
+          @receivers.each do |receiver|
+            full_url_dl = port + "://" + @params_app_env['URL'] +
+                    "/file_receive/login/" +
+                    "#{receiver.url}"
+            Notification.send_report(@send_matter, receiver,
+                                     @attachments,full_url_dl).deliver
+            if @send_matter.password_notice == 1
+              Notification.send_password_report(@send_matter, receiver,
                                        @attachments,full_url_dl).deliver
-              if @send_matter.password_notice == 1
-                Notification.send_password_report(@send_matter, receiver,
-                                         @attachments,full_url_dl).deliver
-              end
             end
           end
-          url_dl = port + "://" + $app_env['URL']
-          Notification.send_result_report(@send_matter,
-                                          @receivers, @attachments,
-                                          url_dl).deliver
-          flash[:notice] = "決裁が完了しました"
+        end
+        url_dl = port + "://" + @params_app_env['URL']
+        Notification.send_result_report(@send_matter,
+                                        @receivers, @attachments,
+                                        url_dl).deliver
+        flash[:notice] = "決裁が完了しました"
       end
     end
     redirect_to :action => :message
   end
 
   def create
-    @send_moderater = SendModerater.find(:first,
-            :conditions => {:url => params[:id]})
+#    @send_moderater = SendModerater.find(:first, :conditions => {:url => params[:id]})
+    @send_moderater =
+        SendModerater
+        .where(:url => params[:id])
+        .first
     @send_moderate = @send_moderater.send_moderate
     @send_matter = @send_moderate.send_matter
     @send_moderaters = @send_moderate.send_moderaters
@@ -253,11 +280,11 @@ class FileSendModerateController < ApplicationController
       @send_matter.save!
     end
     port = get_port()
-    url = port + "://" + $app_env['URL']
+    url = port + "://" + @params_app_env['URL']
     Notification.send_matter_moderate_result_report(@send_matter,
                                     @send_moderate,
                                     url).deliver
-    flash[:notice] = "決裁が完了しました"
+    flash[:notice] = "決裁を却下しました"
     redirect_to :action => :message
   end
 
@@ -268,7 +295,12 @@ class FileSendModerateController < ApplicationController
 
   def check_auth
     if current_user.present?
-      @send_moderater = SendModerater.find(:first, :conditions => {:url => params[:id], :send_flag => 1})
+#      @send_moderater = SendModerater.find(:first, :conditions => {:url => params[:id], :send_flag => 1})
+      @send_moderater =
+          SendModerater
+          .where(:url => params[:id],
+                 :send_flag => 1)
+          .first
       @moderate_user = @send_moderater.user
       unless @moderate_user.id == current_user.id
         flash[:notice] = "不正なアクセスです。(ログインしているユーザが一致しません。)"
@@ -282,7 +314,11 @@ class FileSendModerateController < ApplicationController
   end
 
   def url_check_for_send_moderater
-    @send_moderater = SendModerater.find(:first, :conditions => {:url => params[:id]})
+#    @send_moderater = SendModerater.find(:first, :conditions => {:url => params[:id]})
+    @send_moderater =
+        SendModerater
+        .where(:url => params[:id])
+        .first
     unless @send_moderater.present? && @send_moderater.send_flag == 1
       flash[:notice] = "不正なアクセスかURLが間違っております。"
       redirect_to :action => :message
@@ -291,10 +327,19 @@ class FileSendModerateController < ApplicationController
   end
 
   def authorize_for_send_moderater
-    @send_moderater = SendModerater.find(:first, :conditions => {:url => params[:id], :send_flag => 1})
+#    @send_moderater = SendModerater.find(:first, :conditions => {:url => params[:id], :send_flag => 1})
+    @send_moderater =
+        SendModerater
+        .where(:url => params[:id],
+               :send_flag => 1)
+        .first
     @moderate_user = @send_moderater.moderater.user
-    login_user = User.find(:first,
-          :conditions => {:id => session[:user_id].to_i})
+#    login_user = User.find(:first,
+#          :conditions => {:id => session[:user_id].to_i})
+    login_user =
+        User
+        .where(:id => session[:user_id].to_i)
+        .first
     if @moderate_user == nil || @send_moderater.send_flag == 0
       flash[:notice] = "不正なアクセスかURLが間違っております。"
       redirect_to :action => :message

@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<script type="text/javascript">
+script_url = "<%= url_options[:script_name] %>";
+</script>
+
+<html>
+  <head>
+    <title>DECO Drive</title>
+    <%= csrf_meta_tags %>
+    <%
+    links = Array.new 
+    # パッケージ用スタイル定義
+    links << "application"
+    # Engine用スタイル定義
+    Dir.glob("vendor/engines/*/").each do |path|
+      links << "#{File.basename(path)}/application"
+    end
+    %>
+    <% links.each do |link| %>
+    <%= stylesheet_link_tag link, media: 'all' %>
+    <% end %> 
+    <%
+    links = Array.new 
+    # パッケージ用スクリプト定義
+    links << "application"
+    # Engine用スクリプト定義
+    Dir.glob("vendor/engines/*/").each do |path|
+      links << "#{File.basename(path)}/application"
+    end
+    %>
+    <% links.each do |link| %>
+    <%= javascript_include_tag link %>
+    <% end %> 
+  </head>
+  <body class="receiver_list_import">
+    <%= yield %>
+  </body>
+</html>

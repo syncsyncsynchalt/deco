@@ -21,10 +21,10 @@ class User < ActiveRecord::Base
   has_many :moderaters
   has_many :send_moderaters
   has_many :request_moderaters
-  belongs_to :moderate
   has_many :address_books
   has_many :send_matters
   has_many :request_matters
+  belongs_to :moderate, optional: true
 
   attr_accessor :password
 #  attr_accessible :login, :password_digest

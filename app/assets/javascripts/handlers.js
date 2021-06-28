@@ -60,13 +60,13 @@ function swfUploadLoadFailed() {
 function fileQueued(file) {
         try {
                 // add
-            　　//total_file_size += file.size;
+                //total_file_size += file.size;
                 //if (total_file_size > total_file_size_limit) {
                 //    alert("合計ファイルサイズを超えました。");
                 //    var progress = new FileProgress(file, this.customSettings.progressTarget);
                 //    progress.setError();
                 //    progress.toggleCancel(false, this, file.size);
-　　　　　　　　//　　total_file_size　-= file.size;
+                //    total_file_size　-= file.size;
                 //}else{
                     var progress = new FileProgress(file, this.customSettings.progressTarget);
                     progress.setStatus("送信待機中...");
@@ -74,7 +74,8 @@ function fileQueued(file) {
             // add
             document.getElementById('send_filer').scrollTop = document.getElementById('send_filer').scrollHeight;
             total_queued_number++;
-            document.getElementById("submitbtn").innerHTML = "<input src=\"" + script_url + "/assets/common/but_send.gif\" type=\"image\" />";
+//            document.getElementById("submitbtn").innerHTML = "<input src=\"" + script_url + "/assets/common/but_send.gif\" type=\"image\" />";
+            document.getElementById("submitbtn").innerHTML = "<input src=\"" + script_url + image_path('common/but_send.gif') + "\" type=\"image\" />";
             if (total_queued_number == 1) {
                 document.getElementById('send_filer').style.height = '88px'
             }else if (total_queued_number > 1 && total_queued_number < 5){
@@ -170,7 +171,8 @@ function uploadProgress(file, bytesLoaded, bytesTotal) {
                 if (bytesLoaded == bytesTotal){
                     now = new Date();
                     pointtime = now.getTime()
-                    show_log("処理中… <img src=" + script_url + "/assets/common/scan_progress.gif>")
+//                    show_log("処理中… <img src=" + script_url + "/assets/common/scan_progress.gif>")
+                    show_log("処理中… <img src=" + script_url + image_path('common/scan_progress.gif') + ">")
                 }
 
                 if (total_file_size == 0) {
@@ -200,9 +202,10 @@ function uploadSuccess(file, serverData) {
             transfer_file_size += file.size
 
             if(transfer_file_size == total_file_size){
-              show_log("処理中… <img src=" + script_url + "/assets/common/scan_progress.gif>")
+//              show_log("処理中… <img src=" + script_url + "/assets/common/scan_progress.gif>")
+              show_log("処理中… <img src=" + script_url + image_path('common/scan_progress.gif') + ">")
             }else{
-　　　　      show_log("送信中…")
+              show_log("送信中…")
             }
         } catch (ex) {
                 this.debug(ex);

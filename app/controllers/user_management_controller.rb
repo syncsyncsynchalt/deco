@@ -1,5 +1,5 @@
 class UserManagementController < ApplicationController
-  before_filter :authorize, :load_env
+  before_action :authorize, :load_env
   layout 'user_management'
   def index
   end

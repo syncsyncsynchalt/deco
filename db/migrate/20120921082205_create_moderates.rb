@@ -1,4 +1,4 @@
-class CreateModerates < ActiveRecord::Migration
+class CreateModerates < ActiveRecord::Migration[4.2]
   def change
     create_table :moderates do |t|
       t.string :name

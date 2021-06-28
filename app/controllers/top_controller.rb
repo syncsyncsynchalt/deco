@@ -17,10 +17,10 @@
 # Filters added to this controller apply to all controllers in the application.
 # Likewise, all the methods added will be available for all controllers.
 class TopController < ApplicationController
-  before_filter :authorize
-  before_filter :load_env
-  before_filter :vacuum_file_for_file_exchange
-  before_filter :vacuum_data_for_file_exchange
+  before_action :authorize
+  before_action :load_env
+  before_action :vacuum_file_for_file_exchange
+  before_action :vacuum_data_for_file_exchange
   def index
     session[:site_category] = nil
     @announcements =

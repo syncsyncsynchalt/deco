@@ -1,10 +1,7 @@
 <script type="text/javascript">
 $(function() {
-//    $("#user_environment_back_button").click(function(){
-//      location.href = '<%= user_environment_index_path %>';
-//    });
     $("#user_environment_edit_button").click(function(){
-      location.href = '<%= edit_user_environment_index_path %>';
+      location.href = '<%= url_for(action: 'edit') %><%#= edit_user_environment_index_path %>';
     });
 })
 </script>

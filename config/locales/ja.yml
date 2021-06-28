@@ -334,6 +334,7 @@ ja:
       receiver_name: "受信者名"
       receiver_mail_address: "受信者メールアドレス"
     virus_check_state:
+      checking: "ウィルスチェック中"
       safe: "なし"
     moderate:
       none: "決裁なし"

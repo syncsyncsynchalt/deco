@@ -1,0 +1,91 @@
+<script type="text/javascript">
+
+localDomains = ""
+
+
+$(document).ready(function() {
+  $.validationEngineLanguage.newLang(localDomains);
+<% for i in 1..11 %>
+  $("#app_env<%= i %>").validationEngine({
+    success : function() { document.app_env<%= i %>.submit(); },
+    failure : function() {}
+  })
+<% end %>
+});
+</script>
+
+  <fieldset>
+  <% c=0 -%>
+  <% @app_envs.each do | app_env | %>
+    <% if app_env.key == 'SEND_MAIL_TITLE' -%>
+  <h2><%= $param_label['SEND_MAIL_TITLE'] %></h2>
+  ※ デフォルトの件名<br />
+  「○○のご連絡」に以下の文字列を先頭に追記できます。<br /><br />
+  <div class="table-sys-a">
+      <div class="input-mid-2-l"><%= app_env.value %></div>
+      <div class="input-mid-2-r">
+      <%= link_to '[編集]', {:action => 'edit1', :id => app_env.id } %>
+      <%= link_to '[削除]', {:action => 'destroy', :id => app_env.id},
+                            :confirm => '削除します。よろしいですか?', :method => :delete %>
+      </div>
+      <% c += 1 -%>
+    <% end -%>
+  <% end -%>
+  <% if c == 0 -%>
+  <h2><%= $param_label['SEND_MAIL_TITLE'] %></h2>
+  ※ デフォルトの件名<br />
+  「○○のご連絡」に以下の文字列を先頭に追記できます。<br /><br />
+  <div class="table-sys-a">
+    <%= form_for(:app_env, :url => { :action => "create"}, 
+                :html => {:id => 'app_env1', :name=> "app_env1" }) do |f| %>
+      <div class="item-mid"><%= $param_label['SEND_MAIL_TITLE'] %>の登録</div>
+      <div class="input-mid">
+        <%= f.hidden_field :key, {:value => "SEND_MAIL_TITLE"} %>
+        <%= f.hidden_field :category, {:value => 0} %>
+        <%= f.text_field :value, :class => 'validate[required]' %>
+        <%= f.submit "登　録" %>
+      </div>
+    <% end %>
+  <% end -%>
+  </div>
+  </fieldset>
+
+<br>
+
+  <fieldset>
+  <% c=0 -%>
+  <% @app_envs.each do | app_env | %>
+    <% if app_env.key == 'SEND_MAIL_CONTENT' -%>
+  <h2><%= $param_label['SEND_MAIL_CONTENT'] %></h2>
+  ※ デフォルトの見出し<br />
+  「このメールは，○○様からの依頼により，「DECO」から発信しております。」<br />
+  の「DECO」のまえに以下の文字列を追記できます。<br /><br />
+  <div class="table-sys-a">
+      <div class="input-mid-2-l"><%= app_env.value %></div>
+      <div class="input-mid-2-r">
+      <%= link_to '[編集]', {:action => 'edit1', :id => app_env.id } %>
+      <%= link_to '[削除]', {:action => 'destroy', :id => app_env.id},
+                            :confirm => '削除します。よろしいですか?', :method => :delete %>
+      </div>
+      <% c += 1 -%>
+    <% end -%>
+  <% end -%>
+  <% if c == 0 -%>
+  <h2><%= $param_label['SEND_MAIL_CONTENT'] %></h2>
+  ※ デフォルトの見出し<br />
+  「このメールは，○○様からの依頼により，「DECO」から発信しております。」<br />
+  の「DECO」のまえに以下の文字列を追記できます。<br /><br />
+  <div class="table-sys-a">
+    <%= form_for(:app_env, :url => { :action => "create"}, 
+                :html => {:id => 'app_env2', :name=> "app_env2" }) do |f| %>
+      <div class="item-mid"><%= $param_label['SEND_MAIL_CONTENT'] %>の登録</div>
+      <div class="input-mid">
+        <%= f.hidden_field :key, {:value => "SEND_MAIL_CONTENT"} %>
+        <%= f.hidden_field :category, {:value => 0} %>
+        <%= f.text_field :value, :class => 'validate[required]' %>
+        <%= f.submit "登　録" %>
+      </div>
+    <% end %>
+  <% end -%>
+  </div>
+  </fieldset>

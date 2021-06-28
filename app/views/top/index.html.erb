@@ -18,7 +18,7 @@ function display_<%= cnt %> () {
 }
 </script>
       <div id="announcement_title" onclick="display_<%= cnt %>()"><%= announcement.updated_at.strftime('%Y/%m/%d %H:%M') %>　<%= announcement.title %></div><br>
-<div id='announcement_body_<%= cnt %>' style="display:none;"><%= announcement.body %><br><br></div>
+<div id='announcement_body_<%= cnt %>' style="display:none;"><%= simple_format(announcement.body, {}, wrapper_tag: "div") %><br><br></div>
 <%- end -%>
 <%- if cnt == 0 -%>
   現在、お知らせはありません。<br>
@@ -35,13 +35,28 @@ function display_<%= cnt %> () {
     </dl>
   </div>
 
+<% @expression_flag = 0 %>
+<% @content_frames.each.with_index do |content_frame, count| -%>
+  <% if content_frame.expression_flag == 1 %>
+    <% @expression_flag = 1 %>
+  <% end -%>
+<% end -%>
+<% if @expression_flag == 1 %>
   <div id="service">
     <h1>サービスについて</h1>
     <dl>
 <% @content_frames.each.with_index do |content_frame, count| -%>
-      <dt><%= link_to(content_frame.title, :controller => "content", :action => "load", :id => content_frame.id) %></dt>
-      <dd><%= content_frame.description %></dd>
+  <% if content_frame.expression_flag == 1 %>
+      <dt>
+        <%= link_to(content_frame.title, :controller => "content", :action => "load", :id => content_frame.id) %>
+      </dt>
+      <dd>
+        <%= content_frame.description %>
+      </dd>
+  <% end -%>
 <% end -%>
     </dl>
   </div>
-
+<% else -%>
+<br><br><br>
+<% end -%>

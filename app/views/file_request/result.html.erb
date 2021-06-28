@@ -18,7 +18,7 @@
 <% if @request_matter.message == '' %>
 <div class="input-mid">　</div>
 <% else %>
-<div class="input-mid"><%= h @request_matter.message %></div>
+<div class="input-mid"><%= simple_format(@request_matter.message, {}, wrapper_tag: "div") %></div>
 <% end %>
 <% if @request_matter.moderate_flag == 1 %>
   <div class="item-mid">決裁種別</div>
@@ -38,12 +38,12 @@
 <% number = 0 %>
     <div class="table-d" style="border:0px;">
 <% for moderater in @request_moderaters %>
-      <div class="input-l" style="border:0px; padding:5px 8px; height:20px;">
+      <div class="input-l" style="border:0px;">
 <% number += 1 %>
 <%= number %>.
 <%= moderater.moderater.user.name %>
       </div>
-<div class="input-r" style="border:0px; padding:5px 8px; height:20px; text-align:center;">
+<div class="input-r" style="border:0px;text-align:center;">
 <% if moderater.result == 1 %>
 <font color="blue"><b>承認</b></font>
 <% elsif moderater.result == 2 %>

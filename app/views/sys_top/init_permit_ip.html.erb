@@ -23,8 +23,10 @@ $(document).ready(function() {
   <fieldset>
   <h2>システム管理画面アクセスＩＰアドレスの設定</h2>
   <div class="table-sys-a">
+  <% @system_ip_count = 0 %>
   <%- @app_envs.each do | app_env | -%>
     <%- if app_env.key == 'PERMIT_OPERATION_IPS' -%>
+      <% @system_ip_count += 1 %>
       <div class="input-mid-2-l"><%= app_env.value %></div>
       <div class="input-mid-2-r">
       <%= link_to '[編集]', {:action => 'param_edit1', :id => app_env.id } %>
@@ -33,6 +35,10 @@ $(document).ready(function() {
       </div>
     <%- end -%>
   <%- end -%>
+  <% if @system_ip_count == 0 %>
+    <div class="input-mid-2-l">(<%= $param_label['PERMIT_OPERATION_IPS'] %>が登録されていません)</div>
+    <div class="input-mid-2-r">&nbsp;</div>
+  <% end %>
   <br>
   <%= form_for(:app_env, :url => { :action => "param_create"}, 
               :html => {:id => 'app_env1', :name=> "app_env1" }) do |f| -%>

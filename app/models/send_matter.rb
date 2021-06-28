@@ -17,10 +17,10 @@
 # Filters added to this controller apply to all controllers in the application.
 # Likewise, all the methods added will be available for all controllers.
 class SendMatter < ActiveRecord::Base
-  has_many(:receivers)
-  has_many(:attachments)
+  has_many :receivers
+  has_many :attachments
   has_one :send_moderate
-  belongs_to :user
+  belongs_to :user, optional: true
 
   scope :with_begin_date, ->(begin_date) {
     unless begin_date.blank?

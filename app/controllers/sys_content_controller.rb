@@ -18,16 +18,20 @@
 # Likewise, all the methods added will be available for all controllers.
 class SysContentController < ApplicationController
   layout 'system_admin'
-  before_filter :check_ip_for_administrator, :administrator_authorize,
+  before_action :check_ip_for_administrator, :administrator_authorize,
                 :initialize_value_for_operation
   def index
     session[:section_title] = 'コンテンツ管理'
     session[:target_for_back] = 'index'
     session[:target_for_back_id] = nil
 
-    @top_content_frames = ContentFrame.find(:all,
-            :conditions => { :master_frame => 0 },
-			:order => "content_frame_order")
+#    @top_content_frames = ContentFrame.find(:all,
+#            :conditions => { :master_frame => 0 },
+#            :order => "content_frame_order")
+    @top_content_frames =
+        ContentFrame
+        .where(:master_frame => 0)
+        .order("content_frame_order ASC")
     @stat = 0
     if @top_content_frames.length < 4
       ActiveRecord::Base.transaction do
@@ -40,14 +44,29 @@ class SysContentController < ApplicationController
           @stat = 9
         end
       end
-      @top_content_frames = ContentFrame.find(:all,
-            :conditions => { :master_frame => 0 },
-			:order => "content_frame_order")
+      @top_content_frames =
+          ContentFrame
+          .where(:master_frame => 0)
+          .order("content_frame_order ASC")
     end
 
     if @stat == 9
       flash[:notice] = "初期化しました"
     end
+  end
+
+  def change_expression
+    if params[:expression].blank? || params[:id].blank?
+      redirect_to :action => :index
+      return
+    end
+    @content_frame = ContentFrame.find(params[:id])
+    ActiveRecord::Base.transaction do
+      @content_frame.expression_flag = params[:expression].to_i
+      @content_frame.save!
+    end
+    flash[:notice] = "コンテンツの表示を変更しました"
+    redirect_to :action => :index
   end
 
   def edit_page
@@ -56,8 +75,10 @@ class SysContentController < ApplicationController
     session[:target_for_back_id] = nil
     @master_frame = params[:id]
     @content_frame = ContentFrame.find(@master_frame)
-    @content_items = ContentItem.find(:all,
-            :conditions => { :master_frame => @master_frame })
+#    @content_items = ContentItem.find(:all, :conditions => { :master_frame => @master_frame })
+    @content_items =
+        ContentItem
+        .where(:master_frame => @master_frame)
 
     unless @content_frame.master_frame == 0
       @parent_frame = ContentFrame.find(@content_frame.master_frame)
@@ -73,7 +94,7 @@ class SysContentController < ApplicationController
       @content_item = ContentItem.find(params[:id])
       @edit_type = "update"
     else
-      @content_item = ContentItem.new(params[:content_item])
+      @content_item = ContentItem.new(content_items_params(params[:content_item]))
       @edit_type = "new"
     end
 
@@ -89,9 +110,16 @@ class SysContentController < ApplicationController
       @content_item.destroy
       @content_item.save!
 
-      @content_items = ContentItem.find(:all, 
-              :conditions => ["master_frame = ? AND content_item_order > ?",
-                @master_frame, @content_item_order] )
+#      @content_items = ContentItem.find(:all, 
+#              :conditions => ["master_frame = ? AND content_item_order > ?",
+#                @master_frame, @content_item_order] )
+      @content_items =
+          ContentItem
+          .where([["master_frame = ?",
+                   "content_item_order > ?",
+                   ].join(" AND "),
+                  @master_frame,
+                  @content_item_order])
       @content_items.each do |content_item|
         content_item.content_item_order = content_item.content_item_order - 1
         content_item.save!
@@ -109,9 +137,11 @@ class SysContentController < ApplicationController
     if params[:content_item][:id]
       @content_item = ContentItem.find(params[:content_item][:id])
     else
-      @content_item = ContentItem.new(params[:content_item])
-      @content_items = ContentItem.find(:all,
-              :conditions => { :master_frame => @content_item.master_frame })
+      @content_item = ContentItem.new(content_items_params(params[:content_item]))
+#      @content_items = ContentItem.find(:all, :conditions => { :master_frame => @content_item.master_frame })
+      @content_items =
+          ContentItem
+          .where(:master_frame => @content_item.master_frame)
       @content_item.content_item_order = @content_items.length + 1
     end
 
@@ -119,12 +149,20 @@ class SysContentController < ApplicationController
     session[:target_for_back_id] = params[:content_item][:master_frame]
 
     @result = 0
-    if (params[:content_item][:category]).to_i == 3 or
+    if (params[:content_item][:category]).to_i == 3 ||
        (params[:content_item][:category]).to_i == 5
       if params[:image].present?
         @check_content_type = params[:image].content_type
         unless @check_content_type =~ /image/
           flash[:error] = '画像データではありません'
+          @result = 1
+        end
+        unless @check_content_type =~ /image/ &&
+            (@check_content_type =~ /jpeg/ ||
+             @check_content_type =~ /jpg/ ||
+             @check_content_type =~ /JPEG/ ||
+             @check_content_type =~ /JPG/)
+          flash[:error] = 'JPEG画像を選択してください'
           @result = 1
         end
       else
@@ -135,7 +173,7 @@ class SysContentController < ApplicationController
 
     if @result == 0
       ActiveRecord::Base.transaction do
-        @content_item.update_attributes(params[:content_item])
+        @content_item.update_attributes(content_items_params(params[:content_item]))
         if @content_item.category == 3 or
            @content_item.category == 5
           @content_item.image = params[:image].read
@@ -154,8 +192,10 @@ class SysContentController < ApplicationController
   # 子ページを追加
   def add_subpage
     master_frame_id = params[:id]
-    @content_frames = ContentFrame.find(:all,
-            :conditions => { :master_frame => master_frame_id })
+#    @content_frames = ContentFrame.find(:all, :conditions => { :master_frame => master_frame_id })
+    @content_frames =
+        ContentFrame
+        .where(:master_frame => master_frame_id)
     ActiveRecord::Base.transaction do
       @content_frame = ContentFrame.new()
       @content_frame.title = "新しいページ - " +
@@ -179,9 +219,15 @@ class SysContentController < ApplicationController
       @content_frame.destroy
       @content_frame.save!
 
-      @content_frames = ContentFrame.find(:all, 
-              :conditions => ["master_frame = ? AND content_frame_order > ?",
-                @master_frame, @content_frame_order] )
+#      @content_frames = ContentFrame.find(:all, :conditions => ["master_frame = ? AND content_frame_order > ?", @master_frame, @content_frame_order] )
+      @content_frames =
+          ContentFrame
+          .where([["master_frame = ?",
+                   "content_frame_order > ?",
+                   ].join(" AND "),
+                  @master_frame,
+                  @content_frame_order,
+                  ])
       @content_frames.each do |content_frame|
         content_frame.content_frame_order =
           content_frame.content_frame_order - 1
@@ -210,7 +256,7 @@ class SysContentController < ApplicationController
 
   def update_content_frame
     @content_frame = ContentFrame.find(params[:id])
-    if @content_frame.update_attributes(params[:content_frame])
+    if @content_frame.update_attributes(content_frames_params(params[:content_frame]))
       flash[:notice] = '修正しました。'
     else
       flash[:error] = '失敗'
@@ -223,5 +269,19 @@ class SysContentController < ApplicationController
       @content_item = ContentItem.find(params[:id])
       send_data @content_item.image
     end
+  end
+
+  private
+
+  def content_frames_params(post_params)
+    post_params.permit(
+      :title, :description
+    )
+  end
+
+  def content_items_params(post_params)
+    post_params.permit(
+      :master_frame, :category, :text1, :flg, :url, :string1
+    )
   end
 end

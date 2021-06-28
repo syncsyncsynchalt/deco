@@ -1,9 +1,9 @@
 <script type="text/javascript">
 
-localDomains = "<%= h $local_domains %>"
+localDomains = "<%= h @local_domains %>"
 arInput = 0;
 receivers = new Array();
-max_receivers_num = <%= h $app_env['RECEIVERS_LIMIT'] %>;
+max_receivers_num = <%= h @params_app_env['RECEIVERS_LIMIT'] %>;
 
 for (i = 2 ; i <= max_receivers_num; i++) {
   receivers[i] = 0;
@@ -26,59 +26,21 @@ $(document).ready(function() {
 <%= form_for(:request_matter, :url => { :action => "create" }, :html => {:id => 'request_matter', :name=> "request_matter" }) do |f| -%>
 <%#= f.error_messages -%>
 
-    <h2>１．依頼者情報入力　（あなたの情報を入力してください）</h2>
+  <%= render 'request_user', f: f %>
 
-<fieldset>
+  <h2>２．メッセージ</h2>
 
-    <legend>依頼者情報入力</legend>
-
-  <% if session[:user_id].present? %>
-    <% user_name = current_user.name %>
-    <% mail_address = "" %>
-    <% mail_domain = "" %>
-    <% if @local_ips.select{  |local_ip| IPAddr.new(local_ip.value).include?(@access_ip) }.size > 0 %>
-      <% for key_word in current_user.email.split(/\@/) %>
-        <% if mail_address == "" %>
-          <% mail_address = key_word %>
-        <% else %>
-          <% mail_domain = key_word %>
-        <% end %>
-      <% end %>
-    <% else %>
-      <% mail_address = current_user.email %>
-    <% end %>
-  <% else %>
-    <% user_name = "" %>
-    <% mail_domain = "" %>
-  <% end %>
-    <div class="table-a">
-      <div class="item-top">あなたの名前<span class="required">※</span></div>
-      <div class="input-top"><%= f.text_field :name, :class => 'validate[required]', :size => 30, :value => user_name %></div>
-      <div class="item-bot">あなたのメールアドレス<span class="required">※</span></div>
-  <%- if @local_ips.select{ |local_ip| IPAddr.new(local_ip.value).include?(@access_ip) }.size > 0 -%>
-      <div class="input-bot"><%= f.text_field :mail_address, :class => 'validate[required]', :size => 20, :value => mail_address %>@<%= select_tag 'mail_domain', options_for_select($local_domain_list.each_with_index {| local_domain, i |  [ local_domain, local_domain ]}, mail_domain),  :include_blank => true, :class => 'validate[required]' %>
-      <br /><span class="note">例）<% $local_domain_list.each_with_index do | local_domain, i | %> tokushima_tarou_1@<b><%= h local_domain %></b><% if i + 1 < $local_domain_list.size %>, <%- end -%><%- end -%></span></div>
-  <%- else -%>
-      <div class="input-bot"><%= f.text_field :mail_address, :class => 'validate[required, custom[email]]', :size => 40, :value => mail_address -%>
-      <br /><span class="note">例）name1@example.com</span></div>
-  <%- end -%>
-    </div>
-
-</fieldset>
-
-    <h2>２．メッセージ</h2>
-
-<fieldset>
+  <fieldset>
 
     <legend>メッセージ</legend>
 
     <div class="table-a">
 
-    <div class="item-bot">相手へのメッセージ</div>
-    <div class="input-bot">
+    <div class="item-top">相手へのメッセージ</div>
+    <div class="input-top">
     <%= f.text_area :message, :cols => "40", :rows => '5' ,:class => 'validate[length[0, ' +
-                                           $app_env['MESSAGE_LIMIT'] + ']]' %><br>
-  (<%= h $app_env['MESSAGE_LIMIT'] %>文字まで入力可能)</div>
+                                           @params_app_env['MESSAGE_LIMIT'] + ']]' %><br>
+  (<%= h @params_app_env['MESSAGE_LIMIT'] %>文字まで入力可能)</div>
     </div>
 
 </fieldset>
@@ -86,7 +48,7 @@ $(document).ready(function() {
 
     <h2>３．送信者情報入力（ファイル送信を依頼する相手の情報を入力してください）</h2>
 
-<%= render 'requested_users' %>
+<%= render 'requested_users_address_book' %>
 
 <br><br>
 <p align="center"><%= image_submit_tag("common/but_request.gif") -%></p>

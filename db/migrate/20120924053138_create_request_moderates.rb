@@ -1,4 +1,4 @@
-class CreateRequestModerates < ActiveRecord::Migration
+class CreateRequestModerates < ActiveRecord::Migration[4.2]
   def change
     create_table :request_moderates do |t|
       t.integer :request_matter_id

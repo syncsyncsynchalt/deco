@@ -17,12 +17,16 @@
 # Filters added to this controller apply to all controllers in the application.
 # Likewise, all the methods added will be available for all controllers.
 class FileRequestModerateController < ApplicationController
-  before_filter :load_env
-  before_filter :url_check_for_request_moderater, :except => [:message]
-  before_filter :check_auth, :except => [:login, :auth, :message]
+  before_action :load_env
+  before_action :url_check_for_request_moderater, :except => [:message]
+  before_action :check_auth, :except => [:login, :auth, :message]
 
   def index
-    @request_moderater = RequestModerater.find(:first, :conditions => {:url => params[:id]})
+#    @request_moderater = RequestModerater.find(:first, :conditions => {:url => params[:id]})
+    @request_moderater =
+        RequestModerater
+        .where(:url => params[:id])
+        .first
     @request_moderate = @request_moderater.request_moderate
     @moderate_user = @request_moderater.user
     @request_matter = @request_moderate.request_matter
@@ -32,11 +36,19 @@ class FileRequestModerateController < ApplicationController
   end
 
   def login
-    @request_moderater = RequestModerater.find(:first, :conditions => {:url => params[:id]})
+#    @request_moderater = RequestModerater.find(:first, :conditions => {:url => params[:id]})
+    @request_moderater =
+        RequestModerater
+        .where(:url => params[:id])
+        .first
 
     @moderate_user = @request_moderater.user
-    login_user = User.find(:first,
-          :conditions => {:id => session[:user_id].to_i})
+#    login_user = User.find(:first,
+#          :conditions => {:id => session[:user_id].to_i})
+    login_user =
+        User
+        .where(:id => session[:user_id].to_i)
+        .first
     if @moderate_user == nil
       flash[:notice] = "不正なアクセスかURLが間違っております。"
       redirect_to :action => :message
@@ -69,7 +81,11 @@ class FileRequestModerateController < ApplicationController
   end
 
   def auth
-    @request_moderater = RequestModerater.find(:first, :conditions => {:id => session[:request_moderater_id]})
+#    @request_moderater = RequestModerater.find(:first, :conditions => {:id => session[:request_moderater_id]})
+    @request_moderater =
+        RequestModerater
+        .where(:id => session[:request_moderater_id])
+        .first
     @moderate_user = @request_moderater.user
     if @moderate_user && @moderate_user.authenticate(params[:password])
       session[:user_id] = @moderate_user.id
@@ -86,12 +102,19 @@ class FileRequestModerateController < ApplicationController
   end
 
   def new
-    @request_moderater = RequestModerater.find(:first,
-            :conditions => {:url => params[:id]})
+#    @request_moderater = RequestModerater.find(:first, :conditions => {:url => params[:id]})
+    @request_moderater =
+        RequestModerater
+        .where(:url => params[:id])
+        .first
   end
 
   def approval
-    @request_moderater = RequestModerater.find(:first, :conditions => {:url => params[:id]})
+#    @request_moderater = RequestModerater.find(:first, :conditions => {:url => params[:id]})
+    @request_moderater =
+        RequestModerater
+        .where(:url => params[:id])
+        .first
     @request_moderate = @request_moderater.request_moderate
     @request_matter = @request_moderate.request_matter
     @requested_matters = @request_matter.requested_matters
@@ -114,22 +137,22 @@ class FileRequestModerateController < ApplicationController
           @request_matter.save!
           flash[:notice] = "決裁が完了しました"
             @requested_matters.each do |requested_matter|
-              full_url = port + "://" + $app_env['URL'] +
+              full_url = port + "://" + @params_app_env['URL'] +
                   "/requested_file_send/login/" + requested_matter.url
 
               Notification.request_report(@request_matter,
                                           requested_matter.name, requested_matter.mail_address,
                                           full_url, requested_matter.send_password,
-                                          $app_env['REQUEST_PERIOD'].to_i).deliver
+                                          @params_app_env['REQUEST_PERIOD'].to_i).deliver
               Notification.request_password_report(@request_matter,
                                           requested_matter.name, requested_matter.mail_address,
                                           full_url, requested_matter.send_password,
-                                          $app_env['REQUEST_PERIOD'].to_i).deliver
+                                          @params_app_env['REQUEST_PERIOD'].to_i).deliver
             end
-          req_url = port + "://" + $app_env['URL'] + "/requested_file_send/login/"
+          req_url = port + "://" + @params_app_env['URL'] + "/requested_file_send/login/"
           Notification.request_copied_report(@request_matter,
                                          @requested_matters, req_url,
-                                         $app_env['REQUEST_PERIOD'].to_i).deliver
+                                         @params_app_env['REQUEST_PERIOD'].to_i).deliver
         else
           @request_moderater.result = 1
           @request_moderater.save!
@@ -140,7 +163,7 @@ class FileRequestModerateController < ApplicationController
                       "number = ?"].join(" AND "),
                       @request_moderate.id, moderater_count).first
           if @next_moderater.present?
-            url = port + "://" + $app_env['URL']
+            url = port + "://" + @params_app_env['URL']
             Notification
                 .request_matter_moderate_report(@request_matter, @next_moderater,
                     @next_moderater.user, url).deliver
@@ -149,22 +172,22 @@ class FileRequestModerateController < ApplicationController
             flash[:notice] = "決裁が完了しました"
           else
             @requested_matters.each do |requested_matter|
-              full_url = port + "://" + $app_env['URL'] +
+              full_url = port + "://" + @params_app_env['URL'] +
                   "/requested_file_send/login/" + requested_matter.url
 
               Notification.request_report(@request_matter,
                                           requested_matter.name, requested_matter.mail_address,
                                           full_url, requested_matter.send_password,
-                                          $app_env['REQUEST_PERIOD'].to_i).deliver
+                                          @params_app_env['REQUEST_PERIOD'].to_i).deliver
               Notification.request_password_report(@request_matter,
                                           requested_matter.name, requested_matter.mail_address,
                                           full_url, requested_matter.send_password,
-                                          $app_env['REQUEST_PERIOD'].to_i).deliver
+                                          @params_app_env['REQUEST_PERIOD'].to_i).deliver
             end
-            req_url = port + "://" + $app_env['URL'] + "/requested_file_send/login/"
+            req_url = port + "://" + @params_app_env['URL'] + "/requested_file_send/login/"
             Notification.request_copied_report(@request_matter,
                                            @requested_matters, req_url,
-                                         $app_env['REQUEST_PERIOD'].to_i).deliver
+                                         @params_app_env['REQUEST_PERIOD'].to_i).deliver
             flash[:notice] = "決裁が完了しました"
           end
         end
@@ -182,22 +205,22 @@ class FileRequestModerateController < ApplicationController
           @request_matter.save!
           flash[:notice] = "決裁が完了しました"
           @requested_matters.each do |requested_matter|
-            full_url = port + "://" + $app_env['URL'] +
+            full_url = port + "://" + @params_app_env['URL'] +
                 "/requested_file_send/login/" + requested_matter.url
             Notification.request_report(@request_matter,
                                         requested_matter.name, requested_matter.mail_address,
                                         full_url, requested_matter.send_password,
-                                        $app_env['REQUEST_PERIOD'].to_i).deliver
+                                        @params_app_env['REQUEST_PERIOD'].to_i).deliver
             Notification.request_password_report(@request_matter,
                                         requested_matter.name, requested_matter.mail_address,
                                         full_url, requested_matter.send_password,
-                                        $app_env['REQUEST_PERIOD'].to_i).deliver
+                                        @params_app_env['REQUEST_PERIOD'].to_i).deliver
           end
-          req_url = port + "://" + $app_env['URL'] + "/requested_file_send/login/"
+          req_url = port + "://" + @params_app_env['URL'] + "/requested_file_send/login/"
           @requested_matters = @request_matter.requested_matters
           Notification.request_copied_report(@request_matter,
                                          @requested_matters, req_url,
-                                         $app_env['REQUEST_PERIOD'].to_i).deliver
+                                         @params_app_env['REQUEST_PERIOD'].to_i).deliver
           flash[:notice] = "決裁が完了しました"
       end
     end
@@ -205,8 +228,11 @@ class FileRequestModerateController < ApplicationController
   end
 
   def create
-    @request_moderater = RequestModerater.find(:first,
-            :conditions => {:url => params[:id]})
+#    @request_moderater = RequestModerater.find(:first, :conditions => {:url => params[:id]})
+    @request_moderater =
+        RequestModerater
+        .where(:url => params[:id])
+        .first
     @request_moderate = @request_moderater.request_moderate
     @request_matter = @request_moderate.request_matter
     @request_moderaters = @request_moderate.request_moderaters
@@ -224,11 +250,11 @@ class FileRequestModerateController < ApplicationController
       @request_matter.save!
     end
     port = get_port()
-    url = port + "://" + $app_env['URL']
+    url = port + "://" + @params_app_env['URL']
     Notification.request_matter_moderate_result_report(@request_matter,
                                     @request_moderater,
                                     url).deliver
-    flash[:notice] = "決裁が完了しました"
+    flash[:notice] = "決裁を却下しました"
     redirect_to :action => :message
   end
 
@@ -236,7 +262,12 @@ class FileRequestModerateController < ApplicationController
 
   def check_auth
     if current_user.present?
-      @request_moderater = RequestModerater.find(:first, :conditions => {:url => params[:id], :send_flag => 1})
+#      @request_moderater = RequestModerater.find(:first, :conditions => {:url => params[:id], :send_flag => 1})
+      @request_moderater =
+          RequestModerater
+          .where(:url => params[:id],
+                 :send_flag => 1)
+          .first
       @moderate_user = @request_moderater.user
       unless @moderate_user.id == current_user.id
         flash[:notice] = "不正なアクセスです。(ログインしているユーザが一致しません。)"
@@ -250,7 +281,11 @@ class FileRequestModerateController < ApplicationController
   end
 
   def url_check_for_request_moderater
-    @request_moderater = RequestModerater.find(:first, :conditions => {:url => params[:id]})
+#    @request_moderater = RequestModerater.find(:first, :conditions => {:url => params[:id]})
+    @request_moderater =
+        RequestModerater
+        .where(:url => params[:id])
+        .first
     unless @request_moderater.present? && @request_moderater.send_flag == 1
       flash[:notice] = "不正なアクセスかURLが間違っております。"
       redirect_to :action => :message
@@ -259,10 +294,18 @@ class FileRequestModerateController < ApplicationController
   end
 
   def authorize_for_request_moderater
-    @request_moderater = RequestModerater.find(:first, :conditions => {:url => params[:id], :send_flag => 1})
+#    @request_moderater = RequestModerater.find(:first, :conditions => {:url => params[:id], :send_flag => 1})
+    @request_moderater =
+        RequestModerater
+        .where(:url => params[:id],
+               :send_flag => 1)
+        .first
     @moderate_user = @request_moderater.moderater.user
-    login_user = User.find(:first,
-          :conditions => {:id => session[:user_id].to_i})
+#    login_user = User.find(:first, :conditions => {:id => session[:user_id].to_i})
+    login_user =
+        User
+        .where(:id => session[:user_id].to_i)
+        .first
     if @moderate_user == nil || @request_moderater.send_flag == 0
       flash[:notice] = "不正なアクセスかURLが間違っております。"
       redirect_to :action => :message

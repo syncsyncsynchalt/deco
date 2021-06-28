@@ -25,15 +25,21 @@
       <div class="item-r"></div>
 <%- @attachments.each.with_index do |attachment, count| -%>
 <div class="input-l"><%= count + 1 -%>
-. <%= attachment.name -%>
+. <%=h truncate(attachment.name, length: 20) -%>
 （<%= show_file_size(attachment) %>）</div>
 <%- if(attachment.virus_check != '0') -%>
+<%- if(attachment.virus_check == nil) -%>
+<div class="input-r">
+ウイルス検出チェック中です。<br>(検出された場合削除されます)
+</div>
+<%- else -%>
 <div class="input-r">
 <%= image_tag("common/alert.jpg", :align => 'left', :hspace => '5',
 :size => "21x20",
-:title => "ウイルス検出のため削除しました。(#{attachment.virus_check})") -%>
-ウイルス検出のため削除しました。<br>(<%=h attachment.virus_check -%>)
+:title => "ウイルス検出で削除しました。(#{attachment.virus_check})") -%>
+ウイルス検出で削除しました。<br>(<%=h attachment.virus_check -%>)
 </div>
+<%- end -%>
 <%- else -%>
 <div class="input-r"><%= link_to image_tag('common/delete.jpg',
 {:border => '0', :alt => '削除'}),
@@ -67,12 +73,12 @@
 <% number = 0 %>
     <div class="table-d" style="border:0px;">
 <% for moderater in @send_moderaters %>
-      <div class="input-l" style="border:0px; padding:5px 8px; height:20px;">
+      <div class="input-l" style="border:0px;">
 <% number += 1 %>
 <%= number %>.
 <%= moderater.moderater.user.name %>
       </div>
-<div class="input-r" style="border:0px; padding:5px 8px; height:20px; text-align:center;">
+<div class="input-r" style="border:0px; text-align:center;">
 <% if moderater.result == 1 %>
 <font color="blue"><b>承認</b></font>
 <% elsif moderater.result == 2 %>
@@ -113,7 +119,7 @@
   <% if @send_matter.message == '' %>
     <div class="input-mid">　</div>
   <% else %>
-    <div class="input-mid"><%=h @send_matter.message %></div>
+    <div class="input-mid"><%= simple_format(@send_matter.message, {}, wrapper_tag: "div") %></div>
   <% end %>
 <% if @send_matter.sent_at.present? || @send_matter.moderate_flag == nil %>
   <div class="item-mid">ダウンロードページ</div>
@@ -121,8 +127,8 @@
     確認を行う場合はこちらから行えます<br /><br />
     <% @send_matter.receivers.each do |receiver| %>
       <%=h receiver.name %> 様 URL<br />
-      <a href="<%= @port %><%= $app_env['URL'] %>/file_receive/login/<%= receiver.url %>">
-      <%= @port %><%= $app_env['URL'] %>/<br>
+      <a href="<%= @port %><%= @params_app_env['URL'] %>/file_receive/login/<%= receiver.url %>">
+      <%= @port %><%= @params_app_env['URL'] %>/<br>
       file_receive/login/<%= receiver.url %></a> <br /><br />
     <% end %>
   </div>

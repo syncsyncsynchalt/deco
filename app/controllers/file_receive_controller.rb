@@ -17,13 +17,17 @@
 # Filters added to this controller apply to all controllers in the application.
 # Likewise, all the methods added will be available for all controllers.
 class FileReceiveController < ApplicationController
-  before_filter :load_env
+  before_action :load_env
 
   # ログイン画面(メールのリンクはここに飛ぶ)
   def login
     session[:auth] = nil
     session[:site_category] = "file_receive"
-    @receiver = Receiver.find(:first, :conditions => { :url => params['id']})
+#    @receiver = Receiver.find(:first, :conditions => { :url => params['id']})
+    @receiver =
+        Receiver
+        .where(:url => params['id'])
+        .first
     @send_matter = @receiver.send_matter
     session[:receiver_id] = params['id']
     unless flash[:notice]
@@ -34,8 +38,12 @@ class FileReceiveController < ApplicationController
 
   # ログインチェック
   def auth
-    @receiver = Receiver.find(:first, :conditions =>
-                              { :url => session[:receiver_id]})
+#    @receiver = Receiver.find(:first, :conditions =>
+#                              { :url => session[:receiver_id]})
+    @receiver =
+        Receiver
+        .where(:url => session[:receiver_id])
+        .first
     @send_matter = SendMatter.find(@receiver.send_matter_id)
     if @send_matter.receive_password == params[:login]['receive_password']
       session[:auth] = { "send_matter_id" => @receiver.send_matter_id,
@@ -114,10 +122,18 @@ class FileReceiveController < ApplicationController
           redirect_to :action => 'illegal' and return
         end
         if @download_flag == true
-          @file_dl_check = FileDlCheck.find(:first, :conditions =>
-                                   ["receiver_id = ? AND attachment_id = ?",
-                                    session[:auth]['receiver_id'],
-                                    @attachment.id] )
+#          @file_dl_check = FileDlCheck.find(:first, :conditions =>
+#                                   ["receiver_id = ? AND attachment_id = ?",
+#                                    session[:auth]['receiver_id'],
+#                                    @attachment.id] )
+          @file_dl_check =
+              FileDlCheck
+              .where([["receiver_id = ?",
+                       "attachment_id = ?",
+                       ].join(" AND "),
+                      session[:auth]['receiver_id'],
+                      @attachment.id])
+              .first
           if @send_matter.download_check == 1 &&
               @file_dl_check.download_flg == 0
             @receiver = Receiver.find(session[:auth]['receiver_id'])
@@ -130,23 +146,23 @@ class FileReceiveController < ApplicationController
           @file_dl_log = FileDlLog.new
           @file_dl_log.file_dl_check = @file_dl_check
           @file_dl_log.save
-          if request.user_agent =~ /Windows/i
-            @filename = @attachment.name.encode("Windows-31J")
-          elsif request.user_agent =~ /Mac/i
-            @filename = @attachment.name
-          else
-            @filename = @attachment.name
-          end
-          send_file($app_env['FILE_DIR'] + "/#{@attachment.id}",
+#          if request.user_agent =~ /Windows/i
+#            if request.user_agent =~ /Trident/i
+#                request.user_agent =~ /MSIE/i
+#              @filename = @attachment.name.encode(Encoding::Windows_31J, undef: :replace)
+#            else
+#              @filename = @attachment.name
+#            end
+#          elsif request.user_agent =~ /Mac/i
+#            @filename = @attachment.name
+#          else
+#            @filename = @attachment.name
+#          end
+          @filename = @attachment.name
+          send_file(@params_app_env['FILE_DIR'] + "/#{@attachment.id}",
                     :filename => @filename,
                     :type => @attachment.content_type,
                     :x_sendfile => true)
-=begin
-          send_file($app_env['FILE_DIR'] + "/#{@attachment.id}",
-                    :filename => @filename,
-                    :type => @attachment.content_type,
-                    :x_sendfile => true)
-=end
         else
           flash[:notice] = "ファイルの保管期限を過ぎましたので削除されました。"
           redirect_to :action => 'illegal' and return

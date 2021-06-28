@@ -1,0 +1,19 @@
+<%- unless session[:site_category].present? -%>
+  <% if session[:user_id] -%>
+    ( <%= t('views.login_state.userid') %>: <%= current_user.login %> )
+    <%= link_to "[#{t('views.login_state.management')}]", :controller => :user_management, :action => :index -%>
+    <%= link_to "[#{t('views.login_state.logout')}]", :controller => :sessions, :action => :destroy -%>
+  <%- else -%>
+<%
+    @login_user_exist_flg = 0
+    Dir.glob("vendor/engines/*/").each do |path|
+    engine = path.split("\/")[2]
+      if eval("ApplicationHelper.method_defined?(:#{engine}_show_current_user)")
+  -%>
+        <%= eval("#{engine}_show_current_user") %>
+<%
+      end
+    end
+    -%>
+  <%- end -%>
+<%- end -%>

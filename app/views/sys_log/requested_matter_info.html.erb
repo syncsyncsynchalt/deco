@@ -1,7 +1,6 @@
-
-  <h2>個別データ表示</h2>
-  <h3>依頼情報</h3>
-  <fieldset>
+<h2>個別データ表示</h2>
+<h3>依頼情報</h3>
+<fieldset>
   <div class="table-sys-a">
     <div class="item-mid">依頼ＩＤ</div>
     <div class="input-mid"><%= h @requested_matter.request_matter.id %></div>
@@ -42,14 +41,14 @@
     <div class="input-mid">
 <% @request_moderaters = @request_moderate.request_moderaters %>
 <% number = 0 %>
-    <div class="table-d" style="border:0px;">
+    <div class="table-i" style="border:0px;">
 <% for moderater in @request_moderaters %>
       <div class="input-l" style="border:0px; padding:5px 8px; height:20px;">
 <% number += 1 %>
 <%= number %>.
 <%= moderater.moderater.user.name %>
       </div>
-<div class="input-r" style="border:0px; padding:5px 8px; height:20px; text-align:center;">
+<div class="input-r" style="border:0px; padding:5px 8px; height:20px;">
 <% if moderater.result == 1 %>
 <font color="blue"><b>承認</b></font>
 <% elsif moderater.result == 2 %>
@@ -79,11 +78,11 @@
     <div class="item-mid">送信期限</div>
 <% if @requested_matter.request_matter.sent_at.present? %>
     <div class="input-mid"><%= (Time.parse(@requested_matter.request_matter.sent_at.to_s) +
-                                $app_env['REQUEST_PERIOD'].to_i).strftime("%Y年%m月%d日%H時%M分%S秒") %>
+                                @params_app_env['REQUEST_PERIOD'].to_i).strftime("%Y年%m月%d日%H時%M分%S秒") %>
 <br>
 <% elsif @requested_matter.request_matter.moderate_flag == nil %>
     <div class="input-mid"><%= (Time.parse(@requested_matter.request_matter.created_at.to_s) +
-                                $app_env['REQUEST_PERIOD'].to_i).strftime("%Y年%m月%d日%H時%M分%S秒") %>
+                                @params_app_env['REQUEST_PERIOD'].to_i).strftime("%Y年%m月%d日%H時%M分%S秒") %>
 <br>
 <% else %>
     <div class="input-mid"><br>
@@ -154,7 +153,7 @@
     <tr bordercolor=gray>
     <td nowrap align=center><%= count + 1 %></td>
     <td nowrap><%= requested_attachment.id %></td>
-    <td nowrap><% if File.exist?($app_env['FILE_DIR'].to_s + "/r#{requested_attachment.id}") -%>
+    <td nowrap><% if File.exist?(@params_app_env['FILE_DIR'].to_s + "/r#{requested_attachment.id}") -%>
                  <%= link_to requested_attachment.name, {:controller => 'sys_data',
                                                          :action => 'get_requested_file',
                                                          :id => requested_attachment.id } %>
@@ -163,7 +162,9 @@
     <td nowrap><%= label_file_size + " [" + requested_attachment.size.to_s + "]" %></td>
     <td nowrap><%= requested_attachment.content_type %></td>
     <td nowrap><%= download_flg %></td>
-    <td nowrap><%= requested_attachment.virus_check %></td>
+    <td nowrap><% if requested_attachment.virus_check == nil -%>(ウィルスチェック中)
+               <%- else -%><%= requested_attachment.virus_check -%>
+               <%- end -%></td>
     <td nowrap><%= (Time.parse(requested_attachment.created_at.to_s)).strftime("%Y年%m月%d日%H時%M分%S秒") %></td>
     </tr>
     <% @count += 1 -%>
@@ -172,7 +173,7 @@
     <tr><td colspan=8 algin=center>データがありません</td></tr>
   <% end -%>
   </table>
-  </fieldset>
+</fieldset>
 
 <br>
 <a href="#" onclick="history.back(); return false;">戻る</a><br>

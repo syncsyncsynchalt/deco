@@ -1,24 +1,38 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
-
+<!DOCTYPE html>
 <script type="text/javascript">
 script_url = "<%= url_options[:script_name] %>";
 </script>
 
 <html>
-<head>
-  <title>DECO Drive</title>
-  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-  <%#= javascript_include_tag  'jquery', 'jquery.validationEngine',
-'swfupload.queue', 'handlers', 'fileprogress' %>
-  <%#= stylesheet_link_tag 'os', 'validationEngine.jquery' %>
-  <%#= stylesheet_link_tag 'template' %>
-  <%#= stylesheet_link_tag 'swfupload' %>
-  <%#= stylesheet_link_tag 'styles' %>
-  <%= stylesheet_link_tag "application" %>
-  <%= stylesheet_link_tag "/assets/application_2.css?body=#{SecureRandom.hex(10)}" if File.exists?("#{Rails.root}/public/assets/application_2.css") %>
-  <%= javascript_include_tag "application" %>
-</head>
-<body>
-  <%= yield %>
-</body>
+  <head>
+    <title>DECO Drive</title>
+    <%= csrf_meta_tags %>
+    <%
+    links = Array.new 
+    # パッケージ用スタイル定義
+    links << "application"
+    # Engine用スタイル定義
+    Dir.glob("vendor/engines/*/").each do |path|
+      links << "#{File.basename(path)}/application"
+    end
+    %>
+    <% links.each do |link| %>
+    <%= stylesheet_link_tag link, media: 'all' %>
+    <% end %> 
+    <%
+    links = Array.new 
+    # パッケージ用スクリプト定義
+    links << "application"
+    # Engine用スクリプト定義
+    Dir.glob("vendor/engines/*/").each do |path|
+      links << "#{File.basename(path)}/application"
+    end
+    %>
+    <% links.each do |link| %>
+    <%= javascript_include_tag link %>
+    <% end %> 
+  </head>
+  <body>
+    <%= yield %>
+  </body>
 </html>

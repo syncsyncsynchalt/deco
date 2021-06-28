@@ -1,35 +1,75 @@
-    <span class="left">宛先は最大 <%= h $app_env['RECEIVERS_LIMIT'] %> 名まで追加できます。<br /><br />
+<div id="requested_matter_info_input">
+  <span class="left">
+    <input type="button" onclick="window.open('<%= url_for(:controller => 'receiver_list_import',
+          :type => 'file_request') %>',
+          'requested_matter_list', 'width=480,height=600,scrollbars=yes')" value="CSVファイル読込み" />
+    &nbsp;&nbsp;
+    注意：CSVファイル読込みすると、すでに入力されている送信者情報は削除されます。
+    </span>
+    <br />
+    <span class="left">宛先は最大 <%= h @params_app_env['RECEIVERS_LIMIT'] %> 名まで追加できます。<br /><br />
     <%= image_tag('common/name_s.jpg') %>&nbsp;相手のお名前<span class="required">※</span><br />
     <%= image_tag('common/mail_s.jpg') %>&nbsp;相手のメールアドレス<span class="required">※</span>&nbsp;&nbsp;<span class="note">例）name1@example.com</span>
-    </span>
+  </span>
+</div>
 
-    <fieldset>
-    <legend>送信者情報入力</legend>
+<fieldset>
+  <legend>送信者情報入力</legend>
 
 <%- i=1 -%>
 <%- while i<2 -%>
   <%= fields_for @requested_matter, :index => i do |f2| -%>
 
-    <div class="table-e">
-      <div class="item">ファイル送信者 1人目
-        <% if session[:user_id] -%>
-          <div class="re_address_p"><div class="re_address" onclick="open_modal_window('/address_books/index_sub?recipient_number=<%= i %>', 'modal');" title="アドレス帳"></div></div>
-        <% end %>
-      </div>
-      <div class="input-l">
-        <%= image_tag('common/name.jpg', :align => "left") %><%= f2.text_field :name, :class => 'validate[required]', :size => 30, :index => i %> 様<br />
-        <%= image_tag('common/mail.jpg', :align => "left") %><%= f2.text_field :mail_address, :class => 'validate[required, custom[email]]', :size => 40, :index => i %>
-      </div>
-      <div class="input-r"></div>
-      <div id="receiver_form"></div>
+  <div class="table-e">
+    <div class="item">ファイル送信者 1人目
+<%
+    @show_receiver_flg = 0
+    Dir.glob("vendor/engines/*/").each do |path|
+      engine = path.split("\/")[2]
+      if eval("ApplicationHelper.method_defined?(:#{engine}_show_receiver_address_book)")
+        if @show_receiver_flg == 0
+-%>
+          <%= eval("#{engine}_show_receiver_address_book(i)") %>
+<%        receiver_flg = eval("#{engine}_check_login_id()")
+          @show_receiver_flg = receiver_flg[0]
+        end
+      end
+    end
+%>
+    <% if session[:user_id].present? && @show_receiver_flg == 0 -%>
+      <div class="re_address_p"><div class="re_address" onclick="open_modal_window('/address_books/index_sub?recipient_number=<%= i %>', 'modal');" title="アドレス帳"></div></div>
+    <% end %>
     </div>
-
+    <div class="input-l">
+      <%= image_tag('common/name.jpg', :align => "left") %><%= f2.text_field :name, :class => 'validate[required]', :size => 30, :index => i %> 様<br />
+      <%= image_tag('common/mail.jpg', :align => "left") %><%= f2.text_field :mail_address, :class => 'validate[required, custom[email]]', :size => 40, :index => i %>
+    </div>
+    <div class="input-r"></div>
+    <div id="receiver_form"></div>
+  </div>
   <%- end -%>
-<%- i += i -%>
+  <%- i += i -%>
 <%- end -%>
 </fieldset>
-<% if session[:user_id] -%>
-    <span class="right"><input type="button" onclick="add_receiver_address_book('requested_matter', 'receiver_form', 'ファイル送信者')" value="+ 宛先欄を追加" /></span>
-<% else %>
-    <span class="right"><input type="button" onclick="add_receiver('requested_matter', 'receiver_form', 'ファイル送信者')" value="+ 宛先欄を追加" /></span>
+
+<%
+  @show_receiver_add_flg = 0
+    Dir.glob("vendor/engines/*/").each do |path|
+      engine = path.split("\/")[2]
+      if eval("ApplicationHelper.method_defined?(:#{engine}_show_add_receiver_address_book)")
+        if @show_receiver_add_flg == 0
+-%>
+          <%= eval("#{engine}_show_add_receiver_address_book('requested_matter', 'receiver_form', 'ファイル送信者')") %>
+<%        receiver_flg = eval("#{engine}_check_login_id()")
+          @show_receiver_flg = receiver_flg[0]
+        end
+      end
+    end
+-%>
+<% if @show_receiver_flg == 0
+     if session[:user_id].present? -%>
+<span class="right"><input type="button" onclick="add_receiver_address_book('requested_matter', 'receiver_form', 'ファイル送信者')" value="+ 宛先欄を追加" /></span>
+  <% else %>
+<span class="right"><input type="button" onclick="add_receiver('requested_matter', 'receiver_form', 'ファイル送信者')" value="+ 宛先欄を追加" /></span>
+  <% end %>
 <% end %>

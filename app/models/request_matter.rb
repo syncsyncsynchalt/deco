@@ -20,7 +20,7 @@ class RequestMatter < ActiveRecord::Base
   # attr_accessible :title, :body
   has_many :requested_matters
   has_one :request_moderate
-  belongs_to :user
+  belongs_to :user, optional: true
 
   scope :with_begin_date, ->(begin_date) {
     unless begin_date.blank?

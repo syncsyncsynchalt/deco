@@ -186,7 +186,7 @@ module Nmt
   end
 
   def get_port
-    if $app_env['ENABLE_SSL'].to_i == 1
+    if @params_app_env['ENABLE_SSL'].to_i == 1
       port = "https"
     else
       port = "http"

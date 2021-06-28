@@ -1,4 +1,4 @@
-    <span class="left">宛先は最大 <%= h $app_env['RECEIVERS_LIMIT'] %> 名まで追加できます。<br /><br />
+    <span class="left">宛先は最大 <%= h @params_app_env['RECEIVERS_LIMIT'] %> 名まで追加できます。<br /><br />
     <%= image_tag('common/name_s.jpg') %>&nbsp;相手のお名前<span class="required">※</span><br />
     <%= image_tag('common/mail_s.jpg') %>&nbsp;相手のメールアドレス<span class="required">※</span>&nbsp;&nbsp;<span class="note">例）name1@example.com</span>
     </span>

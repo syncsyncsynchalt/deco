@@ -1,5 +1,5 @@
 class AddressBooksController < ApplicationController
-  before_filter :authorize, :load_env
+  before_action :authorize, :load_env
   layout "user_management"
 
   def index_sub
@@ -91,7 +91,7 @@ class AddressBooksController < ApplicationController
   # POST /address_books
   # POST /address_books.json
   def create
-    @address_book = AddressBook.new(params[:address_book])
+    @address_book = AddressBook.new(address_books_params(params[:address_book]))
     @address_book.user_id = session[:user_id] unless session[:user_id].blank?
     respond_to do |format|
       if @address_book.save
@@ -109,7 +109,7 @@ class AddressBooksController < ApplicationController
   def update
     @address_book = AddressBook.find(params[:id])
     respond_to do |format|
-      if @address_book.update_attributes(params[:address_book])
+      if @address_book.update_attributes(address_books_params(params[:address_book]))
 #        format.html { redirect_to '/address_books/index_result/?recipient_address=1', notice: 'Address book was successfully updated.' }
         format.html { redirect_to @address_book, notice: t("address_books.update.message") }
         format.json { head :no_content }
@@ -130,5 +130,13 @@ class AddressBooksController < ApplicationController
       format.html { redirect_to address_books_url }
       format.json { head :no_content }
     end
+  end
+
+  private
+
+  def address_books_params(post_params)
+    post_params.permit(
+      :master_frame, :organization, :name, :email, :notes
+    )
   end
 end

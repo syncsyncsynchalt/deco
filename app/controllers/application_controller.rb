@@ -17,18 +17,79 @@
 # Filters added to this controller apply to all controllers in the application.
 # Likewise, all the methods added will be available for all controllers.
 class ApplicationController < ActionController::Base
+  #ActionController::Baseのソースを読むとここで様々なmoduleをincludeしている
+  module DataStreamPatch
+    def send_file_headers!(options)
+      super(options)
+      match = /(.+); filename="(.+)"/.match(headers['Content-Disposition'])
+      encoded = URI.encode_www_form_component(match[2]).gsub("+", "%20")
+      headers['Content-Disposition'] = "#{match[1]}; filename*=UTF-8''#{encoded}" unless encoded == match[2]
+    end
+  end
+
+  module ActionController
+    module DataStreaming
+      prepend DataStreamPatch
+    end
+  end
+
+  #moduleの動作を書き換えた上で再度includeする必要がある。
+  include ActionController::DataStreaming
+
   self.allow_forgery_protection = false
 #  include AuthenticatedSystem
   include Nmt
   helper_method :current_user
   helper :all
-  before_filter :check_access_ip
+  before_action :check_access_ip
 
   $content_item_category = Array.new
 
   protect_from_forgery
 
   def check_access_ip
+#=begin
+    access_ip_lists = Array.new
+    remote_access_ip_lists = Array.new
+    local_access_ip_lists = Array.new
+    if request.env['REMOTE_ADDR'].present?
+#      puts "REMOTE_ADDR = #{request.env['REMOTE_ADDR']}"
+      for access_ip in request.env['REMOTE_ADDR'].split(',')
+        if access_ip =~ /^\d+\.\d+\.\d+\.\d+|\d+\.\d+\.\d+\.\d+\/\d+$/
+          access_ip_lists << access_ip
+          @access_ip = access_ip
+        end
+      end
+    end
+    if request.env['HTTP_X_FORWARDED_FOR'].present?
+#      puts "HTTP_X_FORWARDED_FOR = #{request.env['HTTP_X_FORWARDED_FOR']}"
+      for access_ip in request.env['HTTP_X_FORWARDED_FOR'].split(',')
+        if access_ip =~ /^\d+\.\d+\.\d+\.\d+|\d+\.\d+\.\d+\.\d+\/\d+$/
+          access_ip_lists << access_ip
+          @access_ip = access_ip
+        end
+      end
+    end
+    for access_ip in access_ip_lists
+      if IPAddr.new("10.0.0.0/8").include?(access_ip) ||
+          IPAddr.new("172.16.0.0/16").include?(access_ip) ||
+          IPAddr.new("192.168.0.0/16").include?(access_ip)
+        local_access_ip_lists << access_ip
+#        puts "local_access_ip = #{access_ip}"
+      else
+        remote_access_ip_lists << access_ip
+#        puts "remote_access_ip = #{access_ip}"
+      end
+    end
+    if remote_access_ip_lists.size > 0
+      @access_ip = remote_access_ip_lists[0]
+    else
+      if local_access_ip_lists.size > 0
+        @access_ip = local_access_ip_lists[0]
+      end
+    end
+#=end
+=begin
     @access_ip = request.env['HTTP_X_FORWARDED_FOR']
     if @access_ip
       @access_ip = @access_ip.split(',')[0] if @access_ip.include?(',')
@@ -38,6 +99,8 @@ class ApplicationController < ActionController::Base
     else
       @access_ip = request.env['REMOTE_ADDR']
     end
+=end
+#    @access_ip = request.env['REMOTE_ADDR']
   end
 
   # ログインチェック
@@ -54,19 +117,46 @@ class ApplicationController < ActionController::Base
 
   # check IP and login user
   def authorize
-    session[:autorize] = 'yes'
-    @local_ips =
-        AppEnv
-        .where("app_envs.key = 'LOCAL_IPS'")
-    if @local_ips.select{ |local_ip|
-            IPAddr.new(local_ip.value).include?(@access_ip) }.size > 0
-      session[:user_category] = 3
-    else
-      if session[:user_id].present?
-        session[:user_category] = 2
-      else
-        redirect_to :controller => "sessions", :action => "new"
+    begin
+      session[:autorize] = 'yes'
+      @local_ips =
+          AppEnv
+          .where("app_envs.key = 'LOCAL_IPS'")
+      @authorize_use_flg = 0
+      @authorization_flg = 0
+      Dir.glob("vendor/engines/*/").each do |path|
+        engine = path.split("\/")[2]
+        if eval("ApplicationController.method_defined?(:#{engine}_authorize)")
+          local_authorization = eval("#{engine}_authorize")
+          if local_authorization[0] == 1
+            @authorize_use_flg = local_authorization[0]
+          end
+          if @authorization_flg == 0 && local_authorization[1] > 0
+            @authorization_flg = local_authorization[1]
+          end
+        end
       end
+      if @authorize_use_flg == 1
+        if @authorization_flg == 1
+          session[:user_category] = 2
+        else
+          redirect_to :controller => "sessions", :action => "new"
+          cookies.delete :auth_token
+        end
+      else
+        if @local_ips.select{ |local_ip|
+                IPAddr.new(local_ip.value).include?(@access_ip) }.size > 0
+          session[:user_category] = 3
+        else
+          if session[:user_id].present?
+            session[:user_category] = 2
+          else
+            redirect_to :controller => "sessions", :action => "new"
+          end
+        end
+      end
+    rescue EOFError, Errno::ECONNRESET
+      retry
     end
   end
 
@@ -108,18 +198,23 @@ class ApplicationController < ActionController::Base
     unless @local_ips.size == 0
       unless @local_ips.select{ |local_ip|
               IPAddr.new(local_ip.value).include?(@access_ip) }.size > 0
-        render :text => "このIPアドレス（#{@access_ip}）は許可されていません。"
+        render :plain => "このIPアドレス（#{@access_ip}）は許可されていません。"
       end
     end
   end
 
   # 環境変数を読み込む
   def load_env
-    $local_domains = ""
-    $local_domain_list = Array.new
-    $local_ips = Hash.new
-    $file_life_periods = Array.new
-    $app_env = Hash.new
+    @local_domains = ''
+    @local_domain_list = Array.new
+    @local_ips = Array.new
+    @file_life_periods = Array.new
+    @params_app_env = Hash.new
+#    $local_domains = ""
+#    $local_domain_list = Array.new
+#    $local_ips = Hash.new
+#    $file_life_periods = Array.new
+#    $app_env = Hash.new
 
     @file_life_periods_for_sort = Array.new
     @file_life_periods_label = Hash.new
@@ -148,30 +243,30 @@ class ApplicationController < ActionController::Base
         @file_life_periods_label[app_env.id] = app_env.note
         @file_life_period_second[app_env.id] = app_env.value
       when 'LOCAL_IPS'
-        $local_ips = app_env
+        @local_ips << app_env
       when 'LOCAL_DOMAINS'
-        $local_domain_list.push app_env.value
-        $local_domains.concat app_env.value + "|"
+        @local_domain_list.push app_env.value
+        @local_domains.concat app_env.value + "|"
       else
-        $app_env[app_env.key] = app_env.value
+        @params_app_env[app_env.key] = app_env.value
       end
     end
 
     @file_life_periods_for_sort =
             @file_life_periods_for_sort.sort{|a ,b| a[1] <=> b[1]}
     @file_life_periods_for_sort.each do |buff|
-      if @file_life_periods_for_sort.size > $file_life_periods.size
-        $file_life_periods.push [@file_life_periods_label[buff[0]], buff[1]]
+      if @file_life_periods_for_sort.size > @file_life_periods.size
+        @file_life_periods.push [@file_life_periods_label[buff[0]], buff[1]]
       end
     end
 
-    $app_env['FLPD_VALUE'] =
-            @file_life_period_second[$app_env['FILE_LIFE_PERIOD_DEF'].to_i]
-    $app_env['FLPD_LABEL'] =
-            @file_life_periods_label[$app_env['FILE_LIFE_PERIOD_DEF'].to_i]
+    @params_app_env['FLPD_VALUE'] =
+            @file_life_period_second[@params_app_env['FILE_LIFE_PERIOD_DEF'].to_i]
+    @params_app_env['FLPD_LABEL'] =
+            @file_life_periods_label[@params_app_env['FILE_LIFE_PERIOD_DEF'].to_i]
 
-    unless $local_domains == ""
-      $local_domains.chop!
+    unless @local_domains == ""
+      @local_domains.chop!
     end
   end
 
@@ -182,30 +277,58 @@ class ApplicationController < ActionController::Base
 
   #  ファイル削除
   def vacuum_file_for_file_exchange
-    @file_dir = AppEnv.find(:first, :conditions => {
-             :key => "FILE_DIR"})
-    @send_files = Attachment.find(:all,
-            :select => "attachments.id as id, " + 
-              "send_matters.created_at as created_at, " +
-              "send_matters.file_life_period as file_life_period",
-            :joins => "left outer join send_matters " +
-              "on attachments.send_matter_id = send_matters.id")
+#    @file_dir = AppEnv.find(:first, :conditions => {
+#             :key => "FILE_DIR"})
+    @file_dir =
+        AppEnv
+        .where(:key => "FILE_DIR")
+        .first
+#    @send_files = Attachment.find(:all,
+#            :select => "attachments.id as id, " + 
+#              "send_matters.created_at as created_at, " +
+#              "send_matters.file_life_period as file_life_period",
+#            :joins => "left outer join send_matters " +
+#              "on attachments.send_matter_id = send_matters.id")
+    @send_files = Attachment
+    .select("attachments.id as id, " + 
+           "send_matters.created_at as created_at, " +
+           "send_matters.file_life_period as file_life_period")
+    .joins("left outer join send_matters " +
+           "on attachments.send_matter_id = send_matters.id")
 
-    @request_files = RequestedAttachment.find(:all,
-            :select => "requested_attachments.id as id, " + 
+#    @request_files = RequestedAttachment.find(:all,
+#            :select => "requested_attachments.id as id, " + 
+#              "requested_matters.created_at as created_at, " +
+#              "requested_matters.file_life_period as file_life_period",
+#            :joins => "left outer join requested_matters " +
+#              "on requested_attachments.requested_matter_id =" +
+#              "requested_matters.id")
+    @request_files =
+        RequestedAttachment
+        .select("requested_attachments.id as id, " + 
               "requested_matters.created_at as created_at, " +
-              "requested_matters.file_life_period as file_life_period",
-            :joins => "left outer join requested_matters " +
+              "requested_matters.file_life_period as file_life_period")
+        .joins("left outer join requested_matters " +
               "on requested_attachments.requested_matter_id =" +
               "requested_matters.id")
 
-    @repare_data_request_files = RequestedMatter.find(:all,
-            :select => "distinct requested_matters.id as id",
-            :joins => "left outer join requested_attachments " +
+#    @repare_data_request_files = RequestedMatter.find(:all,
+#            :select => "distinct requested_matters.id as id",
+#            :joins => "left outer join requested_attachments " +
+#              "on requested_attachments.requested_matter_id = " +
+#              "requested_matters.id",
+#            :conditions => [ "requested_matters.file_up_date is null " +
+#              "and requested_attachments.id is not null " +
+#              "and requested_attachments.created_at < ADDDATE(LOCALTIME(), -1)" ])
+    @repare_data_request_files =
+        RequestedMatter
+        .select("distinct requested_matters.id as id")
+        .joins("left outer join requested_attachments " +
               "on requested_attachments.requested_matter_id = " +
-              "requested_matters.id",
-            :conditions => [ "requested_matters.file_up_date is null " +
-              "and requested_attachments.id is not null" ])
+              "requested_matters.id")
+        .where( "requested_matters.file_up_date is null " +
+              "and requested_attachments.id is not null " +
+              "and requested_attachments.created_at < ADDDATE(LOCALTIME(), -1)")
 
     @repare_data_request_files.each do | requested_matter_id |
       @requested_matter = RequestedMatter.find(requested_matter_id)
@@ -214,62 +337,100 @@ class ApplicationController < ActionController::Base
       @requested_matter.save
     end
 
-    @vaccumed_send_files1 = Attachment.find(:all,
-            :select => "attachments.id as id, " + 
+#    @vaccumed_send_files1 = Attachment.find(:all,
+#            :select => "attachments.id as id, " + 
+#              "send_matters.created_at as created_at, " +
+#              "send_matters.file_life_period as file_life_period",
+#            :joins => "left outer join send_matters " +
+#              "on attachments.send_matter_id = send_matters.id",
+#            :conditions => [ "attachments.created_at < ADDDATE(LOCALTIME(), -1) " +
+#              "and attachments.send_matter_id is null" ])
+    @vaccumed_send_files1 =
+        Attachment
+        .select("attachments.id as id, " + 
               "send_matters.created_at as created_at, " +
-              "send_matters.file_life_period as file_life_period",
-            :joins => "left outer join send_matters " +
-              "on attachments.send_matter_id = send_matters.id",
-            :conditions => [ "attachments.created_at < ADDDATE(LOCALTIME(), -1) " +
-              "and attachments.send_matter_id is null" ])
+              "send_matters.file_life_period as file_life_period")
+        .joins("left outer join send_matters " +
+              "on attachments.send_matter_id = send_matters.id")
+        .where("attachments.created_at < ADDDATE(LOCALTIME(), -1) " +
+              "and attachments.send_matter_id is null")
 
     @vaccumed_send_files1.each do | file |
-      filename = $app_env['FILE_DIR'] + "/" + file.id.to_s
+      filename = @params_app_env['FILE_DIR'] + "/" + file.id.to_s
       if File.exist?(filename)
         File.delete(filename)
       end
     end
 
     keep_term = 7
-    @vaccumed_send_files2 = Attachment.find(:all,
-            :select => "attachments.id as id, " + 
-              "send_matters.created_at as created_at, " +
-              "send_matters.file_life_period as file_life_period, " +
-              "(LOCALTIME() - INTERVAL #{keep_term} DAY) as time1, " +
-              "LOCALTIME() as ctime, " +
+#    @vaccumed_send_files2 = Attachment.find(:all,
+#            :select => "attachments.id as id, " + 
+#              "send_matters.created_at as created_at, " +
+#              "send_matters.file_life_period as file_life_period, " +
+#              "(LOCALTIME() - INTERVAL #{keep_term} DAY) as time1, " +
+#              "LOCALTIME() as ctime, " +
+#              "(LOCALTIME() - INTERVAL #{keep_term} DAY - " +
+#              "INTERVAL send_matters.file_life_period SECOND) as time2",
+#            :joins => "left outer join send_matters " +
+#              "on attachments.send_matter_id = send_matters.id",
+#            :conditions => [ "send_matters.created_at < " +
+#              "LOCALTIME() - INTERVAL #{keep_term} DAY - " +
+#              "INTERVAL send_matters.file_life_period SECOND " ])
+    @vaccumed_send_files2 =
+        Attachment
+        .select("attachments.id AS id, " + 
+              "send_matters.created_at AS created_at, " +
+              "send_matters.file_life_period AS file_life_period, " +
+              "(LOCALTIME() - INTERVAL #{keep_term} DAY) AS time1, " +
+              "LOCALTIME() AS ctime, " +
               "(LOCALTIME() - INTERVAL #{keep_term} DAY - " +
-              "INTERVAL send_matters.file_life_period SECOND) as time2",
-            :joins => "left outer join send_matters " +
-              "on attachments.send_matter_id = send_matters.id",
-            :conditions => [ "send_matters.created_at < " +
+              "INTERVAL send_matters.file_life_period SECOND) AS time2")
+        .joins("left outer join send_matters " +
+              "on attachments.send_matter_id = send_matters.id")
+        .where("send_matters.created_at < " +
               "LOCALTIME() - INTERVAL #{keep_term} DAY - " +
-              "INTERVAL send_matters.file_life_period SECOND " ])
+              "INTERVAL send_matters.file_life_period SECOND ")
 
     @vaccumed_send_files2.each do | file |
-      filename = $app_env['FILE_DIR'] + "/" + file.id.to_s
+      filename = @params_app_env['FILE_DIR'] + "/" + file.id.to_s
       if File.exist?(filename)
         File.delete(filename)
       end
     end
 
     keep_term = 7
-    @vaccumed_request_files = RequestedAttachment.find(:all,
-            :select => "requested_attachments.id as id, " + 
-              "requested_matters.created_at as created_at, " +
-              "requested_matters.file_life_period as file_life_period, " +
-              "(LOCALTIME() - INTERVAL #{keep_term} DAY) as time1, " +
-              "LOCALTIME() as ctime, " +
+#    @vaccumed_request_files = RequestedAttachment.find(:all,
+#            :select => "requested_attachments.id as id, " + 
+#              "requested_matters.created_at as created_at, " +
+#              "requested_matters.file_life_period as file_life_period, " +
+#              "(LOCALTIME() - INTERVAL #{keep_term} DAY) as time1, " +
+#              "LOCALTIME() as ctime, " +
+#              "(LOCALTIME() - INTERVAL #{keep_term} DAY - " +
+#              "INTERVAL requested_matters.file_life_period SECOND) as time2",
+#            :joins => "left outer join requested_matters " +
+#              "on requested_attachments.requested_matter_id = " +
+#              "requested_matters.id",
+#            :conditions => [ "requested_matters.created_at < " +
+#              "LOCALTIME() - INTERVAL #{keep_term} DAY - " +
+#              "INTERVAL requested_matters.file_life_period SECOND " ])
+    @vaccumed_request_files =
+        RequestedAttachment
+        .select("requested_attachments.id AS id, " + 
+              "requested_matters.created_at AS created_at, " +
+              "requested_matters.file_life_period AS file_life_period, " +
+              "(LOCALTIME() - INTERVAL #{keep_term} DAY) AS time1, " +
+              "LOCALTIME() AS ctime, " +
               "(LOCALTIME() - INTERVAL #{keep_term} DAY - " +
-              "INTERVAL requested_matters.file_life_period SECOND) as time2",
-            :joins => "left outer join requested_matters " +
+              "INTERVAL requested_matters.file_life_period SECOND) AS time2")
+        .joins("left outer join requested_matters " +
               "on requested_attachments.requested_matter_id = " +
-              "requested_matters.id",
-            :conditions => [ "requested_matters.created_at < " +
+              "requested_matters.id")
+        .where("requested_matters.file_up_date < " +
               "LOCALTIME() - INTERVAL #{keep_term} DAY - " +
-              "INTERVAL requested_matters.file_life_period SECOND " ])
+              "INTERVAL requested_matters.file_life_period SECOND ")
 
     @vaccumed_request_files.each do | file |
-      filename = $app_env['FILE_DIR'] + "/r" + file.id.to_s
+      filename = @params_app_env['FILE_DIR'] + "/r" + file.id.to_s
       if File.exist?(filename)
         File.delete(filename)
       end
@@ -292,11 +453,16 @@ class ApplicationController < ActionController::Base
     cond5_for_send = "file_dl_check_id in (select id from file_dl_checks " +
             "where " + cond4_for_send + ")"
 
-    FileDlLog.delete_all([ cond5_for_send ])
-    FileDlCheck.delete_all([ cond4_for_send ])
-    Attachment.delete_all([ cond3_for_send ])
-    Receiver.delete_all([ cond2_for_send ])
-    SendMatter.delete_all([ cond1_for_send ])
+#    FileDlLog.delete_all([ cond5_for_send ])
+#    FileDlCheck.delete_all([ cond4_for_send ])
+#    Attachment.delete_all([ cond3_for_send ])
+#    Receiver.delete_all([ cond2_for_send ])
+#    SendMatter.delete_all([ cond1_for_send ])
+    FileDlLog.where([ cond5_for_send ]).destroy_all
+    FileDlCheck.where([ cond4_for_send ]).destroy_all
+    Attachment.where([ cond3_for_send ]).destroy_all
+    Receiver.where([ cond2_for_send ]).destroy_all
+    SendMatter.where([ cond1_for_send ]).destroy_all
 
     cond1_for_requset = "created_at < '#{current_time}' - " +
             "INTERVAL '#{keep_term}' MONTH"
@@ -310,10 +476,14 @@ class ApplicationController < ActionController::Base
             "(select id from requested_attachments " +
             "where " + cond3_for_requset + ")"
 
-    RequestedFileDlLog.delete_all([ cond4_for_requset ])
-    RequestedAttachment.delete_all([ cond3_for_requset ])
-    RequestedMatter.delete_all([ cond2_for_requset ])
-    RequestMatter.delete_all([ cond1_for_requset ])
+#    RequestedFileDlLog.delete_all([ cond4_for_requset ])
+#    RequestedAttachment.delete_all([ cond3_for_requset ])
+#    RequestedMatter.delete_all([ cond2_for_requset ])
+#    RequestMatter.delete_all([ cond1_for_requset ])
+    RequestedFileDlLog.where([ cond4_for_requset ]).destroy_all
+    RequestedAttachment.where([ cond3_for_requset ]).destroy_all
+    RequestedMatter.where([ cond2_for_requset ]).destroy_all
+    RequestMatter.where([ cond1_for_requset ]).destroy_all
   end
 
   def get_moderate_flag()

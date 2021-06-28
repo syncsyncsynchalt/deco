@@ -1,6 +1,6 @@
   <fieldset>
   <h2>決裁ルート変更</h2>
-  <%= form_for(:user, :url => { :controller => 'sys_user', :action => "update", :id => @user.id}, 
+  <%= form_for(@user, :url => { :controller => 'sys_user', :action => "update", :id => @user.id}, 
               :html => {:id => 'user', :name=> "user" }) do |f| -%>
     <div class="table-sys-a">
       <div class="item-mid2">ユーザＩＤ</div>
@@ -20,7 +20,7 @@
   </fieldset>
 
 <br>
-<div align=center>
+<div align="left">
 <% if session[:target_for_back_id] -%>
 <%= link_to "戻る", {:action => session[:target_for_back],
 :id => session[:target_for_back_id]} %><br />

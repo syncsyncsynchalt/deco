@@ -22,14 +22,46 @@ class SessionsController < ApplicationController
   end
 
   def create
-    user =
-        User
-        .where("login = ?",
-               params[:login]).first
-    if user && user.authenticate(params[:password])
-      session[:user_id] = user.id
+    @authorize_use_flg = 0
+    @authorization_flg = 0
+    Dir.glob("vendor/engines/*/").each do |path|
+      engine = path.split("\/")[2]
+      if eval("ApplicationController.method_defined?(:#{engine}_authorization_check)")
+        puts 'auth01'
+        local_authorization = eval("#{engine}_authorization_check")
+        if @authorize_use_flg == 0 && local_authorization[0] == 1
+          @authorize_use_flg = local_authorization[0]
+        end
+        if @authorization_flg == 0 && local_authorization[1] > 0
+          @authorization_flg = local_authorization[1]
+        end
+      end
+    end
+
+    if @authorize_use_flg == 0
+      user =
+          User
+          .where("login = ?",
+                 params[:login]).first
+      if user && user.authenticate(params[:password])
+        session[:user_id] = user.id
+        @authorization_flg = 1
+#        redirect_to :controller => 'top', :action => 'index'
+#        flash[:notice] = "ログインしました。"
+      else
+        flash[:notice] = "ユーザあるいはパスワードが違います"
+#        redirect_to :action => 'new'
+        @authorization_flg = 0
+      end
+    end
+    if @authorization_flg == 1
       redirect_to :controller => 'top', :action => 'index'
       flash[:notice] = "ログインしました。"
+    elsif @authorization_flg == 2
+      render :plain => "有効期限が過ぎています。"
+    elsif @authorization_flg == 0
+      flash[:notice] = "ユーザあるいはパスワードが違います"
+      redirect_to :action => 'new'
     else
       flash[:notice] = "ユーザあるいはパスワードが違います"
       redirect_to :action => 'new'
@@ -67,5 +99,11 @@ class SessionsController < ApplicationController
     cookies.delete :auth_token
     reset_session
     redirect_to :action => 'new_for_administrator'
+  end
+
+  # セッションパラメータ変更
+  def change_parameter
+    session[:submenuheader_visible] = params[:submenuheader_visible] if params[:submenuheader_visible].present?
+    render :plain => ""
   end
 end

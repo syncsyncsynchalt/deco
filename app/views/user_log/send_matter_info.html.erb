@@ -18,7 +18,7 @@
     <div class="item-mid"><%= t('activerecord.attributes.send_matters.file_life_period') %></div>
     <div class="input-mid"><%= @file_life_period %><br></div>
     <div class="item-mid"><%= t('activerecord.attributes.send_matters.message') %></div>
-    <div class="input-mid"><%= h @send_matter.message %><br></div>
+    <div class="input-mid"><%= simple_format(@send_matter.message, {}, wrapper_tag: "div") %><br></div>
     <div class="item-mid"><%= t('activerecord.attributes.send_matters.status') %></div>
     <div class="input-mid"><%= @status %><br></div>
     <div class="item-mid"><%= t('activerecord.attributes.send_matters.created_at') %></div>
@@ -54,14 +54,14 @@
     <div class="input-mid">
 <% @send_moderaters = @send_moderate.send_moderaters %>
 <% number = 0 %>
-    <div class="table-d" style="border:0px;">
+    <div class="table-i" style="border:0px;">
 <% for moderater in @send_moderaters %>
       <div class="input-l" style="border:0px; padding:5px 8px; height:20px;">
 <% number += 1 %>
 <%= number %>.
 <%= moderater.moderater.user.name %>
       </div>
-<div class="input-r" style="border:0px; padding:5px 8px; height:20px; text-align:center;">
+<div class="input-r" style="border:0px; padding:5px 8px; height:20px;">
 <% if moderater.result == 1 %>
 <font color="blue"><b>承認</b></font>
 <% elsif moderater.result == 2 %>
@@ -162,7 +162,7 @@
     <% else -%><% download_flg = t('views.download.ambiguous') -%>
     <% end -%>
     <tr>
-    <td nowrap><% if File.exist?($app_env['FILE_DIR'].to_s + "/#{attachment.id}") -%>
+    <td nowrap><% if File.exist?(@params_app_env['FILE_DIR'].to_s + "/#{attachment.id}") -%>
                  <%= attachment.name %>
                  <%# link_to attachment.name, {:controller => 'sys_data',
                                                          :action => 'get_send_file',
@@ -172,7 +172,9 @@
     <td nowrap><%= label_file_size + " [" + attachment.size.to_s + "]" %></td>
     <td nowrap><%= download_flg %></td>
     <td nowrap>
-      <% if attachment.virus_check  == '0' %>
+      <% if attachment.virus_check == nil -%>
+        <%= t('views.virus_check_state.checking') %>
+      <%- elsif attachment.virus_check  == '0' %>
         <%= t('views.virus_check_state.safe') %>
       <% else %>
         <%= attachment.virus_check %></td>

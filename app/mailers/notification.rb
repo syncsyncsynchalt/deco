@@ -21,8 +21,17 @@ class Notification < ActionMailer::Base
   app_env_from_mail_address =
       AppEnv
       .where(["`key` = 'FROM_MAIL_ADDRESS'",
-             "category = 0"].join(" AND "))
+              "category = 0"
+              ].join(" AND "))
       .first
+#  app_env_title =
+#     AppEnv.find(:first,
+#                  :conditions => {:key => 'SEND_MAIL_TITLE',
+#                                  :category => 0})
+#  app_env_content =
+#      AppEnv.find(:first,
+#                  :conditions => {:key => 'SEND_MAIL_CONTENT',
+#                                  :category => 0})
   if app_env_from_mail_address.present?
     default from: app_env_from_mail_address.value
   else
@@ -34,8 +43,10 @@ class Notification < ActionMailer::Base
     @receiver = receiver
     @attachments = attachments
     @url = url
+    @mail_content = get_mail_content()
+    title_text = get_mail_head_title()
     mail(:to => receiver.mail_address,
-         :subject => 'ファイル送信のご連絡',
+         :subject => "#{title_text}ファイル送信のご連絡",
          :reply_to => send_matter.mail_address)
   end
 
@@ -44,8 +55,10 @@ class Notification < ActionMailer::Base
     @receiver = receiver
     @attachments = attachments
     @url = url
+    @mail_content = get_mail_content()
+    title_text = get_mail_head_title()
     mail(:to => receiver.mail_address,
-         :subject => 'ファイル送信パスワードのご連絡',
+         :subject => "#{title_text}ファイル送信パスワードのご連絡",
          :reply_to => send_matter.mail_address)
   end
 
@@ -54,8 +67,10 @@ class Notification < ActionMailer::Base
     @receivers = receivers
     @attachments = attachments
     @url = url
+    @mail_content = get_mail_content()
+    title_text = get_mail_head_title()
     mail(:to => send_matter.mail_address,
-         :subject => 'ファイル送信のご連絡【控】',
+         :subject => "#{title_text}ファイル送信のご連絡【控】",
          :reply_to => send_matter.mail_address)
   end
 
@@ -63,8 +78,10 @@ class Notification < ActionMailer::Base
     @send_matter = send_matter
     @receiver = receiver
     @attachment = attachment
+    @mail_content = get_mail_content()
+    title_text = get_mail_head_title()
     mail(:to => send_matter.mail_address,
-         :subject => 'ファイルダウンロードのご連絡',
+         :subject => "#{title_text}ファイルダウンロードのご連絡",
          :reply_to => receiver.mail_address)
   end
 
@@ -72,8 +89,10 @@ class Notification < ActionMailer::Base
     @send_matter = send_matter
     @receiver = receiver
     @attachment = attachment
+    @mail_content = get_mail_content()
+    title_text = get_mail_head_title()
     mail(:to => receiver.mail_address,
-         :subject => 'ファイル削除のご連絡',
+         :subject => "#{title_text}ファイル削除のご連絡",
          :reply_to => send_matter.mail_address)
   end
 
@@ -81,9 +100,11 @@ class Notification < ActionMailer::Base
     @send_matter = send_matter
     @receivers = receivers
     @attachment = attachment
+    @mail_content = get_mail_content()
     @url = url
+    title_text = get_mail_head_title()
     mail(:to => send_matter.mail_address,
-         :subject => 'ファイル削除のご連絡【控】',
+         :subject => "#{title_text}ファイル削除のご連絡【控】",
          :reply_to => send_matter.mail_address)
   end
 
@@ -93,8 +114,10 @@ class Notification < ActionMailer::Base
     @url = url
     @pass = pass
     @request_period = request_period
+    @mail_content = get_mail_content()
+    title_text = get_mail_head_title()
     mail(:to => mail_receiver_addr,
-         :subject => 'ファイル送信依頼のご連絡',
+         :subject => "#{title_text}ファイル送信依頼のご連絡",
          :reply_to => request_matter.mail_address)
   end
 
@@ -104,8 +127,10 @@ class Notification < ActionMailer::Base
     @url = url
     @pass = pass
     @request_period = request_period
+    @mail_content = get_mail_content()
+    title_text = get_mail_head_title()
     mail(:to => mail_receiver_addr,
-         :subject => 'ファイル送信依頼パスワードのご連絡',
+         :subject => "#{title_text}ファイル送信依頼パスワードのご連絡",
          :reply_to => request_matter.mail_address)
   end
 
@@ -114,8 +139,10 @@ class Notification < ActionMailer::Base
     @requested_matters = requested_matters
     @url = url
     @request_period = request_period
+    @mail_content = get_mail_content()
+    title_text = get_mail_head_title()
     mail(:to => request_matter.mail_address,
-         :subject => 'ファイル送信依頼のご連絡【控】',
+         :subject => "#{title_text}ファイル送信依頼のご連絡【控】",
          :reply_to => request_matter.mail_address)
   end
 
@@ -123,9 +150,10 @@ class Notification < ActionMailer::Base
     @requested_matter = requested_matter
     @attachments = attachments
     @url = url
-
+    @mail_content = get_mail_content()
+    title_text = get_mail_head_title()
     mail(:to => requested_matter.request_matter.mail_address,
-         :subject => 'ファイル送信のご連絡(依頼)',
+         :subject => "#{title_text}ファイル送信のご連絡(依頼)",
          :reply_to => requested_matter.mail_address)
   end
 
@@ -133,9 +161,10 @@ class Notification < ActionMailer::Base
     @requested_matter = requested_matter
     @attachments = attachments
     @url = url
-
+    @mail_content = get_mail_content()
+    title_text = get_mail_head_title()
     mail(:to => requested_matter.request_matter.mail_address,
-         :subject => 'ファイル送信パスワードのご連絡(依頼)',
+         :subject => "#{title_text}ファイル送信パスワードのご連絡(依頼)",
          :reply_to => requested_matter.mail_address)
   end
 
@@ -145,9 +174,10 @@ class Notification < ActionMailer::Base
     @url = url
     @url2 = url2
     @password_automation = password_automation
-
+    @mail_content = get_mail_content()
+    title_text = get_mail_head_title()
     mail(:to => requested_matter.mail_address,
-         :subject => 'ファイル送信のご連絡(依頼)【控】',
+         :subject => "#{title_text}ファイル送信のご連絡(依頼)【控】",
          :reply_to => requested_matter.mail_address)
   end
 
@@ -155,8 +185,10 @@ class Notification < ActionMailer::Base
     @name = requested_matter.request_matter.name
     @sender = requested_matter.name
     @attachment = attachment
+    @mail_content = get_mail_content()
+    title_text = get_mail_head_title()
     mail(:to => requested_matter.mail_address,
-         :subject => 'ファイル削除のご連絡',
+         :subject => "#{title_text}ファイル削除のご連絡",
          :reply_to => requested_matter.mail_address)
   end
 
@@ -164,16 +196,20 @@ class Notification < ActionMailer::Base
     @requested_matter = requested_matter
     @attachment = attachment
     @url = url
+    @mail_content = get_mail_content()
+    title_text = get_mail_head_title()
     mail(:to => requested_matter.mail_address,
-         :subject => 'ファイル削除のご連絡【控】',
+         :subject => "#{title_text}ファイル削除のご連絡【控】",
          :reply_to => requested_matter.mail_address)
   end
 
   def requested_file_dl_report(requested_attachment)
     @requested_matter = requested_attachment.requested_matter
     @attachment = requested_attachment
+    @mail_content = get_mail_content()
+    title_text = get_mail_head_title()
     mail(:to => requested_attachment.requested_matter.mail_address,
-         :subject => 'ファイルダウンロード完了のご連絡',
+         :subject => "#{title_text}ファイルダウンロード完了のご連絡",
          :reply_to => requested_attachment.requested_matter.request_matter.mail_address)
   end
 
@@ -182,8 +218,10 @@ class Notification < ActionMailer::Base
     @virus_attachments = virus_attachments
     @receivers = receivers
     @user = user
+    @mail_content = get_mail_content()
+    title_text = get_mail_head_title()
     mail(:to => user.email,
-         :subject => 'ウィルスファイル検出のご連絡',
+         :subject => "#{title_text}ウィルスファイル検出のご連絡",
          :reply_to => user.email)
   end
 
@@ -191,8 +229,10 @@ class Notification < ActionMailer::Base
     @requested_matter = requested_matter
     @virus_attachments = virus_attachments
     @user = user
+    @mail_content = get_mail_content()
+    title_text = get_mail_head_title()
     mail(:to => user.email,
-         :subject => 'ウィルスファイル検出のご連絡',
+         :subject => "#{title_text}ウィルスファイル検出のご連絡",
          :reply_to => user.email)
   end
 
@@ -201,8 +241,10 @@ class Notification < ActionMailer::Base
     @send_moderater = send_moderater
     @moderate_user = moderate_user
     @url = url
+    @mail_content = get_mail_content()
+    title_text = get_mail_head_title()
     mail(:to => moderate_user.email,
-         :subject => 'ファイル送信決裁のご連絡',
+         :subject => "#{title_text}ファイル送信決裁のご連絡",
          :reply_to => send_matter.mail_address)
   end
 
@@ -210,8 +252,10 @@ class Notification < ActionMailer::Base
     @send_matter = send_matter
     @send_moderate = send_moderate
     @url = url
+    @mail_content = get_mail_content()
+    title_text = get_mail_head_title()
     mail(:to => send_matter.mail_address,
-         :subject => 'ファイル送信決裁のご連絡【控】',
+         :subject => "#{title_text}ファイル送信決裁のご連絡【控】",
          :reply_to => send_matter.mail_address)
   end
 
@@ -219,8 +263,10 @@ class Notification < ActionMailer::Base
     @send_matter = send_matter
     @send_moderate = send_moderate
     @url = url
+    @mail_content = get_mail_content()
+    title_text = get_mail_head_title()
     mail(:to => send_matter.mail_address,
-         :subject => 'ファイル送信決裁結果のご連絡',
+         :subject => "#{title_text}ファイル送信決裁結果のご連絡",
          :reply_to => send_matter.mail_address)
   end
 
@@ -229,8 +275,10 @@ class Notification < ActionMailer::Base
     @request_moderater = request_moderater
     @moderate_user = moderate_user
     @url = url
+    @mail_content = get_mail_content()
+    title_text = get_mail_head_title()
     mail(:to => moderate_user.email,
-         :subject => 'ファイル依頼決裁のご連絡',
+         :subject => "#{title_text}ファイル依頼決裁のご連絡",
          :reply_to => request_matter.mail_address)
   end
 
@@ -238,8 +286,10 @@ class Notification < ActionMailer::Base
     @request_matter = request_matter
     @request_moderate = request_moderate
     @url = url
+    @mail_content = get_mail_content()
+    title_text = get_mail_head_title()
     mail(:to => request_matter.mail_address,
-         :subject => 'ファイル依頼決裁のご連絡【控】',
+         :subject => "#{title_text}ファイル依頼決裁のご連絡【控】",
          :reply_to => request_matter.mail_address)
   end
 
@@ -247,8 +297,42 @@ class Notification < ActionMailer::Base
     @request_matter = request_matter
     @request_moderater = request_moderater
     @url = url
+    @mail_content = get_mail_content()
+    title_text = get_mail_head_title()
     mail(:to => request_matter.mail_address,
-         :subject => 'ファイル依頼決裁結果のご連絡',
+         :subject => "#{title_text}ファイル依頼決裁結果のご連絡",
          :reply_to => request_matter.mail_address)
+  end
+
+  private
+
+  def get_mail_head_title()
+    app_env_title =
+        AppEnv
+        .where(["`key` = 'SEND_MAIL_TITLE'",
+                "category = 0",
+                ].join(" AND "))
+        .first
+    if app_env_title.present?
+      title_text = app_env_title.value
+    else
+      title_text = ''
+    end
+    return title_text
+  end
+
+  def get_mail_content()
+    app_env_content =
+        AppEnv
+        .where(["`key` = 'SEND_MAIL_CONTENT'",
+                "category = 0",
+                ].join(" AND "))
+        .first
+    if app_env_content.present?
+      mail_content = app_env_content.value
+    else
+      mail_content = ''
+    end
+    return mail_content
   end
 end

@@ -1,4 +1,4 @@
-class CreateContentFrames < ActiveRecord::Migration
+class CreateContentFrames < ActiveRecord::Migration[4.2]
   def change
     create_table :content_frames do |t|
       t.string :title

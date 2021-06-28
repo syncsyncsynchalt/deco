@@ -18,23 +18,23 @@
 # Likewise, all the methods added will be available for all controllers.
 class SysModerateController < ApplicationController
   layout 'system_admin'
-  before_filter :check_ip_for_administrator, :administrator_authorize
+  before_action :check_ip_for_administrator, :administrator_authorize
 
   def index
     session[:target_for_back_controller] = 'sys_moderate'
     session[:section_title] = '決裁管理'
     session[:target_for_back] = 'index'
     session[:target_for_back_id] = nil
-    @moderates = Moderate.find(:all)
+    @moderates = Moderate.all
   end
 
   def new
-    @users = User.find(:all)
-    @user_count = User.find(:all).count
+    @users = User.all
+    @user_count = @users.count
   end
 
   def create
-    @moderate = Moderate.new(params[:moderate])
+    @moderate = Moderate.new(post_params_moderates)
     moderater_flag = 0
     if params[:moderate].present?
       for user_id in params[:moderater][:user_id]
@@ -62,21 +62,21 @@ class SysModerateController < ApplicationController
       flash[:notice] = '決裁ルートを登録しました。'
       render :action => "message"
     elsif moderater_flag > 10
-      @users = User.find(:all)
-      @user_count = User.find(:all).count
+      @users = User.all
+      @user_count = @users.count
       flash[:error] = '決裁者は最大10名までです'
       render :action => "new"
     else
-      @users = User.find(:all)
-      @user_count = User.find(:all).count
+      @users = User.all
+      @user_count = @users.count
       flash[:error] = '決裁者を選択してください'
       render :action => "new"
     end
   end
 
   def edit
-    @users = User.find(:all)
-    @user_count = User.find(:all).count
+    @users = User.all
+    @user_count = @users.count
     @moderate = Moderate.find(params[:id])
     @moderaters = @moderate.moderaters
     @moderaters_lists = Array.new
@@ -99,7 +99,7 @@ class SysModerateController < ApplicationController
         end
       end
       if moderater_flag >= 1 && moderater_flag <= 10
-        if @moderate.update_attributes(params[:moderate])
+        if @moderate.update_attributes(post_params_moderates)
           moderater_count = 0
           @moderaters = @moderate.moderaters
           moderater_size = @moderaters.length
@@ -135,8 +135,8 @@ class SysModerateController < ApplicationController
           render :action => "message"
         end
       elsif moderater_flag > 10
-        @users = User.find(:all)
-        @user_count = User.find(:all).count
+        @users = User.all
+        @user_count = @users.count
         @moderaters = @moderate.moderaters
         @moderaters_lists = Array.new
         for user_id in params[:moderater][:user_id]
@@ -147,8 +147,8 @@ class SysModerateController < ApplicationController
         flash[:error] = '決裁者は最大10名までです'
         render :action => "edit"
       else
-        @users = User.find(:all)
-        @user_count = User.find(:all).count
+        @users = User.all
+        @user_count = @users.count
         @moderaters = @moderate.moderaters
         @moderaters_lists = Array.new
         for user_id in params[:moderater][:user_id]
@@ -191,5 +191,19 @@ class SysModerateController < ApplicationController
       flash[:notice] = '決裁ルートを削除しました。'
       render :action => "message"
     end
+  end
+
+  private
+
+  def post_params_moderates
+    params.require(:moderate).permit(
+      :name, :type_flag
+    )
+  end
+
+  def post_params_moderaters
+    params.require(:moderater).permit(
+      :category, :moderate_id, :user_id, :number
+    )
   end
 end

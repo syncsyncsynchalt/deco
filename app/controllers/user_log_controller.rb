@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
 class UserLogController < ApplicationController
-  before_filter :authorize, :load_env
-
   layout 'user_management'
+  before_action :authorize, :load_env
+
   def index
   end
+
   def index_result
     @conditions = params[:conditions]
     @user_logs = SendMatter.search_q(current_user.id, @conditions).page(params[:page]).per(10)
@@ -20,10 +21,15 @@ class UserLogController < ApplicationController
 
   # 送信情報を表示
   def send_matter_info
-    @send_matter = SendMatter.find(:first,
-            :conditions => { :id => params['id'] })
-    @receivers = Receiver.find(:all,
-            :conditions => { :send_matter_id => params['id'] })
+#    @send_matter = SendMatter.find(:first, :conditions => { :id => params['id'] })
+    @send_matter =
+        SendMatter
+        .where(:id => params['id'])
+        .first
+#    @receivers = Receiver.find(:all, :conditions => { :send_matter_id => params['id'] })
+    @receivers =
+        Receiver
+        .where(:send_matter_id => params['id'])
     sqlstr = "select " +
           "attachments.id as id, " +
           "attachments.created_at as created_at, " +
@@ -58,10 +64,15 @@ class UserLogController < ApplicationController
   end
 
   def requested_matter_info
-    @requested_matter = RequestedMatter.find(:first,
-            :conditions => { :id => params['id'] })
-    @requested_attachments = RequestedAttachment.find(:all,
-            :conditions => { :requested_matter_id => @requested_matter.id })
+#    @requested_matter = RequestedMatter.find(:first, :conditions => { :id => params['id'] })
+    @requested_matter =
+        RequestedMatter
+        .where(:id => params['id'])
+        .first
+#    @requested_attachments = RequestedAttachment.find(:all, :conditions => { :requested_matter_id => @requested_matter.id })
+    @requested_attachments =
+        RequestedAttachment
+        .where(:requested_matter_id => @requested_matter.id)
 
     if @requested_matter.download_check
       @download_check = transfer_download_check(

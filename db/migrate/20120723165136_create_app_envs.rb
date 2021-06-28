@@ -1,4 +1,4 @@
-class CreateAppEnvs < ActiveRecord::Migration
+class CreateAppEnvs < ActiveRecord::Migration[4.2]
   def change
     create_table :app_envs do |t|
       t.string :key

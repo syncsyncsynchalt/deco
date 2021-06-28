@@ -20,19 +20,28 @@ class ContentController < ApplicationController
   def load
     @items = Array.new
     @master_frame = params[:id]
-    @content_items = ContentItem.find(:all,
-            :conditions => { :master_frame => @master_frame })
+#    @content_items = ContentItem.find(:all,
+#            :conditions => { :master_frame => @master_frame })
+    @content_items =
+        ContentItem
+        .where(:master_frame => @master_frame)
     @content_items.each.with_index do |content_item, count|
       @items.push(pickup_content_item(content_item))
     end
     @self_frame = ContentFrame.find(@master_frame)
     @title = @self_frame.title
     if @self_frame.master_frame == 0
-      @content_frames = ContentFrame.find(:all,
-              :conditions => { :master_frame => @self_frame.id })
+#      @content_frames = ContentFrame.find(:all,
+#              :conditions => { :master_frame => @self_frame.id })
+      @content_frames =
+          ContentFrame
+          .where(:master_frame => @self_frame.id)
     else
-      @content_frames = ContentFrame.find(:all,
-              :conditions => { :master_frame => @self_frame.master_frame })
+#      @content_frames = ContentFrame.find(:all,
+#              :conditions => { :master_frame => @self_frame.master_frame })
+      @content_frames =
+          ContentFrame
+          .where(:master_frame => @self_frame.master_frame)
       if @content_frames.length > 0
         @parent_frame = ContentFrame.find(@self_frame.master_frame)
         @title = "<a href=\"" + url_for(:controller => :content, :action => :load, :id => @parent_frame.id.to_s) + 

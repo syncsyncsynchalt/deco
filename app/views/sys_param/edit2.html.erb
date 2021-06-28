@@ -33,9 +33,4 @@ $(document).ready(function() {
 
 <br>
 
-<% if session[:target_for_back_id] -%>
-<%= link_to "戻る", {:action => session[:target_for_back], :id => session[:target_for_back_id]} %><br />
-<% else -%>
-<%= link_to "戻る", {:action => session[:target_for_back]} %><br />
-<% end -%>
-
+<%= link_to "戻る", {:action => session[:target_for_back], :controller => session[:target_for_back_controller], :id => session[:target_for_back_id].present? ? session[:target_for_back_id] : nil} %><br />

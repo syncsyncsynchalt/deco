@@ -21,4 +21,5 @@ class Moderate < ActiveRecord::Base
   has_many :moderaters
   has_many :send_moderates
   has_many :request_moderates
+  has_many :user
 end

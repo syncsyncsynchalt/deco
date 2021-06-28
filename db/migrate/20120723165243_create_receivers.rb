@@ -1,4 +1,4 @@
-class CreateReceivers < ActiveRecord::Migration
+class CreateReceivers < ActiveRecord::Migration[4.2]
   def change
     create_table :receivers do |t|
       t.integer :send_matter_id

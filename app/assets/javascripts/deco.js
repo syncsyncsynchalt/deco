@@ -62,8 +62,8 @@
         "alertTextOk":"*Ce nom est disponible",
         "alertTextLoad":"* LChargement, veuillez attendre"},
       "localDomain":{
-        "regex": /^[a-zA-Z0-9_\.\-]+\@( + localDomains + )$/,
-        "alertText":"* メールアドレスが不正です(使用できないドメイン)"},
+        "regex": ".*@(" + localDomains + ")",
+        "alertText":"* 使用できないドメインが指定されています"},
       "IPAddress":{
         "regex": /^((([01]?[0-9]{1,2})|(2[0-4][0-9])|(25[0-5]))[.]){3}(([0-1]?[0-9]{1,2})|(2[0-4][0-9])|(25[0-5]))((\/(([0-2]?[0-9])|(3[0-2])))?)$/,
         "alertText":"* ＩＰアドレスが不正です"},
@@ -86,7 +86,7 @@ var max_receivers_num;
 
 //受信者フォーム追加処理
 function add_receiver(model_name, id_name, text) {
-
+  var result = true;
   for (i in receivers) {
     if (receivers[i] == 0) {
       arInput = i;
@@ -103,33 +103,26 @@ function add_receiver(model_name, id_name, text) {
 
     $("#" + id_name).append('<div id=\"group_L' + arInput +
                             '\"  class=\"item\">' + text + ' ' + arInput + '人目</div>' +
-      '<div id=\"group_C' + arInput +'\" class=\"input-l\"><img src=\"' + script_url + '/assets/common/name.jpg\" align=\"left\" /><input type=\"text\" id=\"' +
+      '<div id=\"group_C' + arInput +'\" class=\"input-l\"><img src=\"' + script_url + image_path('common/name.jpg') + '\" align=\"left\" /><input type=\"text\" id=\"' +
       x1 + '\" name=\"' + x2 + '\" value=\"\" class=\'validate[required]\' size=\"30\"/>  様<br />' +
-      '<img src=\"' + script_url + '/assets/common/mail.jpg\" align=\"left\" /><input type=\"text\" id=\"' +
+      '<img src=\"' + script_url + image_path('common/mail.jpg') + '\" align=\"left\" /><input type=\"text\" id=\"' +
       y1 + '\" name=\"' + y2 + '\" value=\"\" ' +
       'class=\'validate[required, custom[email]]\' size=\"40\"/></div>' +
       '<div id=\"group_R' + arInput + '\" class=\"input-r\"><input type="button" onclick="del_receiver(\'' +
       arInput + '\', \'' + model_name + '\')" value="削除" /></div>' +
       '\n');
 
-
     arInput = 0;
-
-//    for (i in files) {
-//      if (files[i] == 1) {
-//             $.validationEngine.closePrompt($('#' + 'attachment' + '_' + i + '_file'));
-//
-//      }
-//    }
   }else{
     window.alert(max_receivers_num+"名までです");
+    result = false;
   }
+  return(result);
 }
-
 
 //受信者フォーム追加処理
 function add_receiver_address_book(model_name, id_name, text) {
-
+  var result = true;
   for (i in receivers) {
     if (receivers[i] == 0) {
       arInput = i;
@@ -146,50 +139,39 @@ function add_receiver_address_book(model_name, id_name, text) {
 
     $("#" + id_name).append('<div id=\"group_L' + arInput +
                             '\"  class=\"item\">' + text + ' ' + arInput + '人目<div class=\"re_address_p\"><div class=\"re_address\" onClick=\"open_modal_window(\'/address_books/index_sub?recipient_number=' + arInput + '\',\'modal\');\" title=\"アドレス帳\"></div></div></div>' +
-      '<div id=\"group_C' + arInput +'\" class=\"input-l\"><img src=\"' + script_url + '/assets/common/name.jpg\" align=\"left\" /><input type=\"text\" id=\"' +
+      '<div id=\"group_C' + arInput +'\" class=\"input-l\"><img src=\"' + script_url + image_path('common/name.jpg') + '\" align=\"left\" /><input type=\"text\" id=\"' +
       x1 + '\" name=\"' + x2 + '\" value=\"\" class=\'validate[required]\' size=\"30\"/>  様<br />' +
-      '<img src=\"' + script_url + '/assets/common/mail.jpg\" align=\"left\" /><input type=\"text\" id=\"' +
+      '<img src=\"' + script_url + image_path('common/mail.jpg') + '\" align=\"left\" /><input type=\"text\" id=\"' +
       y1 + '\" name=\"' + y2 + '\" value=\"\" ' +
       'class=\'validate[required, custom[email]]\' size=\"40\"/></div>' +
       '<div id=\"group_R' + arInput + '\" class=\"input-r\"><input type="button" onclick="del_receiver(\'' +
       arInput + '\', \'' + model_name + '\')" value="削除" /></div>' +
       '\n');
 
-
     arInput = 0;
-
-//    for (i in files) {
-//      if (files[i] == 1) {
-//             $.validationEngine.closePrompt($('#' + 'attachment' + '_' + i + '_file'));
-//
-//      }
-//    }
   }else{
     window.alert(max_receivers_num+"名までです");
+    result = false;
   }
+  return(result);
 }
 
 //受信者フォーム削除処理
 function del_receiver(n, model_name) {
-//  for (i in receivers) {//
-//    if (receivers[i] == 1) {
-//      $.validationEngine.closePrompt($('#' + model_name + '_' + i + '_mail_address'));
-//      $.validationEngine.closePrompt($('#' + model_name + '_' + i + '_name'));
-//    }
-//  }
-
   $('#group_L' + n + '').remove();
   $('#group_C' + n + '').remove();
   $('#group_R' + n + '').remove();
 
   receivers[n] = 0;
+}
 
-//  for (i in files) {
-//    if (files[i] == 1) {
-//      $.validationEngine.closePrompt($('#' + 'attachment' +
-//                                       '_' + i + '_file'));
-//      }
-//  }
+//全受信者フォーム削除処理
+function del_receiver_all(model_name) {
+  for (i in receivers) {
+    if (receivers[i] == 1) {
+      del_receiver(i, model_name);
+    }
+  }
 }
 
 //////////////  Flashなしバージョンのファイル追加・削除関連関数  /////////////
@@ -216,7 +198,7 @@ function add_file(model_name, id_name) {
     $("#" + id_name).append('<div id=\"group_L_f' + arInput_f +
       '\"  class=\"item\">ファイル ' + arInput_f + '個目</div>' +
       '<div id=\"group_C_f' + arInput_f +'\" class=\"input-l\"><input type=\"file\" id=\"' +
-      x1 + '\" name=\"' + x2 + '\" value=\"\" class=\'validate[custom[file]]\' size=\"30\"/></div>'+
+      x1 + '\" name=\"' + x2 + '\" value=\"\" class=\'validate[required]\' size=\"30\"/></div>'+
       '<div id=\"group_R_f' + arInput_f +'\" class=\"input-r\"><input type="button" onclick="del_file(\'' +
       arInput_f + '\', \'' + model_name + '\')" value="削除" /></div>' +
                                 '\n');
@@ -228,11 +210,6 @@ function add_file(model_name, id_name) {
 
 // ファイル選択フォーム削除処理
 function del_file(n, model_name) {
-//  for (i in files) {
-//    if (files[i] == 1 && i > 1) {
-//      $.validationEngine.closePrompt($('#' + model_name + '_' + i + '_file'));    }
-//  }
-
   $('#group_L_f' + n + '').remove();
   $('#group_C_f' + n + '').remove();
   $('#group_R_f' + n + '').remove();
@@ -268,7 +245,7 @@ function file_upload() {
       },
       debug: false,
 
-      button_image_url: script_url + "/assets/common/file.png",
+      button_image_url: script_url + image_path('common/file.png'),
       button_width: "200",
       button_height: "45",
       button_placeholder_id: "spanButtonPlaceHolder",
@@ -329,6 +306,12 @@ function show_file_size(size) {
 function show_transfer_rate(rate) {
   var status = document.getElementById("transfer_rate");
   status.innerHTML = rate  + "%";
+  document.getElementById("progressbar").style.backgroundPosition = -360 + (360*rate/100) + "px 0px";
+}
+
+function show_transfer_rate_html5(rate) {
+  var status = document.getElementById("transfer_rate_html5");
+  status.innerHTML = rate + "%";
   document.getElementById("progressbar").style.backgroundPosition = -360 + (360*rate/100) + "px 0px";
 }
 

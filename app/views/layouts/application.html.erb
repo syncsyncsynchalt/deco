@@ -1,44 +1,63 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
-
+<!DOCTYPE html>
 <script type="text/javascript">
 script_url = "<%= url_options[:script_name] %>";
 </script>
 
 <html>
-<head>
-  <title>DECO Drive</title>
-  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-  <%= stylesheet_link_tag "application" %>
-  <%= javascript_include_tag "application" %>
-</head>
-
-<% if controller.controller_name == 'top' %>
-  <body class="top">
-<% elsif controller.controller_name == 'file_send'%>
-  <body class="sen">
-<% elsif controller.controller_name == 'file_request'%>
-  <body class="req">
-<% elsif controller.action_name == 'about'%>
-  <body class="srv">
-<% elsif controller.action_name == 'usage'%>
-  <body class="use">
-<% elsif controller.action_name == 'constitution'%>
-  <body class="rul">
-<% elsif controller.action_name == 'ask'%>
-  <body class="con">
-<% else %>
-  <body>
-<% end %>
-
-<div id="header">
-<%= image_tag('common/deco_logo01.jpg', :alt => "DECO Drive", :border => 0) %>
-</div>
-<br />
+  <head>
+    <title>DECO Drive</title>
+    <%= csrf_meta_tags %>
+    <%
+    links = Array.new 
+    # パッケージ用スタイル定義
+    links << "application"
+    # Engine用スタイル定義
+    Dir.glob("vendor/engines/*/").each do |path|
+      links << "#{File.basename(path)}/application"
+    end
+    %>
+    <% links.each do |link| %>
+    <%= stylesheet_link_tag link, media: 'all' %>
+    <% end %> 
+    <%
+    links = Array.new 
+    # パッケージ用スクリプト定義
+    links << "application"
+    # Engine用スクリプト定義
+    Dir.glob("vendor/engines/*/").each do |path|
+      links << "#{File.basename(path)}/application"
+    end
+    %>
+    <% links.each do |link| %>
+    <%= javascript_include_tag link %>
+    <% end %> 
+  </head>
+  <% if controller.controller_name == 'top' %>
+    <body class="top">
+  <% elsif controller.controller_name == 'file_send'%>
+    <body class="sen">
+  <% elsif controller.controller_name == 'file_request'%>
+    <body class="req">
+  <% elsif controller.action_name == 'about'%>
+    <body class="srv">
+  <% elsif controller.action_name == 'usage'%>
+    <body class="use">
+  <% elsif controller.action_name == 'constitution'%>
+    <body class="rul">
+  <% elsif controller.action_name == 'ask'%>
+    <body class="con">
+  <% else %>
+    <body>
+  <% end %>
+      <div id="header">
+        <%= image_tag('common/deco_logo01.jpg', :alt => "DECO Drive", :border => 0) %>
+      </div>
+      <br />
 
 <script type="text/javascript">
-<% if session[:site_category] == "requested_file_send" and session[:request_send_url_code] -%>
+<% if session[:site_category] == "requested_file_send" && session[:request_send_url_code] -%>
   <% param_id = session[:request_send_url_code] -%>
-<% elsif session[:site_category] == "requested_file_receive" and session[:request_receive_url_code] -%>
+<% elsif session[:site_category] == "requested_file_receive" && session[:request_receive_url_code] -%>
   <% param_id = session[:request_receive_url_code] -%>
 <% else -%><% param_id = "" -%>
 <% end -%>
@@ -51,47 +70,79 @@ headerMenu = new Array(
 <% end -%>
 <% end -%>
         );
-amtHeaderMenu = <%= amt %>;
+/*
+ amtHeaderMenu = <%= amt %>;
 print_header('<%= session[:site_category] %>', '<%= param_id %>');
+*/
 </script>
-
-<div id="status">
-<%= t('views.login_state.src_ip_address') %>:<%= @access_ip %>
-<%- unless session[:site_category] -%>
-<% if session[:user_id] -%>
-    ( <%= t('views.login_state.userid') %>: <%= current_user.login %> )
-    <%#= link_to "[#{t('views.login_state.management')}]", :controller => :user_management, :action => :index -%>
-    <%= link_to "[#{t('views.login_state.logout')}]", :controller => :sessions, :action => :destroy -%>
-  <%- end -%>
-<%- end -%>
-</div>
-
-
-<div id="main">
-
-<% if flash[:notice] -%>
-  <div id="hint">
-<%=h flash[:notice] %>
-  </div>
-<% end -%>
-
-<% if session[:site_category] == 'system' -%>
-  <div id="sys-main">
-    <div id="sys-menu">
+      <div id="global-nav">
+        <ul>
+        <% case session[:site_category]
+           when "file_receive" %>
+          <li id="p_top">
+            <%= link_to 'トップページ', :controller => 'file_receive' %>
+          </li>
+          <li></li>
+          <li></li>
+        <% when "requested_file_send" %>
+          <li id="p_top">
+            <%= link_to 'トップページ', :controller => 'requested_file_send', :action => 'login', :id => session[:request_send_url_code].present? ? session[:request_send_url_code] : '' %>
+          </li>
+          <li></li>
+          <li></li>
+        <% when "requested_file_receive" %>
+          <li id="p_top">
+            <%= link_to 'トップページ', :controller => 'requested_file_receive', :action => 'login', :id => session[:request_receive_url_code].present? ? session[:request_receive_url_code] : '' %>
+          </li>
+          <li></li>
+          <li></li>
+        <% when "system" %>
+        <% else %>
+          <li id="p_top">
+            <%= link_to 'トップページ', root_path %>
+          </li>
+          <li id="p_sen">
+            <%= link_to 'ファイル送信', :controller => 'file_send' %>
+          </li>
+          <li id="p_req">
+            <%= link_to 'ファイル依頼', :controller => 'file_request' %>
+          </li>
+        <% end %>
+        <% @content_frames.each.with_index do |content_frame, count| %>
+          <li id="p_srv">
+          <% if content_frame.expression_flag == 1 %>
+            <%= link_to content_frame.title, :controller => 'content', :action => 'load', :id => content_frame.id %>
+          <% end %>
+          </li>
+        <% end %>
+        </ul>
+      </div>
+      <div id="status">
+        <%= t('views.login_state.src_ip_address') %>:<%= @access_ip %>
+        <%- unless session[:site_category] -%>
+          <%= render 'layouts/loginuser' %>
+        <%- end -%>
+      </div>
+      <div id="main">
+      <% if flash[:notice] -%>
+        <div id="hint">
+          <%=h flash[:notice] %>
+        </div>
+      <% end -%>
+      <% if session[:site_category] == 'system' -%>
+        <div id="sys-main">
+          <div id="sys-menu">
+          </div>
+          <div id="sys-cont">
+            <%= yield %>
+          </div>
+        </div>
+      <% else -%>
+        <%= yield %>
+      <% end -%>
+      </div>
+    <div id="footer">
+      <font color="#778899">Powered by</font> <a href="http://deco-project.org", target="_blank"><%= image_tag('common/deco_s2.jpg', :alt => "powered by DECO", :align => "bottom", :style => "vertical-align: middle;", :border => 0) %></a>
     </div>
-    <div id="sys-cont">
-    <%= yield %>
-    </div>
-  </div>
-<% else -%>
-  <%= yield %>
-<% end -%>
-
-</div>
-
-<div id="footer">
-<font color="#778899">Powered by</font> <a href="http://deco-project.org", target="_blank"><%= image_tag('common/deco_s2.jpg', :alt => "powerd by DECO", :align => "bottom", :style => "vertical-align: middle;", :border => 0) %></a>
-</div>
-
-</body>
+  </body>
 </html>

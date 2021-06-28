@@ -1,0 +1,35 @@
+<h2>１．依頼者情報入力　（あなたの情報を入力してください）</h2>
+
+<fieldset>
+
+  <legend>依頼者情報入力</legend>
+  <div class="table-a">
+<%
+    @show_sender_flg = 0
+    Dir.glob("vendor/engines/*/").each do |path|
+      engine = path.split("\/")[2]
+      if eval("ApplicationHelper.method_defined?(:#{engine}_show_infomation_matter_sender)")
+        if @show_sender_flg == 0
+-%>
+          <%= eval("#{engine}_show_infomation_matter_sender(f, @request_matter)") %>
+<%        sender_flg = eval("#{engine}_check_send_matter_sender()")
+          @show_sender_flg = sender_flg[0]
+        end
+      end
+    end
+    if @show_sender_flg == 0
+%>
+    <div class="item-top">あなたの名前<span class="required">※</span></div>
+    <div class="input-top"><%= f.text_field :name, :class => 'validate[required]', :size => 30 %></div>
+    <div class="item-bot">あなたのメールアドレス<span class="required">※</span></div>
+      <%- if @local_ips.select{ |local_ip| IPAddr.new(local_ip.value).include?(@access_ip) }.size > 0 -%>
+    <div class="input-bot"><%= f.text_field :mail_address, :class => 'validate[required]', :size => 20 %>@<%= select_tag 'mail_domain', options_for_select(@local_domain_list.each_with_index {| local_domain, i |  [ local_domain, local_domain ]}, @request_matter.mail_domain), :include_blank => true, :class => 'validate[required]' %>
+    <br /><span class="note">例）<% @local_domain_list.each_with_index do | local_domain, i | %> tokushima_tarou_1@<b><%= h local_domain %></b><% if i + 1 < @local_domain_list.size %>, <%- end -%><%- end -%></span></div>
+      <%- else -%>
+    <div class="input-bot"><%= f.text_field :mail_address, :class => 'validate[required, custom[email]]', :size => 40 -%>
+      <br /><span class="note">例）name1@example.com</span>
+      <%- end -%>
+    <%- end -%>
+  </div>
+
+</fieldset>

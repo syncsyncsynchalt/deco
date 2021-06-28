@@ -8,7 +8,7 @@ $(function() {
     });
 })
 
-localDomains = "<%= $local_domains %>";
+localDomains = "<%= @local_domains %>";
 $(document).ready(function() {
   $.validationEngineLanguage.newLang(localDomains);
   $("form").validationEngine({promptPosition: "centerRight", binded: false})
@@ -26,7 +26,7 @@ $(document).ready(function() {
     <div class="input-topx2">
       <div class="inner-box">
       <% if current_user.present? %>
-        <%= text_field_tag 'conditions[from_organization_add]', current_user.from_organization_add, :size => 50 %>
+        <%= text_field_tag 'conditions[from_organization_add]', current_user.from_organization_add, :style => 'width:330px;' %>
       <% end %>
       </div>
     </div>

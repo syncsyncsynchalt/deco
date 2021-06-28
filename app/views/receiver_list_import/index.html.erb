@@ -1,0 +1,28 @@
+
+<div id="main_sub">
+<h2><%= @title %>一覧</h2>
+
+<p><span class="required">※</span> CSV記述規則<br>
+<br>
+読込用のCSVファイルは、以下のフォーマットに対応しております。<br>
+&quot;相手のお名前&quot;,&quot;相手のメールアドレス&quot;<br>
+例）<br>
+&quot;徳島太郎&quot;,&quot;tokushima@example.com&quot;<br>
+&quot;阿波花子&quot;,&quot;awahanako@example.com&quot;<br>
+
+<span class="required">※</span> 先頭のレコードから読込みます。<br>
+<span class="required">※</span> Shift-Jis形式のCSVファイルのみ対応しております。<br>
+</p>
+<%= @title %>情報ファイル
+<%= form_tag({:action => :show, :type => params[:type]}, :multipart => true, :target => "frame") do %>
+  <%= file_field 'file_data', 'name' %><br />
+  <%= submit_tag '読み込み' %>
+<% end %>
+
+<br />
+
+<!-- 受取人選択／確認用Iframe -->
+<iframe id='frame' name="frame" height=480 width=540 frameborder=0 scrolling=auto
+  src=<%= url_for(:action => 'dummy_action') %>></iframe> 
+
+</div>

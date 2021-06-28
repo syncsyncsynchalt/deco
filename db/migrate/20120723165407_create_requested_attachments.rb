@@ -1,4 +1,4 @@
-class CreateRequestedAttachments < ActiveRecord::Migration
+class CreateRequestedAttachments < ActiveRecord::Migration[4.2]
   def change
     create_table :requested_attachments do |t|
       t.integer :requested_matter_id

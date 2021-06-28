@@ -1,4 +1,4 @@
-このメールは，「DECO」から発信しております。
+このメールは，<%= @mail_content %>「DECO」から発信しております。
 
 <%= @send_matter.name %>様が次の内容でファイル送信を行いました。
 
@@ -12,11 +12,11 @@
 
 ■パスワード
 <%= @send_matter.receive_password %>
-<% if @send_matter.password_notice == 0 -%>
+
 ■パスワードの通知方法
+<% if @send_matter.password_notice == 0 -%>
 自分で通知する
 <% else -%>
-■パスワードの通知方法
 システムで行う
 <% end -%>
 
@@ -30,7 +30,7 @@
 ■送信ファイル一覧
 <% @send_matter.attachments.each.with_index do | attachment, count | -%>
 <% if attachment.virus_check == '0' %>
-<%= count + 1 %>.<%= attachment.name %>（<%= show_file_size(attachment) %>）
+<%= count + 1 %>.<%= attachment.name %>（<%= show_file_size(attachment) %>）<%- if attachment.virus_check == nil -%>ウイルスチェック中です。(検出された場合削除されます)<% end %>
 <% end %>
 <% end %>
 

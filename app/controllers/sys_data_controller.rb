@@ -18,8 +18,8 @@
 # Likewise, all the methods added will be available for all controllers.
 class SysDataController < ApplicationController
   layout 'system_admin'
-  before_filter :load_env
-  before_filter :check_ip_for_administrator, :administrator_authorize
+  before_action :load_env
+  before_action :check_ip_for_administrator, :administrator_authorize
 
   def index
     session[:section_title] = '登録データ確認'
@@ -35,41 +35,39 @@ class SysDataController < ApplicationController
     @amt_data = 100
     @s_data = (@page - 1) * @amt_data + 1
     @e_data = @page * @amt_data
-    sqlstr_sub1 = "select " +
-            "convert_tz(attachments.created_at, '-9:00', '+0:00') " +
-            "as file_up_date, " +
-            "send_matters.id as id, " +
-            "'送信' as flg, " +
-            "send_matters.name as sender_name, " +
-            "send_matters.mail_address as sender_mail_address, " +
-            "attachments.id as file_id, " +
-            "attachments.name as file_name, " +
-            "attachments.size as file_size, " +
-            "attachments.content_type as file_content_type, " +
-            "file_dl_checks.download_flg as file_download_flg, " +
-            "attachments.virus_check as file_virus_check " +
-            "from file_dl_checks, attachments, send_matters " +
-            "where file_dl_checks.attachment_id = attachments.id " +
-            "and attachments.send_matter_id = send_matters.id"
-    sqlstr_sub2 = "select " +
-            "convert_tz(requested_matters.file_up_date, '-9:00', '+00:00') " +
-            "as file_up_date, " +
-            "requested_matters.id as id, " +
-            "'依頼' as flg, " +
-            "requested_matters.name as sender_name, " +
-            "requested_matters.mail_address as sender_mail_address, " +
-            "requested_attachments.id as file_id, " +
-            "requested_attachments.name as file_name, " +
-            "requested_attachments.size as file_size, " +
-            "requested_attachments.content_type as file_content_type, " +
-            "requested_attachments.download_flg as file_download_flg, " +
-            "requested_attachments.virus_check as file_virus_check " +
-            "from requested_matters, " +
+    sqlstr_sub1 = "SELECT " +
+            "attachments.created_at AS file_up_date, " +
+            "send_matters.id AS id, " +
+            "'送信' AS flg, " +
+            "send_matters.name AS sender_name, " +
+            "send_matters.mail_address AS sender_mail_address, " +
+            "attachments.id AS file_id, " +
+            "attachments.name AS file_name, " +
+            "attachments.size AS file_size, " +
+            "attachments.content_type AS file_content_type, " +
+            "file_dl_checks.download_flg AS file_download_flg, " +
+            "attachments.virus_check AS file_virus_check " +
+            "FROM file_dl_checks, attachments, send_matters " +
+            "WHERE file_dl_checks.attachment_id = attachments.id " +
+            "AND attachments.send_matter_id = send_matters.id"
+    sqlstr_sub2 = "SELECT " +
+            "requested_matters.file_up_date AS file_up_date, " +
+            "requested_matters.id AS id, " +
+            "'依頼' AS flg, " +
+            "requested_matters.name AS sender_name, " +
+            "requested_matters.mail_address AS sender_mail_address, " +
+            "requested_attachments.id AS file_id, " +
+            "requested_attachments.name AS file_name, " +
+            "requested_attachments.size AS file_size, " +
+            "requested_attachments.content_type AS file_content_type, " +
+            "requested_attachments.download_flg AS file_download_flg, " +
+            "requested_attachments.virus_check AS file_virus_check " +
+            "FROM requested_matters, " +
             " requested_attachments " +
-            "where requested_attachments.requested_matter_id = " +
+            "WHERE requested_attachments.requested_matter_id = " +
             "requested_matters.id "
-    sqlstr = sqlstr_sub1 + " union " + sqlstr_sub2 +
-          " order by file_up_date desc"
+    sqlstr = sqlstr_sub1 + " UNION " + sqlstr_sub2 +
+          " ORDER BY file_up_date DESC"
     @saved_files = FileDlCheck.find_by_sql(sqlstr)
     @total_page = (@saved_files.length/@amt_data).to_i
     unless @saved_files.length % @amt_data == 0 
@@ -83,26 +81,27 @@ class SysDataController < ApplicationController
   def get_send_file
     @attachment = Attachment.find(params[:id])
 
-    if request.user_agent =~ /Windows/i
-       @filename = @attachment.name.encode("Windows-31J")
-    elsif request.user_agent =~ /Mac/i
-      @filename = @attachment.name
-    else
-      @filename = @attachment.name
-    end
+#    if request.user_agent =~ /Windows/i
+#      if request.user_agent =~ /Trident/i
+#          request.user_agent =~ /MSIE/i
+#       @filename = @attachment.name.encode(Encoding::Windows_31J, undef: :replace)
+#      else
+#        @filename = @attachment.name
+#      end
+#    elsif request.user_agent =~ /Mac/i
+#      @filename = @attachment.name
+#    else
+#      @filename = @attachment.name
+#    end
+    @filename = @attachment.name
 
-    if File.exist?($app_env['FILE_DIR'] + "/#{@attachment.id}")
-      send_file $app_env['FILE_DIR'] + "/#{@attachment.id}",
+    if File.exist?(@params_app_env['FILE_DIR'] + "/#{@attachment.id}")
+      send_file @params_app_env['FILE_DIR'] + "/#{@attachment.id}",
                :filename => @filename,
                :type => @attachment.content_type,
                :x_sendfile => true
-=begin
-      send_file $app_env['FILE_DIR'] + "/#{@attachment.id}",
-               :filename => @filename,
-               :type => @attachment.content_type
-=end
     else
-      flash[:error] = $app_env['FILE_DIR'] +
+      flash[:error] = @params_app_env['FILE_DIR'] +
              "/#{@attachment.id}　が存在しません"
       render :action => "message"
     end
@@ -111,26 +110,27 @@ class SysDataController < ApplicationController
   # 依頼送信ファイルのダウンロード
   def get_requested_file
     @requested_attachment = RequestedAttachment.find(params[:id])
-    if request.user_agent =~ /Windows/i
-       @filename = @requested_attachment.name.encode("Windows-31J")
-    elsif request.user_agent =~ /Mac/i
-      @filename = @requested_attachment.name
-    else
-      @filename = @requested_attachment.name
-    end
+#    if request.user_agent =~ /Windows/i
+#      if request.user_agent =~ /Trident/i
+#          request.user_agent =~ /MSIE/i
+#        @filename = @requested_attachment.name.encode(Encoding::Windows_31J, undef: :replace#)
+#      else
+#        @filename = @requested_attachment.name
+#      end
+#    elsif request.user_agent =~ /Mac/i
+#      @filename = @requested_attachment.name
+#    else
+#      @filename = @requested_attachment.name
+#    end
+    @filename = @requested_attachment.name
 
-    if File.exist?($app_env['FILE_DIR'] + "/r#{@requested_attachment.id}")
-      send_file $app_env['FILE_DIR'] + "/r#{@requested_attachment.id}",
+    if File.exist?(@params_app_env['FILE_DIR'] + "/r#{@requested_attachment.id}")
+      send_file @params_app_env['FILE_DIR'] + "/r#{@requested_attachment.id}",
                :filename => @filename,
                :type => @requested_attachment.content_type,
                :x_sendfile => true
-=begin
-      send_file $app_env['FILE_DIR'] + "/r#{@requested_attachment.id}",
-               :filename => @filename,
-               :type => @requested_attachment.content_type
-=end
     else
-      flash[:error] = $app_env['FILE_DIR'] +
+      flash[:error] = @params_app_env['FILE_DIR'] +
               "/r#{@requested_attachment.id}　が存在しません"
       render :action => "message"
     end

@@ -14,7 +14,7 @@ $(function() {
       </div>
     </td>
     <td >
-      <%= link_to image_tag('/assets/common/address_add.png', { :border => '0', :alt => 'add', :title => '新規登録'}), new_address_book_path %>
+      <%= link_to image_tag('common/address_add.png', { :border => '0', :alt => 'add', :title => '新規登録'}), new_address_book_path %>
     </td>
   </tr>
 </table>
@@ -33,11 +33,11 @@ $(function() {
     <td class="address_organization"><%= truncate(address_book.organization, {:length => 20}) %><%= hidden_field_tag "address_book_organization_#{address_book.id}",address_book.organization, {:class => ""} %></td>
     <td class="address_name"><%= truncate(address_book.name, {:length => 20}) %><%= hidden_field_tag "address_book_name_#{address_book.id}",address_book.name, {:class => ""} %></td>
     <td class="address_email"><%= truncate(address_book.email,  {:length => 30}) %><%= hidden_field_tag "address_book_email_#{address_book.id}",address_book.email, {:class => ""} %></td>
-    <td class="address_edit"><%= link_to image_tag('/assets/common/edit.png', { :border => '0', :alt => 'edit', :title => '編集'}), edit_address_book_path(address_book) %></td>
+    <td class="address_edit"><%= link_to image_tag('common/edit.png', { :border => '0', :alt => 'edit', :title => '編集'}), edit_address_book_path(address_book) %></td>
     <td class="address_destroy">
-      <%#= link_to image_tag('/assets/common/trash.png', { :border => '0', :alt => 'destroy', :title => '削除'}), address_book, method: :delete, data: { confirm: '削除してもよろしい
+      <%#= link_to image_tag('common/trash.png', { :border => '0', :alt => 'destroy', :title => '削除'}), address_book, method: :delete, data: { confirm: '削除してもよろしい
 でしょうか?' }, :remote => true %>
-      <%= link_to image_tag('/assets/common/trash.png', { :border => '0', :alt => 'destroy'}), address_book, method: :delete, data: { confirm: '削除してもよろしいでしょうか?' } %>
+      <%= link_to image_tag('common/trash.png', { :border => '0', :alt => 'destroy'}), address_book, method: :delete, data: { confirm: '削除してもよろしいでしょうか?' } %>
     </td>
   </tr>
 

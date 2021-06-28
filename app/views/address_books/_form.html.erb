@@ -8,7 +8,7 @@ $(function() {
     });
 })
 
-localDomains = "<%= $local_domains %>";
+localDomains = "<%= @local_domains %>";
 $(document).ready(function() {
   $.validationEngineLanguage.newLang(localDomains);
   $("form").validationEngine({promptPosition: "centerRight", binded: false})

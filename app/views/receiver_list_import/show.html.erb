@@ -1,0 +1,61 @@
+<% if @error_message -%>
+  <div id="hint_receiver_list_import">
+    <%= @error_message %>
+  </div>
+<% end -%>
+
+<% if @list != nil && @list.size > 0 %>
+宛先は最大<%= @params_app_env['RECEIVERS_LIMIT'] %>名までです。
+<br />
+<br />
+<a href="javascript:check_all()">[すべて選択]</a>
+&nbsp;&nbsp;
+<a href="javascript:uncheck_all()">[すべて解除]</a>
+<div style="width:460px; overflow:auto">
+<table border=1 cellspacing=0 cellpadding=3>
+    <thead bgcolor="#cccccc">
+      <tr bordercolor=gray>
+        <td nowrap bgcolor=#e5f0fe><br /></td>
+        <td nowrap bgcolor=#e5f0fe>お名前</td>
+        <td nowrap bgcolor=#e5f0fe>メールアドレス</td>
+        <% if @list[0].size > 2 %>
+          <% (@list[0].size - 2).times do %>
+            <td nowrap bgcolor=#e5f0fe><br /></td>
+          <% end %>
+        <% end %>
+      </tr>
+    </thead>
+    <tbody>
+      <% @list.each_with_index do |row, i| %>
+        <tr bordercolor=gray>
+          <td nowrap><input type="checkbox" id="checkbox_<%= i %>" checked="checked"></td>
+          <% row.each_with_index do |column, j| %>
+            <td><pre id="list_<%= i %>_<%= j %>"><%=h column.to_s.gsub(/\r\n|\r|\n/, "") %></pre></td>
+          <% end %>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+</div>
+
+  <br />
+<%
+    @show_sender_flg = 0
+    Dir.glob("vendor/engines/*/").each do |path|
+      engine = path.split("\/")[2]
+      if eval("ApplicationHelper.method_defined?(:#{engine}_show_receiver_import_submit_tag)")
+        if @show_sender_flg == 0
+-%>
+          <%= eval("#{engine}_show_receiver_import_submit_tag()") %>
+<%        sender_flg = eval("#{engine}_check_login_id()")
+          @show_sender_flg = sender_flg[0]
+        end
+      end
+    end
+    if @show_sender_flg == 0
+%>
+  <input type="button" onclick="renew_form('<%= raw @div_id %>', '<%= @model_name %>','<%= @id_name %>', '<%= @text %>', '<%= session[:user_id].present? ? '1' : '0' %>');" value="確定" />
+<% end %>
+  <input type="button" onclick="window.parent.close()" value="キャンセル" />
+<% end %>
+<%= @data_read %>

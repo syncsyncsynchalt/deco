@@ -18,10 +18,10 @@
 # Likewise, all the methods added will be available for all controllers.
 class SysParamController < ApplicationController
   layout 'system_admin'
-  before_filter :check_ip_for_administrator, :administrator_authorize
+  before_action :check_ip_for_administrator, :administrator_authorize
 
-  $param_label = Hash.new
-  $param_label['LOCAL_IPS']        = 'ローカルＩＰ'
+  $param_label ||= Hash.new
+  $param_label['LOCAL_IPS']        = 'ローカルＩＰアドレス'
   $param_label['LOCAL_DOMAINS']    = 'ローカルドメイン'
   $param_label['FILE_DIR']         = '送信ファイル保存ディレクトリ'
   $param_label['RECEIVERS_LIMIT']  = '受信者数'
@@ -44,7 +44,10 @@ class SysParamController < ApplicationController
   $param_label['VIRUS_CHECK_NOTICE'] = 'ウィルス検知の通知'
   $param_label['FROM_MAIL_ADDRESS'] = '送信元メールアドレス'
 
-  $param_unit = Hash.new
+  $param_label['SEND_MAIL_TITLE'] = '通知メール件名'
+  $param_label['SEND_MAIL_CONTENT'] = '通知メール本文見出し'
+
+  $param_unit ||= Hash.new
   $param_unit['RECEIVERS_LIMIT']   = '人'
   $param_unit['FILE_SEND_LIMIT']   = 'ファイル'
   $param_unit['FILE_SIZE_LIMIT']   = 'MB'
@@ -56,22 +59,64 @@ class SysParamController < ApplicationController
   # authorication
   def index
     session[:section_title] = 'パラメータ管理'
+    session[:target_for_back_controller] = 'sys_param'
     session[:site_category] = "system"
-
   end
 
   #COMMON index
   def common_index
     session[:section_title] = '共通項目の設定'
+    session[:target_for_back_controller] = 'sys_param'
     session[:target_for_back] = 'common_index'
     session[:target_for_back_id] = nil
-    @app_envs = AppEnv.find(:all, :conditions => [ "category = ?", 0 ])
-    @moderates = Moderate.find(:all)
+    @app_envs =
+        AppEnv
+        .where([["category = ?",
+                 ].join(" AND "),
+                0,
+                ])
+    @moderates =
+        Moderate.all
     @moderate_value =
         AppEnv
-        .where(["category = ?",
-                "`key` = ?"].join(" AND "),
-               0, 'MODERATE_DEFAULT').first
+        .where([["category = ?",
+                 "`key` = ?",
+                 ].join(" AND "),
+                0,
+                'MODERATE_DEFAULT',
+                ])
+        .first
+    if @moderate_value.present?
+      @selected_moderate =
+          Moderate
+          .where("id = ?",
+                 @moderate_value.value).first
+    end
+  end
+
+  #COMMON index
+  def common_index2
+    session[:section_title] = '共通項目2の設定'
+    session[:target_for_back_controller] = 'sys_param'
+    session[:target_for_back] = 'common_index2'
+    session[:target_for_back_id] = nil
+    @app_envs =
+        AppEnv
+        .where([["category = ?",
+                 ].join(" AND "),
+                0,
+                ])
+    @moderates =
+        Moderate.all
+    @moderate_value =
+        AppEnv
+        .where([["category = ?",
+                 "`key` = ?",
+                 ].join(" AND "),
+                0,
+                'MODERATE_DEFAULT',
+                ])
+        .first
     if @moderate_value.present?
       @selected_moderate =
           Moderate
@@ -82,7 +127,7 @@ class SysParamController < ApplicationController
 
   # create 登録
   def create
-    @app_env = AppEnv.new(params[:app_env])
+    @app_env = AppEnv.new(post_params_app_envs)
 
     rslt = 0
     if @app_env.key == 'LOCAL_IPS'
@@ -93,10 +138,12 @@ class SysParamController < ApplicationController
     end
 
     if @app_env.key == 'PW_LENGTH_MIN'
-      @app_env_check = AppEnv.find(:first, 
-              :conditions => {
-                :key => 'PW_LENGTH_MAX',
-                :category => @app_env.category })
+#      @app_env_check = AppEnv.find(:first,  :conditions => { :key => 'PW_LENGTH_MAX', :category => @app_env.category })
+      @app_env_check =
+          AppEnv
+          .where(:key => 'PW_LENGTH_MAX',
+                 :category => @app_env.category)
+          .first
       if @app_env_check and @app_env.value.to_i > @app_env_check.value.to_i
         flash[:error] = '最大パスワード長より小さい数字にしてください'
         rslt = 1
@@ -104,10 +151,12 @@ class SysParamController < ApplicationController
     end
 
     if @app_env.key == 'PW_LENGTH_MAX'
-      @app_env_check = AppEnv.find(:first, 
-              :conditions => {
-                :key => 'PW_LENGTH_MIN',
-                :category => @app_env.category })
+#      @app_env_check = AppEnv.find(:first,  :conditions => { :key => 'PW_LENGTH_MIN', :category => @app_env.category })
+      @app_env_check =
+          AppEnv
+          .where(:key => 'PW_LENGTH_MIN',
+                 :category => @app_env.category)
+          .first
       if @app_env_check and @app_env.value.to_i < @app_env_check.value.to_i
         flash[:error] = '最短パスワード長より大きい数字にしてください'
         rslt = 1
@@ -116,7 +165,7 @@ class SysParamController < ApplicationController
 
     if rslt == 0
       if @app_env.save
-        flash[:notice] = @app_env.key + 'を追加しました。'
+        flash[:notice] = "「#{$param_label[@app_env.key]}」を追加しました。"
       else
         flash[:error] = '失敗'
       end
@@ -132,7 +181,7 @@ class SysParamController < ApplicationController
     rslt = 0
     if rslt == 0
       if @app_env.save
-        flash[:notice] = @app_env.key + 'を変更しました。'
+        flash[:notice] = "「#{$param_label[@app_env.key]}」を変更しました。"
       else
         flash[:error] = '失敗'
       end
@@ -172,13 +221,14 @@ class SysParamController < ApplicationController
       error_messages = "時間が不正です"
     end
 
-    if @app_env.key == 'FILE_LIFE_PERIOD' || 'REQUEST_PERIOD'
+    if @app_env.key == 'FILE_LIFE_PERIOD' ||
+        @app_env.key == 'REQUEST_PERIOD'
       @app_env.note = @term_label
     end
 
     if rslt == 0
       @app_env.save
-      flash[:notice] = @app_env.key + 'を登録しました。'
+      flash[:notice] = "「#{$param_label[@app_env.key]}」を登録しました。"
     else
       flash[:error] = error_messages
     end
@@ -216,7 +266,7 @@ class SysParamController < ApplicationController
   # update
   def update
     @app_env = AppEnv.find(params[:id])
-    app_env = AppEnv.new(params[:app_env])
+    app_env = AppEnv.new(post_params_app_envs)
 
     rslt = 0
     if @app_env.key == 'LOCAL_IPS'
@@ -227,10 +277,12 @@ class SysParamController < ApplicationController
     end
 
     if @app_env.key == 'PW_LENGTH_MIN'
-      @app_env_check = AppEnv.find(:first, 
-              :conditions => {
-                :key => 'PW_LENGTH_MAX',
-                :category => @app_env.category })
+#      @app_env_check = AppEnv.find(:first, :conditions => { :key => 'PW_LENGTH_MAX', :category => @app_env.category })
+      @app_env_check =
+          AppEnv
+          .where(:key => 'PW_LENGTH_MAX',
+                 :category => @app_env.category)
+          .first
       if @app_env_check and app_env.value.to_i > @app_env_check.value.to_i
         flash[:error] = '最大パスワード長より小さい数字にしてください'
         rslt = 1
@@ -238,10 +290,12 @@ class SysParamController < ApplicationController
     end
 
     if @app_env.key == 'PW_LENGTH_MAX'
-      @app_env_check = AppEnv.find(:first, 
-              :conditions => {
-                :key => 'PW_LENGTH_MIN',
-                :category => @app_env.category })
+#      @app_env_check = AppEnv.find(:first, :conditions => { :key => 'PW_LENGTH_MIN', :category => @app_env.category })
+      @app_env_check =
+          AppEnv
+          .where(:key => 'PW_LENGTH_MIN',
+                 :category => @app_env.category)
+          .first
       if @app_env_check and app_env.value.to_i < @app_env_check.value.to_i
         flash[:error] = '最短パスワード長より大きい数字にしてください'
         rslt = 1
@@ -249,8 +303,8 @@ class SysParamController < ApplicationController
     end
 
     if rslt == 0
-      if @app_env.update_attributes(params[:app_env])
-        flash[:notice] = @app_env.key + 'を修正しました。'
+      if @app_env.update_attributes(post_params_app_envs)
+        flash[:notice] = "「#{$param_label[@app_env.key]}」を修正しました。"
       else
         flash[:error] = '失敗'
       end
@@ -269,7 +323,7 @@ class SysParamController < ApplicationController
     rslt = 0
     if rslt == 0
       if @app_env.save
-        flash[:notice] = @app_env.key + 'を変更しました。'
+        flash[:notice] = "「#{$param_label[@app_env.key]}」を変更しました。"
       else
         flash[:error] = '失敗'
       end
@@ -307,13 +361,14 @@ class SysParamController < ApplicationController
       error_messages = "時間が不正です<br>"
     end
 
-    if @app_env.key == 'FILE_LIFE_PERIOD' || 'REQUEST_PERIOD'
+    if @app_env.key == 'FILE_LIFE_PERIOD' ||
+        @app_env.key == 'REQUEST_PERIOD'
       @app_env.note = @term_label
     end
 
     if rslt == 0
       @app_env.save
-      flash[:notice] = @app_env.key + 'を修正しました。'
+      flash[:notice] = "「#{$param_label[@app_env.key]}」を修正しました。"
     else
       flash[:error] = error_messages
     end
@@ -324,9 +379,13 @@ class SysParamController < ApplicationController
 
   # destroy
   def destroy
-    @app_env = AppEnv.find(:first, :conditions => {:id => params[:id]})
+#    @app_env = AppEnv.find(:first, :conditions => {:id => params[:id]})
+    @app_env =
+        AppEnv
+        .where(:id => params[:id])
+        .first
     if @app_env
-      flash[:notice] = @app_env.key + '[' + @app_env.value + '] を削除しました。'
+      flash[:notice] = "「#{$param_label[@app_env.key]}」[#{@app_env.value}] を削除しました。"
       @app_env.destroy
     else
       flash[:notice] = 'パラメータが存在しません。'
@@ -337,23 +396,33 @@ class SysParamController < ApplicationController
 
   # LOCAL index
   def user_type_index
-    if params[:id] == 'local' or params[:id] == 'remote'
+    if params[:id] == 'local' || params[:id] == 'remote'
     
       if params[:id] == 'local'
         session[:section_title] = 'ローカルユーザの設定'
+        session[:target_for_back_controller] = 'sys_param'
         session[:target_for_back] = 'user_type_index'
         session[:target_for_back_id] = 'local'
         @category = 3
-        @app_envs = AppEnv.find(:all,
-                :conditions => [ "category = ?", @category ])
+        @app_envs =
+            AppEnv
+            .where([["category = ?",
+                     ].join(" AND "),
+                     @category,
+                    ])
 
       elsif params[:id] = 'remote'
         session[:section_title] = 'リモートユーザの設定'
+        session[:target_for_back_controller] = 'sys_param'
         session[:target_for_back] = "user_type_index"
         session[:target_for_back_id] = 'remote'
         @category = 2
-        @app_envs = AppEnv.find(:all,
-                :conditions => [ "category = ?", @category ])
+        @app_envs =
+            AppEnv
+            .where([["category = ?",
+                     ].join(" AND "),
+                     @category,
+                    ])
 
       end
 
@@ -382,11 +451,25 @@ class SysParamController < ApplicationController
   def remote_index
     session[:target_for_back] = 'remote_index'
   
-    @app_envs = AppEnv.find(:all, :conditions => [ "category = ?", 2 ])
+#    @app_envs = AppEnv.find(:all, :conditions => [ "category = ?", 2 ])
+    @app_envs =
+        AppEnv
+        .where([["category = ?",
+                 ].join(" AND "),
+                2,
+                ])
   end
 
   # MESSAGE
   def message
 
+  end
+
+  private
+
+  def post_params_app_envs
+    params.require(:app_env).permit(
+      :key, :value, :value, :category
+    )
   end
 end

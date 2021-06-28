@@ -18,20 +18,60 @@
 # Likewise, all the methods added will be available for all controllers.
 class FileRequestController < ApplicationController
   protect_from_forgery :except => [:upload]
-  before_filter :authorize, :except => [:result, :login, :auth, :result_ng]
-  before_filter :result_id_check, :only => [:result]
-  before_filter :result_authorize, :only => [:result]
-  before_filter :load_env
+  before_action :authorize, :except => [:result, :login, :auth, :result_ng]
+  before_action :result_id_check, :only => [:result]
+  before_action :result_authorize, :only => [:result]
+  before_action :load_env
 
   # 入力フォーム
   def index
     session[:site_category] = nil
     @request_matter = RequestMatter.new
+    @request_matter.class_eval { attr_accessor :mail_domain }
     @requested_matter = RequestedMatter.new
     @requested_attachement = RequestedAttachment.new
 
-    @local_domains = AppEnv.find(:all, :conditions =>
-                 {:key => 'LOCAL_DOMAINS'})
+#    @local_domains = AppEnv.find(:all, :conditions =>
+#                 {:key => 'LOCAL_DOMAINS'})
+    @local_domains =
+        AppEnv
+        .where(:key => 'LOCAL_DOMAINS')
+    @login_user_exist_flg = 0
+    Dir.glob("vendor/engines/*/").each do |path|
+      engine = path.split("\/")[2]
+      if eval("ApplicationController.method_defined?(:#{engine}_get_user_info)")
+        if @login_user_exist_flg == 0
+          local_user_info = eval("#{engine}_get_user_info")
+          if local_user_info[0] == 1
+            @login_user_exist_flg = local_user_info[0]
+            @request_matter.name = local_user_info[1]
+            @request_matter.mail_address = local_user_info[2]
+          end
+        end
+      end
+    end
+    if @login_user_exist_flg == 0
+      if session[:user_id].present? && current_user.present?
+        if current_user.from_organization_add.present?
+          @request_matter.name = "#{current_user.from_organization_add}　#{current_user.name}"
+        else
+          @request_matter.name = "#{current_user.name}"
+        end
+        if @local_ips.select{ |local_ip| IPAddr.new(local_ip.value).include?(@access_ip) }.size > 0
+          count = 0
+          for key_word in current_user.email.split(/\@/)
+            if count == 0
+              @request_matter.mail_address = key_word
+            else
+              @request_matter.mail_domain = key_word
+            end
+            count += 1
+          end
+        else
+          @request_matter.mail_address = current_user.email
+        end
+      end
+    end
     respond_to do |format|
       format.html
       format.xml { render :xml => @request_file }
@@ -43,13 +83,17 @@ class FileRequestController < ApplicationController
     recipients = Hash.new
 
     ActiveRecord::Base.transaction do
-      @request_matter = RequestMatter.new(params[:request_matter])
+      @request_matter = RequestMatter.new(post_params_request_matters)
       @request_matter.url = generate_random_strings(@request_matter.name)
       if params[:mail_domain].present?
         @request_matter.mail_address += '@' + params[:mail_domain]
       end
+      if session[:user_id].present? && current_user.present?
+        @request_matter.user = current_user
+      end
+      @request_matter.save!
       params[:requested_matter].each{ |key, value|
-        @requested_matter = RequestedMatter.new(value)
+        @requested_matter = RequestedMatter.new(requested_matters_params(value))
         @requested_matter.request_matter = @request_matter
         @requested_matter.url = generate_random_strings(@requested_matter.name)
         @requested_matter.send_password =
@@ -91,9 +135,6 @@ class FileRequestController < ApplicationController
         @request_matter.sent_at = Time.now
       end
 
-      if session[:user_id].present? && current_user.present?
-        @request_matter.user = current_user
-      end
       unless @request_matter.save!
         render :action => 'index'
       end
@@ -112,7 +153,7 @@ class FileRequestController < ApplicationController
             .where(["request_moderate_id = ?",
                     "number = 1"].join(" AND "),
                    @request_moderate.id).first
-          url = port + "://" + $app_env['URL']
+          url = port + "://" + @params_app_env['URL']
           Notification
               .request_matter_moderate_report(@request_matter, @request_moderater,
                   @request_moderater.user, url).deliver
@@ -124,7 +165,7 @@ class FileRequestController < ApplicationController
             .where("request_moderate_id = ?",
                    @request_moderate.id)
         for request_moderater in @request_moderaters
-          url = port + "://" + $app_env['URL']
+          url = port + "://" + @params_app_env['URL']
           Notification
               .request_matter_moderate_report(@request_matter, request_moderater,
                   request_moderater.user, url).deliver
@@ -137,37 +178,44 @@ class FileRequestController < ApplicationController
               url).deliver
     else
       recipients.each{ |key, value|
-        full_url = port + "://" + $app_env['URL'] +
+        full_url = port + "://" + @params_app_env['URL'] +
             "/requested_file_send/login/" + value[2]
 
         Notification.request_report(@request_matter,
                                     value[1], value[0],
                                     full_url, value[3],
-                                    $app_env['REQUEST_PERIOD'].to_i).deliver
+                                    @params_app_env['REQUEST_PERIOD'].to_i).deliver
         Notification.request_password_report(@request_matter,
                                     value[1], value[0],
                                     full_url, value[3],
-                                    $app_env['REQUEST_PERIOD'].to_i).deliver
+                                    @params_app_env['REQUEST_PERIOD'].to_i).deliver
       }
 
-      req_url = port + "://" + $app_env['URL'] + "/requested_file_send/login/"
+      req_url = port + "://" + @params_app_env['URL'] + "/requested_file_send/login/"
       @requested_matters = @request_matter.requested_matters
       Notification.request_copied_report(@request_matter,
                                          @requested_matters, req_url,
-                                         $app_env['REQUEST_PERIOD'].to_i).deliver
+                                         @params_app_env['REQUEST_PERIOD'].to_i).deliver
     end
   end
 
   def result
     if params[:id].present?
-      @request_matter = RequestMatter.find(:first, :conditions =>
-                                     { :url => params[:id] })
+#      @request_matter = RequestMatter.find(:first, :conditions =>
+#                                     { :url => params[:id] })
+      @request_matter =
+          RequestMatter
+          .where(:url => params[:id])
+          .first
       session[:request_matter_id] = @request_matter.id
     else
       @request_matter = RequestMatter.find(session[:request_matter_id])
     end
+#    @requested_matters =
+#        RequestedMatter.find_all_by_request_matter_id(session[:request_matter_id])
     @requested_matters =
-        RequestedMatter.find_all_by_request_matter_id(session[:request_matter_id])
+        RequestedMatter
+        .where(request_matter_id: session[:request_matter_id])
     if @request_matter.moderate_flag == 1
       @request_moderate = @request_matter.request_moderate
       @request_moderaters = @request_moderate.request_moderaters
@@ -239,5 +287,17 @@ class FileRequestController < ApplicationController
     flash[:notice] = "不正なアクセスです。
                      （アクセスの集中，ブラウザの操作上の問題が考えられます。）"
     redirect_to :action => "result_ng"
+  end
+
+  def post_params_request_matters
+    params.require(:request_matter).permit(
+      :name, :mail_address, :message
+    )
+  end
+
+  def requested_matters_params(post_params)
+    post_params.permit(
+      :name, :mail_address
+    )
   end
 end

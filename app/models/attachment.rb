@@ -17,6 +17,6 @@
 # Filters added to this controller apply to all controllers in the application.
 # Likewise, all the methods added will be available for all controllers.
 class Attachment < ActiveRecord::Base
-  belongs_to(:send_matter)
+  belongs_to :send_matter, optional: true
   has_many :receivers, :through => :file_dl_checks
 end

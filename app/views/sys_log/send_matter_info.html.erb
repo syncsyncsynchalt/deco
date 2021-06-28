@@ -1,7 +1,6 @@
-
-  <h2>個別データ表示</h2>
-  <h3>送信情報</h3>
-  <fieldset>
+<h2>個別データ表示</h2>
+<h3>送信情報</h3>
+<fieldset>
   <div class="table-sys-a">
     <div class="item-mid">送信ＩＤ</div>
     <div class="input-mid"><%= h @send_matter.id %></div>
@@ -16,7 +15,7 @@
     <div class="item-mid">ファイル保存期間</div>
     <div class="input-mid"><%= @file_life_period %><br></div>
     <div class="item-mid">メッセージ</div>
-    <div class="input-mid"><%= h @send_matter.message %><br></div>
+    <div class="input-mid"><%= simple_format(@send_matter.message, {}, wrapper_tag: "div") %><br></div>
     <div class="item-mid">ステータス</div>
     <div class="input-mid"><%= @status %><br></div>
     <div class="item-mid">登録日</div>
@@ -52,14 +51,14 @@
     <div class="input-mid">
 <% @send_moderaters = @send_moderate.send_moderaters %>
 <% number = 0 %>
-    <div class="table-d" style="border:0px;">
+    <div class="table-i" style="border:0px;">
 <% for moderater in @send_moderaters %>
       <div class="input-l" style="border:0px; padding:5px 8px; height:20px;">
 <% number += 1 %>
 <%= number %>.
 <%= moderater.moderater.user.name %>
       </div>
-<div class="input-r" style="border:0px; padding:5px 8px; height:20px; text-align:center;">
+<div class="input-r" style="border:0px; padding:5px 8px; height:20px;">
 <% if moderater.result == 1 %>
 <font color="blue"><b>承認</b></font>
 <% elsif moderater.result == 2 %>
@@ -165,7 +164,7 @@
     <tr bordercolor=gray>
     <td nowrap align=center><%= count + 1 %></td>
     <td nowrap><%= attachment.id %></td>
-    <td nowrap><% if File.exist?($app_env['FILE_DIR'].to_s + "/#{attachment.id}") -%>
+    <td nowrap><% if File.exist?(@params_app_env['FILE_DIR'].to_s + "/#{attachment.id}") -%>
                  <%= link_to attachment.name, {:controller => 'sys_data',
                                                          :action => 'get_send_file',
                                                          :id => attachment.id } %>
@@ -174,7 +173,9 @@
     <td nowrap><%= label_file_size + " [" + attachment.size.to_s + "]" %></td>
     <td nowrap><%= attachment.content_type %></td>
     <td nowrap><%= download_flg %></td>
-    <td nowrap><%= attachment.virus_check %></td>
+    <td nowrap><% if attachment.virus_check == nil -%>(ウィルスチェック中)
+               <%- else -%><%= attachment.virus_check -%>
+               <%- end -%></td>
     <td nowrap><%= (Time.parse(attachment.created_at.to_s)).strftime("%Y年%m月%d日%H時%M分%S秒") %></td>
     </tr>
     <% @count += 1 -%>

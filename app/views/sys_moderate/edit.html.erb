@@ -12,7 +12,7 @@ $(document).ready(function() {
 </script>
 
   <fieldset>
-<%= form_for("moderate", :url => { :action => 'update', :id => @moderate.id},
+<%= form_for(@moderate, :url => { :action => 'update', :id => @moderate.id},
              :html => {:id => "moderate", :name=> "moderate" }) do |f| %>
   <h2>決裁名</h2>
 <div class="table-sys-a">

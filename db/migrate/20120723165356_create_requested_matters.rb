@@ -1,4 +1,4 @@
-class CreateRequestedMatters < ActiveRecord::Migration
+class CreateRequestedMatters < ActiveRecord::Migration[4.2]
   def change
     create_table :requested_matters do |t|
       t.integer :request_matter_id

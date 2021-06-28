@@ -30,8 +30,7 @@
 
 ■送信ファイル一覧
 <% @attachments.each.with_index do | attachment, count | -%>
-<%= count + 1 %>.<%= attachment.name %>（<%= show_file_size(attachment) %>）
-<% if attachment.virus_check != '0' -%>ウイルスが検出されたため削除されました。(<%= attachment.virus_check %>)
+<%= count + 1 %>.<%= attachment.name %>（<%= show_file_size(attachment) %>）<%- if attachment.virus_check == nil -%>ウイルスチェック中です。(検出された場合削除されます)<% elsif attachment.virus_check != '0' -%>ウイルスが検出されたため削除されました。(<%= attachment.virus_check %>)
 <% end -%>
 <% end %>
 

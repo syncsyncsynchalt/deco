@@ -1,4 +1,4 @@
-class CreateSendMatters < ActiveRecord::Migration
+class CreateSendMatters < ActiveRecord::Migration[4.2]
   def change
     create_table :send_matters do |t|
       t.string :name

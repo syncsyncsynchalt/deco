@@ -52,13 +52,13 @@
         <td nowrap><%= saved_file.sender_mail_address %></td>
         <td nowrap><%= saved_file.file_id %></td>
         <td nowrap><% if saved_file.flg == '送信' -%>
-                     <% if File.exist?($app_env['FILE_DIR'].to_s + "/#{saved_file.file_id}") -%>
+                     <% if File.exist?(@params_app_env['FILE_DIR'].to_s + "/#{saved_file.file_id}") -%>
                        <%= link_to saved_file.file_name, {:controller => 'sys_data',
                                                           :action => 'get_send_file',
                                                           :id => saved_file.file_id } %>
                      <% else -%><%= saved_file.file_name -%><% end -%>
                    <% elsif saved_file.flg == '依頼' -%>
-                     <% if File.exist?($app_env['FILE_DIR'].to_s + "/r#{saved_file.file_id}") -%>
+                     <% if File.exist?(@params_app_env['FILE_DIR'].to_s + "/r#{saved_file.file_id}") -%>
                        <%= link_to saved_file.file_name, {:controller => 'sys_data',
                                                           :action => 'get_requested_file',
                                                           :id => saved_file.file_id } %>
@@ -68,17 +68,16 @@
         <td nowrap><%= label_file_size %></td>
         <td nowrap><%= saved_file.file_content_type %></td>
         <td nowrap><%= download_flg %></td>
-        <td nowrap><%= saved_file.file_virus_check %></td>
+        <td nowrap><% if saved_file.file_virus_check == nil -%>(ウィルスチェック中)
+                   <%- else -%><%= saved_file.file_virus_check -%>
+                   <%- end -%></td>
         </tr>
       <% end -%>
     <% end -%>
   <% else -%>
     <tr>
-      <td colspan=7 algin=center>データがありません</td>
+      <td colspan=12 algin=center>データがありません</td>
     </tr>
-  <% end -%>
-  <% if count == 0 -%>
-    <tr><td colspan=7 algin=center>データがありません</td></tr>
   <% end -%>
 </table>
 ※　ＩＤについて，依頼は requested_matters.id，送信は send_matters.id<br>

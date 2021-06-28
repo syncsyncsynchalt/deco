@@ -25,9 +25,12 @@
 <% if @requested_attachments.size > 0 -%>
   <%  @requested_attachments.each_with_index do | attachment, index | -%>
     <% if attachment.virus_check == '0' -%>
-      <div class="input-l"><%= index + 1 %>. <%= h truncate(attachment.name, {:length => 28}) %>（<%= show_file_size(attachment) %>）</div>
-      <div class="input-r"><%= link_to image_tag('/assets/common/download.gif', {:border => '0', :alt => 'ダウンロード'}),
+      <div class="input-l"><%= index + 1 %>. <%= h truncate(attachment.name, length: 20) %>（<%= show_file_size(attachment) %>）</div>
+      <div class="input-r"><%= link_to image_tag('common/download.gif', {:border => '0', :alt => 'ダウンロード'}),
                                  {:action => 'get', :id => attachment.id} %></div>
+    <% elsif attachment.virus_check == nil %>
+      <div class="input-l"><%= index + 1 %>. <%=h  truncate(attachment.name, length: 20) %>（<%=h show_file_size(attachment) %>）</div>
+      <div class="input-r">ウイルス検出チェック中です。<br>(検出された場合削除されます)</div>
     <% end -%>
   <% end -%>
 <% else -%>
@@ -43,11 +46,11 @@
       <% if @requested_matter.message == '' -%>
       <div class="input-mid">　</div>
       <% else -%>
-      <div class="input-mid"><%= h @requested_matter.message %></div>
+      <div class="input-mid"><%= simple_format(@requested_matter.message, {}, wrapper_tag: "div") %></div>
       <% end -%>
 
-      <div class="item-bot">ファイル保管期限</div>
-      <div class="input-bot"><%= (Time.parse(@requested_matter.file_up_date.to_s) +
+      <div class="item-mid">ファイル保管期限</div>
+      <div class="input-mid"><%= (Time.parse(@requested_matter.file_up_date.to_s) +
                       @requested_matter.file_life_period).strftime("%Y年%m月%d日%H時%M分%S秒") %></div>
 
     </div>

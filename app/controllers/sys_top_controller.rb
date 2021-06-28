@@ -18,7 +18,11 @@
 # Likewise, all the methods added will be available for all controllers.
 class SysTopController < ApplicationController
   layout 'system_admin'
-  before_filter :check_ip_for_administrator, :administrator_authorize
+  before_action :check_ip_for_administrator, :administrator_authorize
+
+  $param_label ||= Hash.new
+  $param_label['PERMIT_OPERATION_IPS']        = 'システム管理画面アクセスＩＰアドレス'
+
   def index
     session[:section_title] = 'システム管理画面'
     session[:target_for_back] = 'index'
@@ -29,13 +33,16 @@ class SysTopController < ApplicationController
     session[:section_title] = 'システム管理画面アクセスＩＰアドレスの設定'
     session[:target_for_back] = 'init_permit_ip'
     session[:target_for_back_id] = nil
-    @app_envs = AppEnv.find(:all,
-            :conditions => { :key => "PERMIT_OPERATION_IPS" })
+#    @app_envs = AppEnv.find(:all,
+#            :conditions => { :key => "PERMIT_OPERATION_IPS" })
+    @app_envs =
+        AppEnv
+        .where(:key => "PERMIT_OPERATION_IPS")
   end
 
   # create 登録
   def param_create
-    @app_env = AppEnv.new(params[:app_env])
+    @app_env = AppEnv.new(post_params)
 
     result = 0
     if @app_env.key == 'PERMIT_OPERATION_IPS'
@@ -47,22 +54,10 @@ class SysTopController < ApplicationController
 
     if result == 0
       if @app_env.save
-        flash[:notice] = @app_env.key + 'を追加しました。'
+        flash[:notice] = "#{$param_label[@app_env.key]}を追加しました。"
       else
         flash[:error] = '失敗'
       end
-    end
-
-    render :action => "message"
-  end
-
-  def param_create_
-    @app_env = AppEnv.new(params[:app_env])
-
-    if @app_env.save
-      flash[:notice] = @app_env.key + 'を追加しました。'
-    else
-      flash[:error] = '失敗'
     end
 
     render :action => "message"
@@ -76,7 +71,7 @@ class SysTopController < ApplicationController
   # update
   def param_update
     @app_env = AppEnv.find(params[:id])
-    app_env = AppEnv.new(params[:app_env])
+    app_env = AppEnv.new(post_params)
 
     result = 0
     if @app_env.key == 'PERMIT_OPERATION_IPS'
@@ -87,8 +82,8 @@ class SysTopController < ApplicationController
     end
 
     if result == 0
-      if @app_env.update_attributes(params[:app_env])
-        flash[:notice] = @app_env.key + 'を修正しました。'
+      if @app_env.update_attributes(post_params)
+        flash[:notice] = "#{$param_label[@app_env.key]}を修正しました。"
       else
         flash[:error] = '失敗'
       end
@@ -100,8 +95,8 @@ class SysTopController < ApplicationController
   def param_update_
     @app_env = AppEnv.find(params[:id])
 
-    if @app_env.update_attributes(params[:app_env])
-      flash[:notice] = @app_env.key + 'を修正しました。'
+    if @app_env.update_attributes(post_params)
+      flash[:notice] = "#{$param_label[@app_env.key]}を修正しました。"
     else
       flash[:error] = '失敗'
     end
@@ -113,10 +108,19 @@ class SysTopController < ApplicationController
     @app_env = AppEnv.find(params[:id])
     @app_env.destroy
 
-    flash[:notice] = @app_env.key + '[' + @app_env.value + '] を削除しました。'
+    flash[:notice] = "#{$param_label[@app_env.key]}[#{@app_env.value}] を削除しました。"
+#    flash[:notice] = @app_env.key + '[' + @app_env.value + '] を削除しました。'
     render :action => "message"
   end
 
   def message
+  end
+
+  private
+
+  def post_params
+    params.require(:app_env).permit(
+      :key, :value, :value, :category
+    )
   end
 end

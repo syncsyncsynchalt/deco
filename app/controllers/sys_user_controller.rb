@@ -19,7 +19,7 @@
 class SysUserController < ApplicationController
   layout 'system_admin'
 #  include AuthenticatedSystem
-  before_filter :check_ip_for_administrator, :administrator_authorize
+  before_action :check_ip_for_administrator, :administrator_authorize
 
   def index
     session[:section_title] = 'ユーザ管理'
@@ -60,14 +60,14 @@ class SysUserController < ApplicationController
   #決裁ルート変更
   def chg_moderate
     @user = User.find(params[:id])
-    @moderates = Moderate.find(:all)
+    @moderates = Moderate.all
   end
 
   # update
   def update
     @user = User.find(params[:id])
 
-    if @user.update_attributes(params[:user])
+    if @user.update_attributes(post_params_user)
       flash[:notice] = @user.login + 'を更新しました。'
     else
       flash[:error] = '失敗'
@@ -85,5 +85,13 @@ class SysUserController < ApplicationController
   end
 
   def message
+  end
+
+  private
+
+  def post_params_user
+    params.require(:user).permit(
+      :moderate_id, :category, :login, :name, :password, :password_confirmation, :email, :email, :note
+    )
   end
 end

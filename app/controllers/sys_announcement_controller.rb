@@ -18,14 +18,18 @@
 # Likewise, all the methods added will be available for all controllers.
 class SysAnnouncementController < ApplicationController
   layout 'system_admin'
-  before_filter :check_ip_for_administrator, :administrator_authorize
+  before_action :check_ip_for_administrator, :administrator_authorize
+
   def index
     session[:section_title] = 'アナウンス管理'
-    @announcements = Announcement.order('updated_at desc, id')
+    @announcements =
+        Announcement
+        .order(['updated_at DESC',
+                'id ASC'].join(', '))
   end
 
   def create
-    @announcement = Announcement.new(params[:announcement])
+    @announcement = Announcement.new(post_params_announcements)
     if @announcement.save
       flash[:notice] = 'アナウンスを１件登録しました。'
     else
@@ -42,7 +46,7 @@ class SysAnnouncementController < ApplicationController
   # update
   def update
     @announcement = Announcement.find(params[:id])
-    if @announcement.update_attributes(params[:announcement])
+    if @announcement.update_attributes(post_params_announcements)
       flash[:notice] = '「' + @announcement.title + '」 を修正しました。'
     else
       flash[:error] = '失敗'
@@ -59,5 +63,13 @@ class SysAnnouncementController < ApplicationController
   end
 
   def message
+  end
+
+  private
+
+  def post_params_announcements
+    params.require(:announcement).permit(
+      :title, :body
+    )
   end
 end

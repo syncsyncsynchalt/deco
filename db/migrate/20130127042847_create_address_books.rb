@@ -1,4 +1,4 @@
-class CreateAddressBooks < ActiveRecord::Migration
+class CreateAddressBooks < ActiveRecord::Migration[4.2]
   def change
     create_table :address_books do |t|
       t.integer :user_id

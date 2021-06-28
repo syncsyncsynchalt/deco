@@ -10,7 +10,7 @@ $(document).ready(function() {
 
   <fieldset>
   <h2>ユーザ情報編集</h2>
-  <%= form_for(:user, :url => { :action => "update", :id => @user.id}, 
+  <%= form_for(@user, :url => { :action => "update", :id => @user.id}, 
               :html => {:id => 'user', :name=> "user" }) do |f| -%>
     <div class="table-sys-a">
       <div class="item-mid2">ユーザＩＤ</div>
@@ -28,7 +28,7 @@ $(document).ready(function() {
   </fieldset>
 
 <br>
-<div align=center>
+<div align="left">
 <% if session[:target_for_back_id] -%>
 <%= link_to "戻る", {:action => session[:target_for_back], :id => session[:target_for_back_id]} %><br />
 <% else -%>

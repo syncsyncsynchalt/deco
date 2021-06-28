@@ -17,13 +17,17 @@
 # Filters added to this controller apply to all controllers in the application.
 # Likewise, all the methods added will be available for all controllers.
 class RequestedFileReceiveController < ApplicationController
-  before_filter :load_env
+  before_action :load_env
 
   # 認証画面(メールのリンク先)
   def login
     @url_code = params[:id]
-    @requested_matter = RequestedMatter.find(:first,
-            :conditions => { :url => @url_code })
+#    @requested_matter = RequestedMatter.find(:first,
+#            :conditions => { :url => @url_code })
+    @requested_matter =
+        RequestedMatter
+        .where({ :url => @url_code })
+        .first
     pass_port = 'pass'
 
     session[:request_receive_url_code] = @url_code
@@ -52,9 +56,10 @@ class RequestedFileReceiveController < ApplicationController
   # 認証チェック
   def auth
     @url_code = session[:request_receive_url_code]
-    @requested_matter = RequestedMatter.find(:first,
-            :conditions => {
-              :id => session[:"#{@url_code}"]['requested_matter_id'] })
+#    @requested_matter = RequestedMatter.find(:first,
+#            :conditions => {
+#              :id => session[:"#{@url_code}"]['requested_matter_id'] })
+    @requested_matter = RequestedMatter.find(session[:"#{@url_code}"]['requested_matter_id'])
 
     if @requested_matter.receive_password == params[:login]['receive_password']
       session[:"#{@url_code}"]['r_auth'] = 'yes'
@@ -81,10 +86,14 @@ class RequestedFileReceiveController < ApplicationController
         flash[:notice] = "ファイルの保管期限を過ぎましたので削除されました。"
         redirect_to :action => 'blank'
       else
-        @requested_attachments = RequestedAttachment.find(:all,
-                :conditions => {
-                  :requested_matter_id =>
-                    session[:"#{@url_code}"]['requested_matter_id'] })
+#        @requested_attachments = RequestedAttachment.find(:all,
+#                :conditions => {
+#                  :requested_matter_id =>
+#                    session[:"#{@url_code}"]['requested_matter_id'] })
+        @requested_attachments =
+            RequestedAttachment
+            .where(:requested_matter_id =>
+                    session[:"#{@url_code}"]['requested_matter_id'])
       end
     else
       flash[:notice] = "ログインしていません。"
@@ -109,10 +118,18 @@ class RequestedFileReceiveController < ApplicationController
           redirect_to :action => 'blank'
         else
           if @requested_matter.download_check == 1
-            unless RequestedAttachment.find(:first,
-                    :conditions => ["requested_matter_id = ?
-                      AND download_flg = ?",
-                      session[:"#{@url_code}"]['requested_matter_id'], 1])
+#            unless RequestedAttachment.find(:first,
+#                    :conditions => ["requested_matter_id = ?
+#                      AND download_flg = ?",
+#                      session[:"#{@url_code}"]['requested_matter_id'], 1])
+            unless RequestedAttachment
+                       .where([["requested_matter_id = ?",
+                                "download_flg = ?",
+                                ].join(" AND "),
+                               session[:"#{@url_code}"]['requested_matter_id'],
+                               1,
+                               ])
+                       .first
               Notification.requested_file_dl_report(
                       @requested_attachment).deliver
             end
@@ -125,19 +142,25 @@ class RequestedFileReceiveController < ApplicationController
           @requested_file_dl_log.requested_attachment = @requested_attachment
           @requested_file_dl_log.save
 
-          if request.user_agent =~ /Windows/i
-            @filename = @requested_attachment.name.encode("Windows-31J")
-          elsif request.user_agent =~ /Mac/i
-            @filename = @requested_attachment.name
-          else
-            @filename = @requested_attachment.name
-          end
-          send_file $app_env['FILE_DIR'] + "/r#{@requested_attachment.id}",
+#          if request.user_agent =~ /Windows/i
+#            if request.user_agent =~ /Trident/i
+#                request.user_agent =~ /MSIE/i
+#              @filename = @requested_attachment.name.encode(Encoding::Windows_31J, undef: :replace)
+#            else
+#              @filename = @requested_attachment.name
+#            end
+#          elsif request.user_agent =~ /Mac/i
+#            @filename = @requested_attachment.name
+#          else
+#            @filename = @requested_attachment.name
+#          end
+          @filename = @requested_attachment.name
+          send_file @params_app_env['FILE_DIR'] + "/r#{@requested_attachment.id}",
                     :filename => @filename,
                     :type => @requested_attachment.content_type,
                     :x_sendfile => true
 =begin
-          send_file $app_env['FILE_DIR'] + "/r#{@requested_attachment.id}",
+          send_file @params_app_env['FILE_DIR'] + "/r#{@requested_attachment.id}",
                     :filename => @filename,
                     :type => @requested_attachment.content_type
 =end

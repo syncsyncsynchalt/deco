@@ -1,4 +1,4 @@
-class CreateFileDlLogs < ActiveRecord::Migration
+class CreateFileDlLogs < ActiveRecord::Migration[4.2]
   def change
     create_table :file_dl_logs do |t|
       t.integer :file_dl_check_id

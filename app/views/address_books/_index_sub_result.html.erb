@@ -1,6 +1,6 @@
 <script type="text/javascript">
 $(function() {
-  $(".address_name,.address_email,.address_notes").click(function() {
+  $(".address_organization,.address_name,.address_email,.address_notes").click(function() {
     var name_value = "";
     if ($("#conditions_organization_flg").attr("checked") == 'checked') {
       name_value = $(this).parent().find(".address_organization_h").val() + "　" + $(this).parent().find(".address_name_h").val();

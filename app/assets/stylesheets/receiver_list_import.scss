@@ -1,0 +1,20 @@
+// Place all the styles related to the ReceiverListImport controller here.
+// They will automatically be included in application.css.
+// You can use Sass (SCSS) here: http://sass-lang.com/
+
+body.receiver_list_import {
+    margin: 0px 10px 0px 10px;
+}
+
+#hint_receiver_list_import {
+    margin: 20px 0px 15px 0px;
+    padding: 10px;
+    border-color: #fe8080;
+    border-width: 1px;
+    border-style: solid;
+    background-color: #ffe0e0;
+    text-align: center;
+    color: red;
+    font-weight: bold;
+    font-size: 14px;
+}
