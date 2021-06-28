@@ -1,8 +1,8 @@
-1. MySQL‚ÌƒCƒ“ƒXƒg[ƒ‹
+1. MySQLã®ã‚¤ãƒ³ã‚¹ãƒˆãƒ¼ãƒ«
 
 # yum -y install mysql mysql-server
 
-(/etc/my.cnf)‚Ìu[mysqld]v“à‚ÉˆÈ‰º‚ğ’Ç‰Á‚·‚é
+(/etc/my.cnf)ã®ã€Œ[mysqld]ã€å†…ã«ä»¥ä¸‹ã‚’è¿½åŠ ã™ã‚‹
 -----------------------------------------------------------------------------------------------------
 symbolic-links=0
 character-set-server=utf8
@@ -18,13 +18,13 @@ character-set-server=utf8
 > GRANT ALL PRIVILEGES ON deco_production.* TO deco@'localhost' IDENTIFIED BY '********';
 > create database deco_production;
 
-2. ƒ‰ƒCƒuƒ‰ƒŠ‚ÌƒCƒ“ƒXƒg[ƒ‹
+2. ãƒ©ã‚¤ãƒ–ãƒ©ãƒªã®ã‚¤ãƒ³ã‚¹ãƒˆãƒ¼ãƒ«
 
 # yum -y install zlib-devel
 # yum -y install openssl-devel
 # yum -y install curl-devel
 
-3. yaml‚ÌƒCƒ“ƒXƒg[ƒ‹
+3. yamlã®ã‚¤ãƒ³ã‚¹ãƒˆãƒ¼ãƒ«
 
 # cd /usr/local/src
 # wget http://pyyaml.org/download/libyaml/yaml-0.1.4.tar.gz
@@ -33,7 +33,7 @@ character-set-server=utf8
 # make
 # make install
 
-4. Ruby‚ÌƒCƒ“ƒXƒg[ƒ‹
+4. Rubyã®ã‚¤ãƒ³ã‚¹ãƒˆãƒ¼ãƒ«
 
 # cd /usr/local/src
 # wget ftp://ftp.ruby-lang.org/pub/ruby/1.9/ruby-1.9.3-p125.tar.gz
@@ -43,7 +43,7 @@ character-set-server=utf8
 # make
 # make install
 
-5. RubyGem‚ÌƒCƒ“ƒXƒg[ƒ‹
+5. RubyGemã®ã‚¤ãƒ³ã‚¹ãƒˆãƒ¼ãƒ«
 
 # cd /usr/local/src
 # wget http://rubyforge.org/frs/download.php/75475/rubygems-1.8.11.tgz
@@ -51,44 +51,44 @@ character-set-server=utf8
 # cd rubygems-1.8.11
 # ruby setup.rb
 
-6. clamAV‚ÌƒCƒ“ƒXƒg[ƒ‹
+6. clamAVã®ã‚¤ãƒ³ã‚¹ãƒˆãƒ¼ãƒ«
 
-ƒŒƒ|ƒWƒgƒŠ‚ğ’Ç‰Á‚·‚é
+ãƒ¬ãƒã‚¸ãƒˆãƒªã‚’è¿½åŠ ã™ã‚‹
 
 # wget http://packages.sw.be/rpmforge-release/rpmforge-release-0.5.2-2.el6.rf.x86_64.rpm
 # rpm --import http://apt.sw.be/RPM-GPG-KEY.dag.txt
 # rpm -K rpmforge-release-0.5.2-2.el6.rf.x86_64.rpm
 # rpm -i rpmforge-release-0.5.2-2.el6.rf.x86_64.rpm
 
-ClamAV‚ğƒpƒbƒP[ƒW‚ÅƒCƒ“ƒXƒg[ƒ‹‚·‚é
+ClamAVã‚’ãƒ‘ãƒƒã‚±ãƒ¼ã‚¸ã§ã‚¤ãƒ³ã‚¹ãƒˆãƒ¼ãƒ«ã™ã‚‹
 
 # yum -y install clamav clamd clamav-devel clamav-db
 
-(/etc/clamd.conf)‚ÌˆÈ‰º‚Ì‹Lq‚ğ•ÏX‚·‚é
+(/etc/clamd.conf)ã®ä»¥ä¸‹ã®è¨˜è¿°ã‚’å¤‰æ›´ã™ã‚‹
 
 -----------------------------------------------------------------------------------------------------
 -User clamav
 +User root
 -----------------------------------------------------------------------------------------------------
 
-clamAV‚ğ‹N“®‚³‚¹‚é
+clamAVã‚’èµ·å‹•ã•ã›ã‚‹
 # /etc/init.d/clamd start
 
-OS‹N“®‚É‹N“®‚·‚é‚æ‚¤‚Éİ’è‚·‚é
+OSèµ·å‹•æ™‚ã«èµ·å‹•ã™ã‚‹ã‚ˆã†ã«è¨­å®šã™ã‚‹
 # chkconfig clamd on
 
-ƒEƒBƒ‹ƒX’è‹`ƒtƒ@ƒCƒ‹‚ğXV‚·‚é
+ã‚¦ã‚£ãƒ«ã‚¹å®šç¾©ãƒ•ã‚¡ã‚¤ãƒ«ã‚’æ›´æ–°ã™ã‚‹
 # freshclam
 
 
-7. Apache‚ÆPassenger‚ÌƒCƒ“ƒXƒg[ƒ‹
+7. Apacheã¨Passengerã®ã‚¤ãƒ³ã‚¹ãƒˆãƒ¼ãƒ«
 
 # yum -y install httpd httpd-devel
 
 # gem install passenger
 # passenger-install-apache2-module
 
-(/etc/httpd/conf.d/rails.conf)‚ğì¬‚µˆÈ‰º‚ğ’Ç‰Á‚·‚é
+(/etc/httpd/conf.d/rails.conf)ã‚’ä½œæˆã—ä»¥ä¸‹ã‚’è¿½åŠ ã™ã‚‹
 
 -----------------------------------------------------------------------------------------------------
    LoadModule passenger_module /usr/local/lib/ruby/gems/1.9.1/gems/passenger-3.0.18/ext/apache2/mod_passenger.so
@@ -96,7 +96,7 @@ OS‹N“®‚É‹N“®‚·‚é‚æ‚¤‚Éİ’è‚·‚é
    PassengerRuby /usr/local/bin/ruby
 -----------------------------------------------------------------------------------------------------
 
-(/etc/httpd/conf/httpd.conf)‚ÉˆÈ‰º‚ğ’Ç‰Á‚·‚é
+(/etc/httpd/conf/httpd.conf)ã«ä»¥ä¸‹ã‚’è¿½åŠ ã™ã‚‹
 
 -----------------------------------------------------------------------------------------------------
 <VirtualHost *:80>
@@ -113,7 +113,7 @@ OS‹N“®‚É‹N“®‚·‚é‚æ‚¤‚Éİ’è‚·‚é
 # wget --no-check-certificate https://tn123.org/mod_xsendfile/mod_xsendfile.c
 # sudo apxs -cia mod_xsendfile.c
 
-(/etc/httpd/conf.d/xsendfile.conf)‚ğì¬‚µˆÈ‰º‚ğ’Ç‰Á‚·‚é
+(/etc/httpd/conf.d/xsendfile.conf)ã‚’ä½œæˆã—ä»¥ä¸‹ã‚’è¿½åŠ ã™ã‚‹
 -----------------------------------------------------------------------------------------------------
 <IfModule mod_xsendfile.c>
     XsendFile on
@@ -121,15 +121,15 @@ OS‹N“®‚É‹N“®‚·‚é‚æ‚¤‚Éİ’è‚·‚é
 </IfModule>
 -----------------------------------------------------------------------------------------------------
 
-8. DECO‚ÌƒCƒ“ƒXƒg[ƒ‹
+8. DECOã®ã‚¤ãƒ³ã‚¹ãƒˆãƒ¼ãƒ«
 
-(/usr/local)‚ÉDECO‚Ìˆ³kƒtƒ@ƒCƒ‹‚ğ’u‚¢‚Ä‚¨‚­
+(/usr/local)ã«DECOã®åœ§ç¸®ãƒ•ã‚¡ã‚¤ãƒ«ã‚’ç½®ã„ã¦ãŠã
 # cd /usr/local
 # tar xzvf deco.tar.gz
 # cd deco
 # gem install bundler
 # bundle install
-(config/database.yml)‚Ìuproductionv‚Ìİ’è‚ğ•ÒW‚·‚é
+(config/database.yml)ã®ã€Œproductionã€ã®è¨­å®šã‚’ç·¨é›†ã™ã‚‹
 
 -----------------------------------------------------------------------------------------------------
 production:
@@ -146,7 +146,7 @@ production:
 # rake db:migrate RAILS_ENV=production
 # rake db:seed RAILS_ENV=production
 
-(config/environments/production.rb)‚Éƒ[ƒ‹ƒT[ƒoî•ñ‚Ì‹Lq‚ğ’Ç‰Á‚·‚é
+(config/environments/production.rb)ã«ãƒ¡ãƒ¼ãƒ«ã‚µãƒ¼ãƒæƒ…å ±ã®è¨˜è¿°ã‚’è¿½åŠ ã™ã‚‹
 -----------------------------------------------------------------------------------------------------
   ActionMailer::Base.smtp_settings[:address] = "localhost"
   ActionMailer::Base.smtp_settings[:domain] = "example.com"
@@ -155,15 +155,15 @@ production:
 # rake assets:precompile RAILS_ENV=production
 # chown -R apache:apache /usr/local/deco
 
-ƒtƒ@ƒCƒ‹•Û‘¶ƒfƒBƒŒƒNƒgƒŠ‚Ìì¬
+ãƒ•ã‚¡ã‚¤ãƒ«ä¿å­˜ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªã®ä½œæˆ
 # mkdir -p /var/deco/files
 # chown -R apache:apache /var/deco/files
 
-WebƒT[ƒo‚Ì‹N“®
+Webã‚µãƒ¼ãƒã®èµ·å‹•
 # /etc/rc.d/init.d/httpd start
 
-ˆÈ‰º‚ÌURL‚ÅŠÇ—‰æ–Ê‚Åİ’è‚ğs‚¤
-(DECOƒT[ƒo‚ÌURL)/sys_top
+ä»¥ä¸‹ã®URLã§ç®¡ç†ç”»é¢ã§è¨­å®šã‚’è¡Œã†
+(DECOã‚µãƒ¼ãƒã®URL)/sys_top
 
-İ’è‚ªŠ®—¹‚µ‚½‚çˆÈ‰º‚ÌURL‚ÅƒVƒXƒeƒ€‚ÉƒAƒNƒZƒX
-(DECOƒT[ƒo‚ÌURL)/
+è¨­å®šãŒå®Œäº†ã—ãŸã‚‰ä»¥ä¸‹ã®URLã§ã‚·ã‚¹ãƒ†ãƒ ã«ã‚¢ã‚¯ã‚»ã‚¹
+(DECOã‚µãƒ¼ãƒã®URL)/

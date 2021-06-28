@@ -507,8 +507,8 @@ class SysLogController < ApplicationController
       else
         condition = condition + "and "
       end
-      condition = condition + "created_at BETWEEN '" + (time.strftime("%Y-%m-%d")) + "'" +
-              "and '" + (time.at_end_of_month.strftime("%Y-%m-%d")) + "' "
+      condition = condition + "created_at BETWEEN '" + (time.strftime("%Y-%m-%d %H:%M:%S")) + "'" +
+              "and '" + (time.at_end_of_month.strftime("%Y-%m-%d %H:%M:%S")) + "' "
     end
 
     deletefiles = Dir.glob($app_env['FILE_DIR'] + '/log_send_' + '*')

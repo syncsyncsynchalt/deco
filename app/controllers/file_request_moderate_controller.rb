@@ -122,14 +122,14 @@ class FileRequestModerateController < ApplicationController
                                           full_url, requested_matter.send_password,
                                           $app_env['REQUEST_PERIOD'].to_i).deliver
               Notification.request_password_report(@request_matter,
-                                          @requested_matter.name, requested_matter.mail_address,
+                                          requested_matter.name, requested_matter.mail_address,
                                           full_url, requested_matter.send_password,
                                           $app_env['REQUEST_PERIOD'].to_i).deliver
             end
-          url_dl = port + "://" + $app_env['URL']
-          Notification.send_result_report(@request_matter,
-                                          @requested_matters,
-                                          url_dl).deliver
+          req_url = port + "://" + $app_env['URL'] + "/requested_file_send/login/"
+          Notification.request_copied_report(@request_matter,
+                                         @requested_matters, req_url,
+                                         $app_env['REQUEST_PERIOD'].to_i).deliver
         else
           @request_moderater.result = 1
           @request_moderater.save!
@@ -157,14 +157,14 @@ class FileRequestModerateController < ApplicationController
                                           full_url, requested_matter.send_password,
                                           $app_env['REQUEST_PERIOD'].to_i).deliver
               Notification.request_password_report(@request_matter,
-                                          @requested_matter.name, requested_matter.mail_address,
+                                          requested_matter.name, requested_matter.mail_address,
                                           full_url, requested_matter.send_password,
                                           $app_env['REQUEST_PERIOD'].to_i).deliver
             end
-            url_dl = port + "://" + $app_env['URL']
-            Notification.send_result_report(@request_matter,
-                                            @requested_matters,
-                                            url_dl).deliver
+            req_url = port + "://" + $app_env['URL'] + "/requested_file_send/login/"
+            Notification.request_copied_report(@request_matter,
+                                           @requested_matters, req_url,
+                                         $app_env['REQUEST_PERIOD'].to_i).deliver
             flash[:notice] = "決裁が完了しました"
           end
         end

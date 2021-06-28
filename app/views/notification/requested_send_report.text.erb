@@ -1,0 +1,27 @@
+このメールは，<%= @requested_matter.name -%>様からの依頼により，<%= @mail_content %>「DECO」から発信しております。
+
+<%= @requested_matter.request_matter.name %> 様
+
+あなた宛てのファイルが次のとおり，<%= @requested_matter.name -%>様から送信されております。
+
+■依頼送信ID
+<%= @requested_matter.id %>
+
+■メッセージ
+<%= @requested_matter.message %>
+
+■送信ファイル一覧
+<%- @attachments.each.with_index do | attachment, count | -%>
+<%- if attachment.virus_check == '0' -%>
+  <%= count + 1 %>.<%= attachment.name -%>（<%= show_file_size(attachment) -%>）
+<%- end -%>
+<%- end -%>
+
+ダウンロードは以下のURLをクリックして行ってください。
+
+<%= @url %>
+
+<%= (Time.parse(@requested_matter.file_up_date.to_s) +
+                @requested_matter.file_life_period).strftime("%Y年%m月%d日%H時%M分%S秒") %>　までにダウンロードしてください。
+
+なお，ダウンロードするには，パスワードが必要です。

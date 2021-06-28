@@ -1,0 +1,11 @@
+このメールは<%= @mail_content %>「DECO」から発信しております。
+
+<%= @send_matter.name %> 様
+
+次のファイルの削除が完了しました。
+
+■削除ファイル
+<%= @attachment.name %>（<%= show_file_size(@attachment) %>）
+
+■確認画面
+<%= @url %>/file_send/result/<%= @send_matter.url %>

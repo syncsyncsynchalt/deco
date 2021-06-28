@@ -1,13 +1,13 @@
-このメールは<%= @mail_content %>「DECO」から発信しております。<br /><br />
+このメールは<%= @mail_content %>「DECO」から発信しております。
 
-ファイル依頼送信時に、以下のファイルでウィルスが確認されました。<br />
-※なお、ウィルスが確認されたファイルは削除しております<br /><br />
+ファイル依頼送信時に、以下のファイルでウィルスが確認されました。
+※なお、ウィルスが確認されたファイルは削除しております
 
-■依頼ID<br />
-  <%= @requested_matter.request_matter.id %><br /><br />
+■依頼ID
+  <%= @requested_matter.request_matter.id %>
 
-■依頼送信ID<br />
-  <%= @requested_matter.id %><br /><br />
+■依頼送信ID
+  <%= @requested_matter.id %>
 
 ■送信者
   <%= @requested_matter.name %>様（<%= @requested_matter.mail_address %>）

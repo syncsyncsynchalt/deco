@@ -18,7 +18,7 @@
 # Likewise, all the methods added will be available for all controllers.
 class SysTopController < ApplicationController
   layout 'system_admin'
-  before_filter :administrator_authorize
+  before_filter :check_ip_for_administrator, :administrator_authorize
   def index
     session[:section_title] = 'システム管理画面'
     session[:target_for_back] = 'index'

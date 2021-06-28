@@ -1,0 +1,41 @@
+このメールは，「DECO」から発信しております。
+
+<%= @send_matter.name %>様が次の内容でファイル送信を行いました。
+
+■送信ID
+<%= @send_matter.id %>
+
+■送信者一覧
+<% @send_matter.receivers.each.with_index do | receiver, count | -%>
+  <%= count + 1 %>.<%= receiver.name %> 様（<%= receiver.mail_address %>）
+<% end -%>
+
+■パスワード
+<%= @send_matter.receive_password %>
+<% if @send_matter.password_notice == 0 -%>
+■パスワードの通知方法
+自分で通知する
+<% else -%>
+■パスワードの通知方法
+システムで行う
+<% end -%>
+
+■ダウンロード完了通知メール
+<% if @send_matter.download_check == 0 -%>
+希望しない
+<% elsif @send_matter.download_check == 1 -%>
+希望する
+<% end -%>
+
+■送信ファイル一覧
+<% @send_matter.attachments.each.with_index do | attachment, count | -%>
+<% if attachment.virus_check == '0' %>
+<%= count + 1 %>.<%= attachment.name %>（<%= show_file_size(attachment) %>）
+<% end %>
+<% end %>
+
+■相手へのメッセージ
+<%= @send_matter.message %>
+
+■決裁を行う場合はこちらのURLをクリックしてください
+<%= @url %>/file_send_moderate/login/<%= @send_moderater.url %>

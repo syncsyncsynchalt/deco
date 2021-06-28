@@ -1,0 +1,26 @@
+このメールは<%= @mail_content %>「DECO」から発信しております。
+
+ファイル送信時に、以下のファイルでウィルスが確認されました。
+※なお、ウィルスが確認されたファイルは削除しております
+
+■送信ID
+<%= @send_matter.id %>
+
+
+■送信者
+<%= @send_matter.name %>様
+
+■ファイル送信日時
+<%= @send_matter.created_at.strftime("%Y年%m月%d日%H時%M分%S秒") %>
+
+■ウィルスが確認されたファイル
+<% @virus_attachments.each.with_index do | attachment, count | -%>
+  <%= count + 1 %>.<%= attachment.name %>（ウィルスの種類：<%= attachment.virus_check %>）
+<% end -%>
+
+■受取人一覧
+<% @receivers.each.with_index do | receiver, count | -%>
+  <%= count + 1 %>.<%= receiver.name %> 様（<%= receiver.mail_address %>）
+<% end -%>
+
+

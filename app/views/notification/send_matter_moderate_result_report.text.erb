@@ -1,0 +1,14 @@
+このメールは，「DECO」から発信しております。
+
+次の内容のファイル送信の決裁が完了しました。
+
+■送信ID
+<%= @send_matter.id %>
+
+■決裁結果
+<% if @send_matter.moderate_result == 1 %>
+承認
+<% elsif @send_matter.moderate_result == 2 %>
+却下
+<% end %>
+

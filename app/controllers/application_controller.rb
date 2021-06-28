@@ -105,9 +105,11 @@ class ApplicationController < ActionController::Base
         AppEnv
         .where("app_envs.key = 'PERMIT_OPERATION_IPS'")
 
-    unless @local_ips.select{ |local_ip|
-            IPAddr.new(local_ip.value).include?(@access_ip) }.size > 0
-      render :text => "このIPアドレス（#{@access_ip}）は許可されていません。"
+    unless @local_ips.size == 0
+      unless @local_ips.select{ |local_ip|
+              IPAddr.new(local_ip.value).include?(@access_ip) }.size > 0
+        render :text => "このIPアドレス（#{@access_ip}）は許可されていません。"
+      end
     end
   end
 

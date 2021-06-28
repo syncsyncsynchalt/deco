@@ -39,8 +39,8 @@ module Nmt
                          :id => 1) +
                  "\"><<</a> "
         string = string + "<a href=\"" +
-                 url_for(:controller => controller, :action => action) +
-                 "/#{(page.to_i - 1).to_s}\"><</a> "
+                 url_for(:controller => controller, :action => action, :id => page.to_i - 1) +
+                 "\"><</a> "
       end
 
       if total_page.to_i <= w_in.to_i * 2 + 1
@@ -76,8 +76,8 @@ module Nmt
           else
 #                 /#{controller}/#{action}" +
             string = string + "<a href=\"" +
-                     url_for(:controller => controller, :action => action) +
-                     "/#{n.to_s}\">#{n.to_s}</a> "
+                     url_for(:controller => controller, :action => action, :id => n) +
+                     "\">#{n.to_s}</a> "
           end
         end
         if p_c_s - 1 > w_out.to_i
@@ -91,8 +91,8 @@ module Nmt
         else
           string = string +
                    "<a href=\"" +
-                   url_for(:controller => controller, :action => action) +
-                   "/#{n}\">#{n}</a> "
+                   url_for(:controller => controller, :action => action, :id => n) +
+                   "\">#{n}</a> "
         end
       end
 
@@ -111,8 +111,8 @@ module Nmt
           else
             string = string +
                      "<a href=\"" +
-                     url_for(:controller => controller, :action => action) +
-                     "/#{n}\">#{n}</a> "
+                     url_for(:controller => controller, :action => action, :id => n) +
+                     "\">#{n}</a> "
           end
         end
       end
@@ -122,12 +122,12 @@ module Nmt
       else
         string = string +
          "<a href=\"" +
-         url_for(:controller => controller, :action => action) +
-         "/#{(page.to_i + 1).to_s}\">></a> "
+         url_for(:controller => controller, :action => action, :id => page.to_i + 1) +
+         "\">></a> "
         string = string +
          "<a href=\"" +
-         url_for(:controller => controller, :action => action) +
-         "/#{total_page}\">>></a>"
+         url_for(:controller => controller, :action => action, :id => page.to_i + 1) +
+         "\">>></a>"
       end
     end
 
