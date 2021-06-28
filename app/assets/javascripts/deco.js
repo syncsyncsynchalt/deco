@@ -86,13 +86,13 @@ var max_receivers_num;
 
 //受信者フォーム追加処理
 function add_receiver(model_name, id_name, text) {
+
   for (i in receivers) {
     if (receivers[i] == 0) {
       arInput = i;
       break;
     }
   }
-
   if (arInput) {
     receivers[arInput] = 1;
 
@@ -102,7 +102,7 @@ function add_receiver(model_name, id_name, text) {
     y2 = model_name + "[" + arInput + "][mail_address]";
 
     $("#" + id_name).append('<div id=\"group_L' + arInput +
-      '\"  class=\"item\">' + text + ' ' + arInput + '人目</div>' +
+                            '\"  class=\"item\">' + text + ' ' + arInput + '人目</div>' +
       '<div id=\"group_C' + arInput +'\" class=\"input-l\"><img src=\"' + script_url + '/assets/common/name.jpg\" align=\"left\" /><input type=\"text\" id=\"' +
       x1 + '\" name=\"' + x2 + '\" value=\"\" class=\'validate[required]\' size=\"30\"/>  様<br />' +
       '<img src=\"' + script_url + '/assets/common/mail.jpg\" align=\"left\" /><input type=\"text\" id=\"' +
@@ -111,6 +111,50 @@ function add_receiver(model_name, id_name, text) {
       '<div id=\"group_R' + arInput + '\" class=\"input-r\"><input type="button" onclick="del_receiver(\'' +
       arInput + '\', \'' + model_name + '\')" value="削除" /></div>' +
       '\n');
+
+
+    arInput = 0;
+
+//    for (i in files) {
+//      if (files[i] == 1) {
+//             $.validationEngine.closePrompt($('#' + 'attachment' + '_' + i + '_file'));
+//
+//      }
+//    }
+  }else{
+    window.alert(max_receivers_num+"名までです");
+  }
+}
+
+
+//受信者フォーム追加処理
+function add_receiver_address_book(model_name, id_name, text) {
+
+  for (i in receivers) {
+    if (receivers[i] == 0) {
+      arInput = i;
+      break;
+    }
+  }
+  if (arInput) {
+    receivers[arInput] = 1;
+
+    x1 = model_name + "_" + arInput + "_name";
+    x2 = model_name + "[" + arInput + "][name]";
+    y1 = model_name + "_" + arInput + "_mail_address";
+    y2 = model_name + "[" + arInput + "][mail_address]";
+
+    $("#" + id_name).append('<div id=\"group_L' + arInput +
+                            '\"  class=\"item\">' + text + ' ' + arInput + '人目<div class=\"re_address_p\"><div class=\"re_address\" onClick=\"open_modal_window(\'/address_books/index_sub?recipient_number=' + arInput + '\',\'modal\');\" title=\"アドレス帳\"></div></div></div>' +
+      '<div id=\"group_C' + arInput +'\" class=\"input-l\"><img src=\"' + script_url + '/assets/common/name.jpg\" align=\"left\" /><input type=\"text\" id=\"' +
+      x1 + '\" name=\"' + x2 + '\" value=\"\" class=\'validate[required]\' size=\"30\"/>  様<br />' +
+      '<img src=\"' + script_url + '/assets/common/mail.jpg\" align=\"left\" /><input type=\"text\" id=\"' +
+      y1 + '\" name=\"' + y2 + '\" value=\"\" ' +
+      'class=\'validate[required, custom[email]]\' size=\"40\"/></div>' +
+      '<div id=\"group_R' + arInput + '\" class=\"input-r\"><input type="button" onclick="del_receiver(\'' +
+      arInput + '\', \'' + model_name + '\')" value="削除" /></div>' +
+      '\n');
+
 
     arInput = 0;
 
@@ -231,6 +275,8 @@ function file_upload() {
       button_text_style: ".theFont {font-size: 12pt; color: #000000;  text-decoration: underline}",
       button_text_left_padding: 7,
       button_text_top_padding: 2,
+        button_cursor : SWFUpload.CURSOR.HAND,
+        button_window_mode : SWFUpload.WINDOW_MODE.TRANSPARENT,
 
       // The event handler functions are defined in handlers.js
       file_queued_handler : fileQueued,
@@ -298,3 +344,19 @@ function showtime() {
   status2.innerHTML = "処理時間：" + (finishtime - pointtime);
 }
 
+function open_window(recipient_number){
+    win=window.open("/address_books/?recipient_number="+recipient_number,"new","width=700,height=480,resizable=yes,scrollbars=yes");
+    win.moveTo(0,0);
+}
+
+function open_modal_window(url, element_class) {
+  $("."+element_class).load(url).modal({
+    onOpen: $("."+element_class).html('...Loading'),
+      close: true,
+      onShow: function() {
+          $("#simplemodal-container").draggable({cursor: 'move', opacity: 0.1});
+          $(".simplemodal-wrap").css('overflow','hidden');
+      }
+  });
+  return false;
+}

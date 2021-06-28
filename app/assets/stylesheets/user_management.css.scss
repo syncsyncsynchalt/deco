@@ -1,0 +1,179 @@
+.um-leftmenu{
+  margin: 10px 0px 0px 0px;
+  padding: 0px;
+  width: 200px; /*width of menu*/
+  border: 0px solid #9A9A9A;
+  border-bottom-width: 0;
+}
+
+
+
+.um-leftmenu a.menuitem{
+  background: url(/assets/common/but01_m.gif) no-repeat;
+  color: white;
+  display: block;
+  position: relative; /*To help in the anchoring of the ".statusicon" icon image*/
+  width: auto;
+  height:25px;
+  padding: 9px 4px 0px 12px;
+  text-decoration: none;
+#  font-size: 15px;
+#  font-weight: bold;
+}
+
+.um-leftmenu a.menuitem:visited, .um-leftmenu .menuitem:active{
+color: white;
+}
+
+.um-leftmenu a.menuitem .statusicon{ /*CSS for icon image that gets dynamically added to headers*/
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  border: none;
+}
+
+.um-leftmenu a.menuitem:hover{
+  background: url(/assets/common/but01_m.gif) no-repeat;
+  color: white;
+  display: block;
+  position: relative; /*To help in the anchoring of the ".statusicon" icon image*/
+  width: auto;
+  height:25px;
+  padding: 9px 4px 0px 12px;
+  text-decoration: none;
+
+#  color: white;
+#  height:25px;
+#  padding: 8px 4px 1px 4px;
+#  background: url(/assets/common/but01_m.gif);
+}
+
+.um-leftmenu div.submenu{ /*DIV that contains each sub menu*/
+background: white;
+}
+
+.um-leftmenu div.submenu ul{ /*UL of each sub menu*/
+list-style-type: none;
+margin: 0;
+padding: 0;
+}
+
+.um-leftmenu div.submenu ul li{
+  border-bottom: 1px dotted #cccccc;
+  margin-left: 5px;
+  padding: 8px 8px 8px 8px;
+  background-color: #356B97;
+}
+
+.um-leftmenu div.submenu ul li:hover{
+  background: #356B97;
+  color: #51fffd;
+  cursor: pointer;
+}
+
+.um-leftmenu div.submenu ul li a{
+  display: block;
+  font: normal 13px "Lucida Grande", "Trebuchet MS", Verdana, Helvetica, sans-serif;
+  color: white;
+  text-decoration: none;
+  padding: 2px 0px 0px 5px;
+}
+
+#um-main {
+  margin: 0px 0px 0px 0px;
+  padding: 0px 0px 0px 0px;
+  width: 800px;
+  position: relative;
+}
+
+#um-main a:visited {
+#  color: white;
+}
+
+#um-main a:hover {
+  color: #51fffd;
+}
+
+#um-menu {
+  background-color: white;
+  padding: 0px 0px 0px 0px;
+  width: 200px;
+  height: 100%;
+  float: left;
+}
+
+#sys-cont {
+  margin: 0px 0px 0px 10px;
+  padding: 0px 0px 0px 0px;
+  width: 570px;
+  float: left;
+
+  h1{
+    width: 550px;
+    margin: 10px 0px 15px 0px;
+    padding: 9px 10px 9px 10px;
+    font-size: 15px;
+    color: #1f507e;
+    background: url(common/ban01.gif) no-repeat;
+  }
+
+  h2 {
+    margin: 18px 0px 0px 13px;
+    padding: 10px 10px 0px 14px;
+    width: 534px;
+    height: 35px;
+    font-size: 14px;
+    color: #1f507e;
+    background: url(common/ban02.gif) no-repeat;
+  }
+
+ div.comment {
+  margin: 0px 0px 10px 13px;
+  padding: 0px 0px 0px 0px;
+  width: 558px;
+  line-height: 20px;
+ }
+
+}
+
+.modal {display:none;}
+
+/* Overlay */
+#simplemodal-overlay {background-color:#000; cursor:not-allowed;}
+
+/* Container */
+.modal {height:400px; width:600px;  background-color:#fff; border:3px solid #356B97; padding:12px; overflow:hidden;}
+.modal .simplemodal-data {padding:8px;overflow:hidden;}
+.modal code {background:#141414; border-left:3px solid #65B43D; color:#bbb; display:block; font-size:12px; margin-bottom:12px; padding:4px 6px 6px;}
+.modal a {color:#ddd;}
+a.modalCloseImg {background:url(/assets/common/x.png) no-repeat; width:25px; height:29px; display:inline; z-index:3200; position:absolute; top:0px; right:-1px; cursor:pointer;}
+.modal h3 {color:#84b8d9;}
+
+.simplemodal-wrap {
+  overflow:hidden;
+
+}
+
+input[type=text].datepicker {
+    width: 80px;
+}
+
+div.to_modal {
+  color: #0000ff;
+  cursor: pointer;
+}
+
+
+#progress {
+    position:fixed;
+    top:0px;
+    left:0px;
+    background-image: url(/assets/progress.gif);
+    background-repeat: no-repeat;
+    background-position: center center;
+    background-color:#000000;
+    opacity:0.7;
+    filter: alpha(opacity=70);
+    height: 100%;
+    width: 100%;
+}

@@ -110,6 +110,17 @@ OS起動時に起動するように設定する
 </VirtualHost>
 -----------------------------------------------------------------------------------------------------
 
+# wget --no-check-certificate https://tn123.org/mod_xsendfile/mod_xsendfile.c
+# sudo apxs -cia mod_xsendfile.c
+
+(/etc/httpd/conf.d/xsendfile.conf)を作成し以下を追加する
+-----------------------------------------------------------------------------------------------------
+<IfModule mod_xsendfile.c>
+    XsendFile on
+    XsendFilePath /var/deco/files
+</IfModule>
+-----------------------------------------------------------------------------------------------------
+
 8. DECOのインストール
 
 (/usr/local)にDECOの圧縮ファイルを置いておく

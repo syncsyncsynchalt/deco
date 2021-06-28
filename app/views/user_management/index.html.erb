@@ -1,0 +1,53 @@
+<script type="text/javascript">
+</script>
+
+<h1><%= t('views.user_menu.user_management') %></h1>
+
+<div class="modal"></div>
+<div class="comment">
+  <div class="table-address-a">
+    <div class="item-top">
+      <%= t('activerecord.attributes.users.login') %>
+    </div>
+    <div class="input-top">
+      <%= current_user.login %>
+    </div>
+    <div class="item-mid">
+      <%= t('activerecord.attributes.users.name') %>
+    </div>
+    <div class="input-mid">
+      <%= current_user.name %>
+    </div>
+    <div class="item-mid">
+      <%= t('activerecord.attributes.users.email') %>
+    </div>
+    <div class="input-mid">
+      <%= current_user.email %>
+    </div>
+    <div class="item-mid">
+      <%= t('activerecord.attributes.users.moderate_id') %>
+
+    </div>
+    <div class="input-mid">
+      <% if current_user.moderate.present? %>
+      <div class="to_modal"onclick="open_modal_window('/user_management/show_moderate/<%= current_user.moderate.id %>', 'modal');"><%= current_user.moderate.name %></div>
+      <% else %>
+        &nbsp;
+      <% end %>
+    </div>
+    <div class="item-bot">
+      <%= t('.moderate_route_include_myself') %>
+    </div>
+    <div class="input-bot">
+      <% if current_user.moderaters.present? %>
+        <% current_user.moderaters.each do |moderater| %>
+      <div class="to_modal"onclick="open_modal_window('/user_management/show_moderate/<%= moderater.moderate.id %>', 'modal');"><%= moderater.moderate.name %></div>
+        <% end %>
+      <% else %>
+        &nbsp;
+      <% end %>
+    </div>
+
+
+  </div>
+</div>

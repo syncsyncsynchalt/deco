@@ -1,0 +1,185 @@
+
+<h1><%= t('views.user_menu.user_log_request') %></h1>
+  <h2>依頼情報</h2>
+  <div class="comment">
+  <fieldset>
+  <div class="table-address-a">
+    <div class="item-top"><%= t('activerecord.attributes.request_matters.id') %></div>
+    <div class="input-top"><%= h @requested_matter.request_matter.id %></div>
+    <div class="item-mid"><%= t('activerecord.attributes.request_matters.name') %></div>
+    <div class="input-mid"><%= h @requested_matter.request_matter.name %></div>
+    <div class="item-mid"><%= t('activerecord.attributes.request_matters.mail_address') %></div>
+    <div class="input-mid"><%= h @requested_matter.request_matter.mail_address %></div>
+    <div class="item-mid"><%= t('activerecord.attributes.request_matters.message') %></div>
+    <div class="input-mid"><%= h @requested_matter.request_matter.message %><br></div>
+    <div class="item-mid"><%= t('activerecord.attributes.request_matters.created_at') %></div>
+    <div class="input-mid">
+      <%= (Time.parse(@requested_matter.request_matter.created_at.to_s)).strftime("%Y年%m月%d日%H時%M分%S秒") %></div>
+    <div class="item-mid"><%= t('activerecord.attributes.request_matters.moderate_flag') %></div>
+    <div class="input-mid">
+<% @request_moderate = @requested_matter.request_matter.request_moderate %>
+<% if @request_moderate == nil %>
+<%= t('views.moderate.none') %>
+<% else %>
+<% if @request_moderate.type_flag == 0 %>
+<%= t('views.moderate.nomal') %>
+<% else %>
+<%= t('views.moderate.simple') %>
+<% end %>
+<% end %>
+    </div>
+<% unless @request_moderate == nil %>
+    <div class="item-mid">決裁結果</div>
+    <div class="input-mid">
+<% if @request_moderate.result == 1 %>
+<font color="blue"><b>承認</b></font>
+<% elsif @request_moderate.result == 2 %>
+<font color="red">却下</font>
+<% else %>
+  未決
+<% end %>
+    </div>
+    <div class="item-mid">決裁ルート</div>
+    <div class="input-mid">
+<% @request_moderaters = @request_moderate.request_moderaters %>
+<% number = 0 %>
+    <div class="table-d" style="border:0px;">
+<% for moderater in @request_moderaters %>
+      <div class="input-l" style="border:0px; padding:5px 8px; height:20px;">
+<% number += 1 %>
+<%= number %>.
+<%= moderater.moderater.user.name %>
+      </div>
+<div class="input-r" style="border:0px; padding:5px 8px; height:20px; text-align:center;">
+<% if moderater.result == 1 %>
+<font color="blue"><b>承認</b></font>
+<% elsif moderater.result == 2 %>
+<font color="red">却下</font>
+<% else %>
+未決
+<% end %>
+      </div>
+<% end %>
+    </div>
+    </div>
+<% end %>
+    <div class="item-mid"><%= t('activerecord.attributes.request_matters.sent_at') %></div>
+<% if @requested_matter.request_matter.sent_at.present? %>
+    <div class="input-mid"><%= (Time.parse(@requested_matter.request_matter.sent_at.to_s)).strftime("%Y年%m月%d日%H時%M分%S秒") %>
+                           <br>
+    </div>
+<% elsif @requested_matter.request_matter.moderate_flag == nil %>
+    <div class="input-mid"><% if @requested_matter.request_matter.created_at -%>
+                             <%= (Time.parse(@requested_matter.request_matter.created_at.to_s)).strftime("%Y年%m月%d日%H時%M分%S秒") %>
+                           <% end -%><br>
+    </div>
+<% else %>
+    <div class="input-mid"><br>
+    </div>
+<% end -%>
+    <div class="item-mid"><%= t('views.transmission_term') %></div>
+<% if @requested_matter.request_matter.sent_at.present? %>
+    <div class="input-mid"><%= (Time.parse(@requested_matter.request_matter.sent_at.to_s) +
+                                $app_env['REQUEST_PERIOD'].to_i).strftime("%Y年%m月%d日%H時%M分%S秒") %>
+<br>
+<% elsif @requested_matter.request_matter.moderate_flag == nil %>
+    <div class="input-mid"><%= (Time.parse(@requested_matter.request_matter.created_at.to_s) +
+                                $app_env['REQUEST_PERIOD'].to_i).strftime("%Y年%m月%d日%H時%M分%S秒") %>
+<br>
+<% else %>
+    <div class="input-mid"><br>
+<% end -%>
+    </div>
+  </fieldset>
+  </div>
+
+  <h2>送信情報</h2>
+  <div class="comment">
+  <fieldset>
+  <div class="table-address-a">
+    <div class="item-top"><%= t('activerecord.attributes.requested_matters.id') %></div>
+    <div class="input-top"><%= h @requested_matter.id %></div>
+    <div class="item-mid"><%= t('activerecord.attributes.requested_matters.name') %></div>
+    <div class="input-mid"><%= h @requested_matter.name %></div>
+    <div class="item-mid"><%= t('activerecord.attributes.requested_matters.mail_address') %></div>
+    <div class="input-mid"><%= h @requested_matter.mail_address %><br></div>
+    <div class="item-mid"><%= t('activerecord.attributes.requested_matters.password_notice') %></div>
+    <div class="input-mid"><%= @password_notice %><br></div>
+    <div class="item-mid"><%= t('activerecord.attributes.requested_matters.download_check') %></div>
+    <div class="input-mid"><%= @download_check %><br></div>
+    <div class="item-mid"><%= t('activerecord.attributes.requested_matters.file_life_period') %></div>
+    <div class="input-mid"><%= @file_life_period %><br></div>
+    <div class="item-mid"><%= t('activerecord.attributes.requested_matters.message') %></div>
+    <div class="input-mid"><%= h @requested_matter.message %><br></div>
+    <div class="item-mid"><%= t('activerecord.attributes.requested_matters.status') %></div>
+    <div class="input-mid"><%= @status %><br></div>
+    <div class="item-mid"><%= t('activerecord.attributes.send_matters.sent_at') %></div>
+    <div class="input-mid"><% if @requested_matter.file_up_date -%>
+                             <%= (Time.parse(@requested_matter.file_up_date.to_s)).strftime("%Y年%m月%d日%H時%M分%S秒") %>
+                           <% end -%><br>
+    </div>
+    <div class="item-mid"><%= t('views.receipt_term') %></div>
+    <div class="input-mid"><% if @requested_matter.file_life_period -%>
+                             <%= (Time.parse(@requested_matter.file_up_date.to_s) +
+                                 @requested_matter.file_life_period).strftime("%Y年%m月%d日%H時%M分%S秒") %>
+                           <% end -%><br>
+    </div>
+  </div>
+  </fieldset>
+  </div>
+
+  <h2>ファイル情報</h2>
+  <div class="comment">
+  <fieldset>
+  <table class="table-user-log">
+    <tr>
+    <th nowrap><%= t('.file_name') %></th>
+    <th nowrap><%= t('.file_size') %></th>
+    <th nowrap><%= t('.file_download_state') %></th>
+    <th nowrap><%= t('.file_virus_state') %></th>
+    </tr>
+
+  <% @count = -1 -%>
+  <% @requested_attachments.each.with_index do | requested_attachment, count | -%>
+    <% if requested_attachment.size.to_i > 1024 * 1024 -%>
+      <% label_file_size = (requested_attachment.size.to_i / (1024 * 1024)).to_s + ' MB' -%>
+    <% elsif requested_attachment.size.to_i > 1024 -%>
+      <% label_file_size = (requested_attachment.size.to_i / 1024).to_s + ' KB' -%>
+    <% else -%>
+      <% label_file_size = requested_attachment.size.to_s + ' B' -%>
+    <% end -%>
+    <% if requested_attachment.download_flg == 0 -%><% download_flg = t('views.download.yet') -%>
+    <% elsif requested_attachment.download_flg == 1 -%><% download_flg =  t('views.download.finished') -%>
+    <% else -%><% download_flg = t('views.download.ambiguous') -%>
+    <% end -%>
+    <tr>
+
+    <td nowrap><% if File.exist?($app_env['FILE_DIR'].to_s + "/r#{requested_attachment.id}") -%>
+      <%= requested_attachment.name -%>
+                 <%#= link_to requested_attachment.name, {:controller => 'sys_data',
+                                                         :action => 'get_requested_file',
+                                                         :id => requested_attachment.id } %>
+               <% else -%><%= requested_attachment.name -%><% end -%>
+    </td>
+    <td nowrap><%= label_file_size + " [" + requested_attachment.size.to_s + "]" %></td>
+    <td nowrap><%= download_flg %></td>
+    <td nowrap>
+      <% if requested_attachment.virus_check  == '0' %>
+        <%= t('views.virus_check_state.safe') %>
+      <% else %>
+        <%= requested_attachment.virus_check %></td>
+      <% end %>
+    </td>
+    </tr>
+    <% @count += 1 -%>
+  <% end -%>
+  <% if @count < 0 -%>
+    <tr><td colspan=8 algin=center><%= t('views.messages.no_data') %></td></tr>
+  <% end -%>
+  </table>
+  </fieldset>
+
+<br>
+<a href="#" onclick="history.back(); return false;"><%= t('views.page_transration_button.back') %></a><br>
+<br>
+</div>

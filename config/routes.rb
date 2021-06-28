@@ -1,4 +1,33 @@
 Deco::Application.routes.draw do
+  get "user_environment/index"
+
+#  get "user_management/index"
+
+  resources :user_management, :except => ['show', 'new', 'create', 'update', 'edit', 'destroy'] do
+    get :index, :on => :collection
+    get :show_moderate, :on => :collection
+  end
+
+  resources :user_environment, :except => ['show', 'new', 'create', 'update', 'edit', 'destroy'] do
+    get :index, :on => :collection
+    get :edit, :on => :collection
+  end
+
+  resources :user_log, :except => ['show', 'new', 'create', 'update', 'edit', 'destroy'] do
+    get :index, :on => :collection
+    get :index_result, :on => :collection
+    get :index_request, :on => :collection
+    get :index_request_result, :on => :collection
+    get :send_matter_info, :on => :collection
+    get :requested_matter_info, :on => :collection
+  end
+
+  resources :address_books do
+    get :index_result, :on => :collection
+    get :index_sub, :on => :collection
+    get :index_sub_result, :on => :collection
+  end
+
   root :to => "top#index"
   # The priority is based upon order of creation:
   # first created -> highest priority.

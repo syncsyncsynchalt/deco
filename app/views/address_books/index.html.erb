@@ -1,0 +1,151 @@
+<script type="text/javascript">
+$(function() {
+  $("#result").ajaxStart (function() {
+    $("#search_progress").html('<%= image_tag('common/scan_progress.gif', :alt => "progress", :border => 0) %>');
+    }).ajaxComplete (function() { $("#search_progress").html('');});
+
+  $(".address_name,.address_email,.address_notes").click(function() {
+    location.href = '/address_books/' + $(this).parent().attr('id').replace('address_item_','');
+//    window.opener.$("#receiver_<%= params[:recipient_number] %>_name").val($(this).parent().find(".address_name").text());
+//    window.opener.$("#receiver_<%= params[:recipient_number] %>_mail_address").val($(this).parent().find(".address_email").text());
+//    window.close();
+  });
+
+//  $("#result").load("/address_books/index_result/?recipient_number=<%= params[:recipient_number] %>", null, function(){
+//    $(".address_name,.address_email,.address_notes").click(function() {
+//      window.opener.$("#receiver_<%= params[:recipient_number] %>_name").val($("#"+$(this).parent().attr('id').replace('address_item_','address_book_name_')).val());
+//      window.opener.$("#receiver_<%= params[:recipient_number] %>_mail_address").val($("#"+$(this).parent().attr('id').replace('address_item_','address_book_email_')).val());
+//    });
+//  });
+//  //load();
+
+//  $("#new_address_book")
+//  .exValidation({
+//    customBind: {
+//      object: $('#address_submit_button'),
+//      listener: 'click',
+//      callback: function() {
+//        alert('Fake POST');
+//      }
+//    }
+//  });
+
+
+  // 検索ボタン押下処理
+  $("#button_address_book_search").click(function() {
+        load();
+  });
+
+  // ソート
+  $("#conditions_sort_select_1, #conditions_sort_select_2").change(function() {
+    load();
+  });
+
+})
+
+//function load() {
+//  data_param = {};
+//  data_param['recipient_number'] = <%= params[:recipient_number] %>;
+//
+//  $.ajax({url: '<%= url_for :action => 'index_result'  %>',
+//       　　　data: $.param(data_param),
+//            dataType: 'script'});
+//}
+
+
+
+function load() {
+    // POSTパラメータセット
+        data_param = {};
+        data_param['conditions'] = {}
+        data_param['conditions']['search_select'] = $("#conditions_search_select").val();
+        data_param['conditions']['search_text'] = $("#conditions_search_text").val();
+        data_param['conditions']['sort_select_1'] = $("#conditions_sort_select_1").val();
+        data_param['conditions']['sort_select_2'] = $("#conditions_sort_select_2").val();
+
+  　$.ajax({url: '<%= url_for :action => 'index_result'  %>',
+       　　　data: $.param(data_param),
+            dataType: 'script'});
+}
+
+</script>
+
+<h1><%= t('views.user_menu.address_books') %></h1>
+
+<div class="comment">
+<%= form_tag({ :action => 'index_result' }, { :remote => true } ) do %>
+<div class="table-address-search-u">
+<%= select_tag('conditions[search_select]', options_for_select(
+               { t('activerecord.attributes.address_book.organization') => 'organization',
+                 t('activerecord.attributes.address_book.name') => 'name',
+                 t('activerecord.attributes.address_book.email') => 'email' }, @hyoji_select_1),:include_blank => true) %>
+            &nbsp;
+             <%= text_field_tag 'conditions[search_text]', '', { :size => 30 } %>
+<input id="button_address_book_search" type="button" value="<%= t('address_books.search_button') %>" />
+<span id="search_progress"></span></div>
+
+<div class="table-address-search-d">
+表示順序：
+<%= select_tag('conditions[sort_select_1]', options_for_select(
+    { t('activerecord.attributes.address_book.organization') => 'organization',
+      t('activerecord.attributes.address_book.name') => 'name',
+      t('activerecord.attributes.address_book.email') => 'email' }, 'email')) %>
+
+<%= select_tag('conditions[sort_select_2]', options_for_select(
+    { t('views.sort.asc') => 'asc', t('views.sort.desc') => 'desc'}, 'asc')) %>
+</div>
+<% end %>
+
+
+<div id="result">
+
+<table class="table-address-add">
+  <tr>
+    <td style="text-align: left;">
+      <div class="pagination">
+        <%= paginate @address_books %>
+      </div>
+    </td>
+    <td >
+      <%= link_to image_tag('/assets/common/address_add.png', { :border => '0', :alt => 'add', :title => '新規登録'}), new_address_book_path %>
+    </td>
+  </tr>
+</table>
+
+<table class="table-address">
+  <tr>
+    <th>組織</th>
+    <th>名前</th>
+    <th>メールアドレス</th>
+    <th></th>
+    <th></th>
+  </tr>
+
+<% @address_books.each do |address_book| %>
+  <tr class="address_items" id="address_item_<%= address_book.id %>">
+    <td class="address_organization"><%= truncate(address_book.organization, {:length => 20}) %><%= hidden_field_tag "address_book_organization_#{address_book.id}",address_book.organization, {:class => ""} %></td>
+    <td class="address_name"><%= truncate(address_book.name, {:length => 20}) %><%= hidden_field_tag "address_book_name_#{address_book.id}",address_book.name, {:class => ""} %></td>
+    <td class="address_email"><%= truncate(address_book.email,  {:length => 30}) %><%= hidden_field_tag "address_book_email_#{address_book.id}",address_book.email, {:class => ""} %></td>
+    <td class="address_edit"><%= link_to image_tag('/assets/common/edit.png', { :border => '0', :alt => 'edit', :title => '編集'}), edit_address_book_path(address_book) %></td>
+    <td class="address_destroy">
+      <%#= link_to image_tag('/assets/common/trash.png', { :border => '0', :alt => 'destroy', :title => '削除'}), address_book, method: :delete, data: { confirm: '削除してもよろしい
+でしょうか?' }, :remote => true %>
+      <%= link_to image_tag('/assets/common/trash.png', { :border => '0', :alt => 'destroy'}), address_book, method: :delete, data: { confirm: '削除してもよろしいでしょうか?' } %>
+    </td>
+  </tr>
+
+<% end %>
+</table>
+
+<table class="table-address-add">
+  <tr>
+    <td style="text-align: left;">
+      <div class="pagination">
+        <%= paginate @address_books %>
+      </div>
+    </td>
+  </tr>
+</table>
+
+</div>
+</div>

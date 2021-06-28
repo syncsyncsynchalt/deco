@@ -1,0 +1,2 @@
+module UserEnvironmentHelper
+end

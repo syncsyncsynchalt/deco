@@ -57,7 +57,7 @@ class FileSendController < ApplicationController
     password_length = $app_env['PW_LENGTH_MIN'].to_i +
           ($app_env['PW_LENGTH_MAX'].to_i - $app_env['PW_LENGTH_MIN'].to_i) / 2
     @randam_password =
-        generate_random_strings(rand(10000).to_s).slice(1,password_length)
+        generate_random_string_values(rand(10000).to_s).slice(1,password_length)
     respond_to do |format|
       format.html
       format.xml { render :xml => @send_file }
@@ -116,6 +116,9 @@ class FileSendController < ApplicationController
       @send_matter.status = 1
       if params[:mail_domain].present?
         @send_matter.mail_address += '@' + params[:mail_domain]
+      end
+      if session[:user_id].present? && current_user.present?
+        @send_matter.user = current_user
       end
       @attachments = Attachment.find(:all, :conditions =>
                                      {:relayid => @send_matter.relayid})
@@ -487,10 +490,12 @@ class FileSendController < ApplicationController
       @send_matter = SendMatter.find(session[:send_matter_id])
     end
 
-    if (Time.now - (Time.parse(@send_matter.created_at.to_s) +
-                    @send_matter.file_life_period)) > 0
-      flash[:notice] = "ファイルの保管期限を過ぎましたので削除されました。"
-      redirect_to :action => "result_ng"
+    if @send_matter.sent_at.present?
+      if (Time.now - (Time.parse(@send_matter.sent_at.to_s) +
+                      @send_matter.file_life_period)) > 0
+        flash[:notice] = "ファイルの保管期限を過ぎましたので削除されました。"
+        redirect_to :action => "result_ng"
+      end
     end
     @port = get_port()
     @port = @port + "://"

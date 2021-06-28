@@ -1,0 +1,64 @@
+<script type="text/javascript">
+$(function() {
+    $("#address_back_button").click(function(){
+      location.href = '/address_books';
+    });
+    $("#address_edit_button").click(function(){
+      location.href = '<%= edit_address_book_path(@address_book) %>';
+    });
+})
+</script>
+
+<h1><%= t('views.user_menu.address_books') %></h1>
+<div class="comment">
+  <div class="table-address-a">
+    <div class="item-top">
+      <%= t'.organization' %>
+    </div>
+    <div class="input-top">
+      <% if @address_book.organization.present? %>
+        <%= @address_book.organization %>
+      <% else %>
+        &nbsp;
+      <% end %>
+    </div>
+    <div class="item-mid">
+      <%= t'.name' %>
+    </div>
+    <div class="input-mid">
+      <% if @address_book.name.present? %>
+        <%= @address_book.name %>
+      <% else %>
+        &nbsp;
+      <% end %>
+    </div>
+    <div class="item-mid">
+      <%= t'.email' %>
+    </div>
+    <div class="input-mid">
+      <% if @address_book.email.present? %>
+        <%= @address_book.email %>
+      <% else %>
+        &nbsp;
+      <% end %>
+    </div>
+    <div class="item-bot">
+      <%= t'.notes' %>
+    </div>
+    <div class="input-bot">
+      <% if @address_book.notes.present? %>
+        <%= @address_book.notes %>
+      <% else %>
+        &nbsp;
+      <% end %>
+    </div>
+  </div>
+
+
+<%#= link_to 'Edit', edit_address_book_path(@address_book) %>
+<%#= link_to 'Back', address_books_path %>
+
+&nbsp;</br>
+
+<div id="address_submit"><input type="button" value="戻る" id="address_back_button" style="margin-left:0px;"/>&nbsp;&nbsp;<input type="button" value="編集" id="address_edit_button" style="margin-left:0px;"/></div>
+</div>

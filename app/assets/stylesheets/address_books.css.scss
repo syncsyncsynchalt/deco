@@ -1,0 +1,360 @@
+// Place all the styles related to the address_books controller here.
+// They will automatically be included in application.css.
+// You can use Sass (SCSS) here: http://sass-lang.com/
+
+.sub-body {
+  margin:10px 10px 10px 10px
+}
+
+.sub-body h1 {
+  margin: 18px 0px 15px 0px;
+  padding: 9px 10px 9px 10px;
+  font-size: 15px;
+  color: #1f507e;
+  background: url(common/ban01.gif) no-repeat;
+}
+
+
+table.table-address {
+//  margin: 0px 0px 0px 18px;
+  width: 100%;
+  border: 1px solid #c0c0c0;
+  border-spacing: 0;
+  border-collapse: collapse;
+  font-size: 13px;
+  tr {
+    cursor: pointer;
+  }
+  tr:hover {
+    background-color: #FFF5EE;
+#    background-color: #e5f0fe;
+  }
+  th {
+    font-weight: normal;
+    border: 1px solid #c0c0c0;
+    background-color:#e5f0fe;
+  }
+  td {
+    vertical-align: middle;
+    border: 1px solid #c0c0c0;
+  }
+  td.address_organization {
+    padding-left: 3px;
+    min-width:100px;
+  }
+  td.address_name {
+    padding-left: 3px;
+    min-width:150px;
+  }
+  td.address_email {
+    padding-left: 3px;
+    min-width:100px;
+  }
+  td.address_notes {
+    padding-left: 3px;
+    min-width:100px;
+  }
+  td.address_edit, td.address_destroy {
+    width:25px;
+    text-align: center;
+    vertical-align: middle;
+  }
+}
+
+table.table-address-np {
+//  margin: 0px 0px 0px 18px;
+  width: 100%;
+  border: 1px solid #c0c0c0;
+  border-spacing: 0;
+  border-collapse: collapse;
+  font-size: 13px;
+  tr {
+  }
+  tr:hover {
+    background-color: #FFF5EE;
+#    background-color: #e5f0fe;
+  }
+  th {
+    font-weight: normal;
+    border: 1px solid #c0c0c0;
+    background-color:#e5f0fe;
+  }
+  td {
+    vertical-align: middle;
+    border: 1px solid #c0c0c0;
+  }
+  td.address_organization {
+    padding-left: 3px;
+    min-width:100px;
+  }
+  td.address_date {
+    padding-left: 3px;
+    min-width:150px;
+  }
+  td.address_name {
+    padding-left: 3px;
+    min-width:150px;
+  }
+  td.address_email {
+    padding-left: 3px;
+    min-width:100px;
+  }
+  td.address_notes {
+    padding-left: 3px;
+    min-width:100px;
+  }
+  td.address_edit, td.address_destroy {
+    width:25px;
+    text-align: center;
+    vertical-align: middle;
+  }
+}
+
+table.table-address-add {
+//  margin: 18px 0px 5px 0px;
+  width: 100%;
+  border: 0px;
+  border-spacing: 0;
+  border-collapse: collapse;
+  font-size: 13px;
+  td {
+    text-align: right;
+    border: 0px;
+  }
+}
+
+.re_address_p {
+  margin-top:8px;
+  padding-left:64px;
+}
+
+.re_address {
+  width: 25px;
+  height: 25px;
+  background-image: url("/assets/common/address_book.png");
+  background-repeat   : no-repeat;
+  background-position : centercenter;
+  cursor: pointer;
+}
+
+div.table-address-a {
+//  margin: 0px 0px 0px 18px;
+  float: left;
+  width: 100%;
+  border-top: 1px solid #c0c0c0;
+  border-right: 0px;
+  border-bottom: 1px solid #c0c0c0;
+  border-left: 0px;
+  color: #000;
+  font-size: 13px;
+  background-color:#e5f0fe;
+  .item-top {
+    float: left;
+    width: 188px;
+    padding: 8px;
+    background-color:#e5f0fe;
+  }
+  .input-top {
+    float: left;
+    width: 338px;
+    padding: 8px;
+    background-color:#ffffff;
+  }
+  .item-mid {
+    float: left;
+    clear: both;
+    width: 188px;
+    padding: 8px;
+    border-top: 1px dotted #cccccc;
+    background-color:#e5f0fe;
+  }
+  .input-mid {
+    float: left;
+    width: 338px;
+    height: auto;
+    margin-left: 0px;
+    border-top: 1px dotted #cccccc;
+    background-color:#ffffff;
+    padding: 8px;
+  }
+  .item-bot {
+    float: left;
+    clear: both;
+    width: 188px;
+    padding: 8px;
+    border-top: 1px dotted #cccccc;
+    background-color:#e5f0fe;
+  }
+  .input-bot {
+    float: left;
+    width: 338px;
+    margin-left: 0px;
+    border-top: 1px dotted #cccccc;
+    padding: 8px;
+    background-color:#ffffff;
+  }
+  .item-topx2 {
+    float: left;
+    height: 41px;
+    width: 188px;
+    padding: 8px;
+    background-color:#e5f0fe;
+  }
+  .input-topx2 {
+    float: left;
+    height: 41px;
+    width: 338px;
+    padding: 8px;
+    background-color:#ffffff;
+    display:table;
+  }
+  .item-midx2 {
+    float: left;
+    clear: both;
+    height: 41px;
+    width: 188px;
+    padding: 8px;
+    border-top: 1px dotted #cccccc;
+    background-color:#e5f0fe;
+  }
+  .input-midx2 {
+    float: left;
+    height: 41px;
+    width: 338px;
+    height: auto;
+    margin-left: 0px;
+    vertical-align: middle;
+    border-top: 1px dotted #cccccc;
+    background-color:#ffffff;
+    padding: 8px;
+    display:table;
+  }
+  .item-botx2 {
+    float: left;
+    clear: both;
+    height: 41px;
+    width: 188px;
+    padding: 8px;
+    border-top: 1px dotted #cccccc;
+    background-color:#e5f0fe;
+  }
+  .input-botx2 {
+    float: left;
+    height: 41px;
+    width: 338px;
+    margin-left: 0px;
+    border-top: 1px dotted #cccccc;
+    padding: 8px;
+    background-color:#ffffff;
+    display:table;
+  }
+  .item-top-sub {
+    float: left;
+    width: 188px;
+    padding: 8px;
+    background-color:#e5f0fe;
+  }
+  .input-top-sub {
+    float: left;
+    width: 360px;
+    padding: 8px;
+    background-color:#ffffff;
+  }
+  .item-mid-sub {
+    float: left;
+    clear: both;
+    width: 188px;
+    padding: 8px;
+    border-top: 1px dotted #cccccc;
+    background-color:#e5f0fe;
+  }
+  .input-mid-sub {
+    float: left;
+    width: 360px;
+    height: auto;
+    margin-left: 0px;
+    border-top: 1px dotted #cccccc;
+    background-color:#ffffff;
+    padding: 8px;
+  }
+  .item-bot-sub {
+    float: left;
+    clear: both;
+    width: 188px;
+    padding: 8px;
+    border-top: 1px dotted #cccccc;
+    background-color:#e5f0fe;
+  }
+  .input-bot-sub {
+    float: left;
+    width: 360px;
+    margin-left: 0px;
+    border-top: 1px dotted #cccccc;
+    padding: 8px;
+    background-color:#ffffff;
+  }
+
+  .inner-box {
+    display:table-cell;
+    vertical-align: middle;
+  }
+}
+
+div#address_submit {
+  clear: both;
+  margin: 0px 100px 10px 10px;
+
+}
+
+
+div.table-address-search-u {
+  font-size: 13px;
+  margin-bottom: 5px;
+}
+div.table-address-search-d {
+  border-bottom: solid 1px #cccccc;
+  font-size: 13px;
+  margin-bottom: 6px;
+  padding-bottom: 8px;
+
+}
+
+div.pagination {
+width:100%;
+clear:both;
+padding:10px 0 10px 0;
+margin:0px;
+text-align:left;
+float:left;
+clear:both;
+font-size:12px;
+}
+
+div.pagination a {
+padding: 2px 5px 2px 5px;
+margin-right: 2px;
+border: 1px solid #cccccc;
+text-decoration: none;
+color: #52bfea;
+}
+div.pagination a:hover, div.pagination a:active {
+border:1px solid #cccccc;
+color: #fff;
+background-color: #e5f0fe;
+}
+div.pagination span.current {
+padding: 2px 5px 2px 5px;
+margin-right: 2px;
+border: 1px solid #cccccc;
+font-weight: bold;
+background-color: #356B97;
+color: #FFF;
+}
+div.pagination span.disabled {
+padding: 2px 5px 2px 5px;
+margin-right: 2px;
+border: 1px solid #f3f3f3;
+color: #ccc;
+}
+
+

@@ -1,0 +1,27 @@
+    <span class="left">宛先は最大<%= h $app_env['RECEIVERS_LIMIT'] %> 名まで追加できます。<br /><br />
+    <%= image_tag('common/name_s.jpg') %>&nbsp;相手のお名前<span class="required">※</span><br />
+    <%= image_tag('common/mail_s.jpg') %>&nbsp;相手のメールアドレス<span class="required">※</span>&nbsp;&nbsp;<span class="note">例）name1@example.com</span>
+    </span>
+
+    <fieldset>
+    <legend>受取人情報入力</legend>
+
+<% i=1 %>
+  <%= fields_for @receiver , :index => i do |f2| %>
+    <div class="table-e">
+      <div class="item">ファイル受取人 1人目
+      </div>
+      <div class="input-l">
+        <%= image_tag('common/name.jpg', :align => "left") %><%= f2.text_field :name, :class => 'validate[required]', :size => 30, :index => i %> 様<br />
+        <%= image_tag('common/mail.jpg', :align => "left") %><%= f2.text_field :mail_address, :class => 'validate[required, custom[email]]', :size => 40, :index => i %>
+      </div>
+      <div class="input-r"></div>
+      <div id="receiver_form"></div>
+    </div>
+
+  <% end %>
+<% i += 1 %>
+
+    </fieldset>
+    <span class="right"><input type="button" onclick="add_receiver('receiver', 'receiver_form', 'ファイル受取人');return false;" value="+ 宛先欄を追加" /></span>
+

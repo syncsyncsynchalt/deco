@@ -1,0 +1,57 @@
+<script type="text/javascript">
+$(function() {
+//    $("#user_environment_back_button").click(function(){
+//      location.href = '<%= user_environment_index_path %>';
+//    });
+    $("#user_environment_edit_button").click(function(){
+      location.href = '<%= edit_user_environment_index_path %>';
+    });
+})
+</script>
+
+<h1><%= t('views.user_menu.user_environment') %></h1>
+
+<div class="comment">
+  <div class="table-address-a">
+    <div class="item-topx2">
+      <%= t('.from_organization_add') %>
+    </div>
+    <div class="input-topx2">
+      <div class="inner-box">
+      <% if current_user.present? %>
+        <% if current_user.from_organization_add.present? %>
+          <%= current_user.from_organization_add %>
+        <% else %>
+          &nbsp;
+        <% end %>
+      <% else %>
+        &nbsp;
+      <% end %>
+      </div>
+    </div>
+    <div class="item-botx2">
+      <%= t('.to_organization_add') %>
+    </div>
+    <div class="input-botx2">
+      <div class="inner-box">
+      <% if current_user.present? %>
+        <% if current_user.to_organization_add %>
+          <%= t('views.enable') %>
+        <% else %>
+          <%= t('views.disable') %>
+        <% end %>
+      <% else %>
+        &nbsp;
+      <% end %>
+      </div>
+    </div>
+  </div>
+
+
+<%#= link_to 'Edit', edit_address_book_path(@address_book) %>
+<%#= link_to 'Back', address_books_path %>
+
+&nbsp;</br>
+
+<div id="address_submit"><input type="button" value="編集" id="user_environment_edit_button" style="margin-left:0px;"/></div>
+</div>

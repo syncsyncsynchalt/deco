@@ -1,0 +1,54 @@
+<script type="text/javascript">
+$(function() {
+    $("#user_environment_back_button").click(function(){
+      location.href = '<%= user_environment_index_path %>';
+    });
+    $("#user_environment_submit_button").click(function(){
+      $("form").submit();
+    });
+})
+
+localDomains = "<%= $local_domains %>";
+$(document).ready(function() {
+  $.validationEngineLanguage.newLang(localDomains);
+  $("form").validationEngine({promptPosition: "centerRight", binded: false})
+});
+</script>
+
+<h1><%= t('views.user_menu.user_environment') %></h1>
+
+<div class="comment">
+<%= form_tag(:action => 'create') do %>
+  <div class="table-address-a">
+    <div class="item-topx2">
+      <%= t('.from_organization_add') %>
+    </div>
+    <div class="input-topx2">
+      <div class="inner-box">
+      <% if current_user.present? %>
+        <%= text_field_tag 'conditions[from_organization_add]', current_user.from_organization_add, :size => 50 %>
+      <% end %>
+      </div>
+    </div>
+    <div class="item-botx2">
+      <%= t('.to_organization_add') %>
+    </div>
+    <div class="input-botx2">
+      <div class="inner-box">
+      <% if current_user.present? %>
+        <%= t('views.enable') %>：<%= radio_button_tag 'conditions[to_organization_add]', 'true', (current_user.to_organization_add) %>
+        <%= t('views.disable') %>：<%= radio_button_tag 'conditions[to_organization_add]', 'false', (!current_user.to_organization_add) %>
+      <% else %>
+        &nbsp;
+      <% end %>
+      </div>
+    </div>
+  </div>
+<% end %>
+<%#= link_to 'Edit', edit_address_book_path(@address_book) %>
+<%#= link_to 'Back', address_books_path %>
+
+&nbsp;</br>
+
+<div id="address_submit"><input type="button" value="<%= t('views.page_transration_button.back') %>" id="user_environment_back_button" style="margin-left:0px;"/>&nbsp;&nbsp;<input type="button" value="<%= t('views.page_transration_button.create') %>" id="user_environment_submit_button" style="margin-left:0px;"/></div>
+</div>

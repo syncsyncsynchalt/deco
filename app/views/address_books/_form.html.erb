@@ -1,0 +1,65 @@
+<script type="text/javascript">
+$(function() {
+    $("#address_back_button").click(function(){
+      location.href = '/address_books';
+    });
+    $("#address_submit_button").click(function(){
+      $("form").submit();
+    });
+})
+
+localDomains = "<%= $local_domains %>";
+$(document).ready(function() {
+  $.validationEngineLanguage.newLang(localDomains);
+  $("form").validationEngine({promptPosition: "centerRight", binded: false})
+});
+</script>
+
+<%= form_for(@address_book) do |f| %>
+  <% if @address_book.errors.any? %>
+    <div id="error_explanation">
+      <h2><%= pluralize(@address_book.errors.count, "error") %> prohibited this address_book from being saved:</h2>
+
+      <ul>
+      <% @address_book.errors.full_messages.each do |msg| %>
+        <li><%= msg %></li>
+      <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="comment">
+  <div class="table-address-a">
+    <div class="item-top">
+      <%= f.label :organization %>
+    </div>
+    <div class="input-top">
+      <%= f.text_field :organization, :class => '', :size => 50 %>
+    </div>
+    <div class="item-mid">
+      <%= f.label :name %><span class="required">※</span>
+    </div>
+    <div class="input-mid">
+      <%= f.text_field :name, :class => 'validate[required]', :size => 50 %>
+    </div>
+    <div class="item-mid">
+      <%= f.label :email %><span class="required">※</span>
+    </div>
+    <div class="input-mid">
+      <%= f.text_field :email, :class => 'validate[required, custom[email]]', :size => 50 %>
+    </div>
+    <div class="item-bot">
+      <%= f.label :notes %>
+    </div>
+    <div class="input-bot">
+      <%= f.text_field :notes, :size => 50 %>
+    </div>
+  </div>
+
+<% end %>
+
+&nbsp;</br>
+
+<div id="address_submit"><input type="button" value="戻る" id="address_back_button" style="margin-left:0px;"/>&nbsp;&nbsp;<input type="button" value="登録" id="address_submit_button" style="margin-left:0px;"/></div>
+
+</div>

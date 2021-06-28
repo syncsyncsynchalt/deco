@@ -22,6 +22,9 @@ class User < ActiveRecord::Base
   has_many :send_moderaters
   has_many :request_moderaters
   belongs_to :moderate
+  has_many :address_books
+  has_many :send_matters
+  has_many :request_matters
 
   attr_accessor :password
 #  attr_accessible :login, :password_digest
@@ -71,7 +74,7 @@ class User < ActiveRecord::Base
 
   protected
 
-  # before filter 
+  # before filter
   def encrypt_password
     return if password.blank?
     self.salt = Digest::SHA1.hexdigest("--#{Time.now.to_s}--#{login}--") if new_record?

@@ -1,0 +1,46 @@
+<h1>決裁ルート</h1>
+
+
+<div class="comment">
+  <div class="table-address-a">
+    <div class="item-top-sub">
+      <%= t('.name') %>
+    </div>
+    <div class="input-top-sub">
+      <%= @moderate.name %>
+    </div>
+    <div class="item-mid-sub">
+      <%= t('.category') %>
+    </div>
+    <div class="input-mid-sub">
+        <% if @moderate.type_flag == 1 %>
+          <%= t('views.moderate.simple') %>
+        <% else %>
+          <%= t('views.moderate.nomal') %>
+        <% end %>
+    </div>
+    <div class="item-bot-sub">
+      <%= t('.route') %>
+    </div>
+    <div class="input-bot-sub">
+      <% if @moderate.present? %>
+        <% moderater_count = 0 %>
+        <% for moderater in @moderate.moderaters %>
+          <% if moderater.user.present? %>
+            <% unless moderater_count == 0 %>
+            <br>
+            <% end %>
+            <%= moderater.user.name %>（<%= moderater.user.login %>）
+          <% moderater_count += 1 %>
+          <% end %>
+        <% end %>
+      <% else %>
+        なし
+      <% end %>
+    </div>
+  </div>
+</div>
+
+
+
+

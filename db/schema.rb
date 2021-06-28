@@ -11,7 +11,18 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20121026102557) do
+ActiveRecord::Schema.define(:version => 20130213084332) do
+
+  create_table "address_books", :force => true do |t|
+    t.integer  "user_id"
+    t.string   "from_email"
+    t.string   "name"
+    t.string   "email"
+    t.string   "organization"
+    t.string   "notes"
+    t.datetime "created_at",   :null => false
+    t.datetime "updated_at",   :null => false
+  end
 
   create_table "announcements", :force => true do |t|
     t.string   "title"
@@ -113,6 +124,7 @@ ActiveRecord::Schema.define(:version => 20121026102557) do
     t.integer  "moderate_flag"
     t.integer  "moderate_result"
     t.datetime "sent_at"
+    t.string   "user_id"
   end
 
   create_table "request_moderaters", :force => true do |t|
@@ -194,6 +206,7 @@ ActiveRecord::Schema.define(:version => 20121026102557) do
     t.integer  "moderate_flag"
     t.integer  "moderate_result"
     t.datetime "sent_at"
+    t.string   "user_id"
   end
 
   create_table "send_moderaters", :force => true do |t|
@@ -231,9 +244,11 @@ ActiveRecord::Schema.define(:version => 20121026102557) do
     t.text     "note"
     t.string   "remember_token"
     t.datetime "remember_token_expires_at"
-    t.datetime "created_at",                              :null => false
-    t.datetime "updated_at",                              :null => false
+    t.datetime "created_at",                                                 :null => false
+    t.datetime "updated_at",                                                 :null => false
     t.integer  "moderate_id"
+    t.string   "from_organization_add"
+    t.boolean  "to_organization_add",                     :default => false
   end
 
 end

@@ -103,7 +103,13 @@ class FileSendModerateController < ApplicationController
       end
       send_file $app_env['FILE_DIR'] + "/#{@attachment.id}",
                 :filename => @filename,
+                :type => @attachment.content_type,
+                :x_sendfile => true
+=begin
+      send_file $app_env['FILE_DIR'] + "/#{@attachment.id}",
+                :filename => @filename,
                 :type => @attachment.content_type
+=end
     end
   end
 

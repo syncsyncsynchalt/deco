@@ -114,8 +114,8 @@ class RequestedFileSendController < ApplicationController
       else
         password_length = $app_env['PW_LENGTH_MIN'].to_i +
           ($app_env['PW_LENGTH_MAX'].to_i - $app_env['PW_LENGTH_MIN'].to_i) / 2
-        @randam_password = 
-            generate_random_strings(rand(10000).to_s).slice(1,password_length)
+        @randam_password =
+            generate_random_string_values(rand(10000).to_s).slice(1,password_length)
         respond_to do |format|
           format.html
           format.xml { reander :xml => @requested_file_send }
@@ -151,8 +151,8 @@ class RequestedFileSendController < ApplicationController
       else
         password_length = $app_env['PW_LENGTH_MIN'].to_i +
           ($app_env['PW_LENGTH_MAX'].to_i - $app_env['PW_LENGTH_MIN'].to_i) / 2
-        @randam_password = 
-            generate_random_strings(rand(10000).to_s).slice(1,password_length)
+        @randam_password =
+            generate_random_string_values(rand(10000).to_s).slice(1,password_length)
         respond_to do |format|
           format.html
           format.xml { reander :xml => @requested_file_send }
@@ -227,7 +227,7 @@ class RequestedFileSendController < ApplicationController
 
     @url_code =params[:requested_matter_url]
 
-    if session[:"#{@url_code}"]['requested_matter_id'] == 
+    if session[:"#{@url_code}"]['requested_matter_id'] ==
             @requested_matter.id
       session[:request_send_url_code] = @requested_matter.url
 
@@ -252,7 +252,7 @@ class RequestedFileSendController < ApplicationController
               end
             end
             @requested_matter.update_attributes(params[:requested_matter])
-            @requested_matter.url_operation = 
+            @requested_matter.url_operation =
                     generate_random_strings(@requested_matter.name)
             @requested_matter.file_up_date = DateTime.now
             @requested_matter.save!
@@ -333,13 +333,13 @@ class RequestedFileSendController < ApplicationController
           @total_file_size = 0
 
           params[:attachment].each do |key, value|
-            if value[:file].size > 
+            if value[:file].size >
                     ($app_env['FILE_SIZE_LIMIT'].to_i)*1024*1024
               flash[:notice] = 'ファイルサイズが制限を越えています。'
               redirect_to :action => 'blank' and return
             end
             @total_file_size += value[:file].size
-            if @total_file_size > 
+            if @total_file_size >
                     ($app_env['FILE_TOTAL_SIZE_LIMIT'].to_i)*1024*1024
               flash[:notice] = 'ファイルの合計サイズが制限を越えています。'
               redirect_to :action => 'blank' and return
@@ -399,7 +399,7 @@ class RequestedFileSendController < ApplicationController
             end
           end
 
-          redirect_to :action => 'result', 
+          redirect_to :action => 'result',
                   :id => @requested_matter.url_operation
 
           @requested_attachments = @requested_matter.requested_attachments
@@ -412,7 +412,7 @@ class RequestedFileSendController < ApplicationController
                   "/requested_file_send/result/" +
                   "#{@requested_matter.url_operation}"
 
-          if @requested_attachments.select{ |requested_attachment| 
+          if @requested_attachments.select{ |requested_attachment|
                   requested_attachment.virus_check == '0' }.size > 0
             Notification.requested_send_report(
                     @requested_matter,

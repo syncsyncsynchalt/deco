@@ -1,0 +1,78 @@
+<script type="text/javascript">
+$(function() {
+  $("#result").ajaxStart (function() {
+    $("#search_progress").html('<%= image_tag('common/scan_progress.gif', :alt => "progress", :border => 0) %>');
+    }).ajaxComplete (function() { $("#search_progress").html('');});
+
+  // 検索ボタン押下処理
+  $("#button_address_book_search").click(function() {
+        load();
+  });
+  // ソート
+  $("#conditions_sort_select_1, #conditions_sort_select_2").change(function() {
+    load();
+  });
+  $("#button_address_book_modal_close").click(function(){
+    $.modal.close();
+  });
+  load();
+})
+
+function load() {
+    // POSTパラメータセット
+        data_param = {};
+        data_param['conditions'] = {}
+        data_param['conditions']['search_select'] = $("#conditions_search_select").val();
+        data_param['conditions']['search_text'] = $("#conditions_search_text").val();
+        data_param['conditions']['sort_select_1'] = $("#conditions_sort_select_1").val();
+        data_param['conditions']['sort_select_2'] = $("#conditions_sort_select_2").val();
+        data_param['recipient_number'] = <%= params[:recipient_number] %>
+  　$.ajax({url: '<%= url_for :action => 'index_sub_result'  %>',
+       　　　data: $.param(data_param),
+            dataType: 'script'});
+}
+
+function close_address_modal() {
+  $.modal.close();
+}
+
+</script>
+
+<h1><%= t('views.user_menu.address_books') %></h1>
+
+<div class="table-address-search-u">
+<%= form_tag({ :action => 'index_sub_result' }, { :remote => true } ) do %>
+<%= select_tag('conditions[search_select]', options_for_select(
+               { t('activerecord.attributes.address_book.organization') => 'organization',
+                 t('activerecord.attributes.address_book.name') => 'name',
+                 t('activerecord.attributes.address_book.email') => 'email' }, @hyoji_select_1),:include_blank => true) %>
+            &nbsp;
+             <%= text_field_tag 'conditions[search_text]', '', { :size => 30 } %>
+<input id="button_address_book_search" type="button" value="<%= t('address_books.search_button') %>" />
+<span id="search_progress"></span>
+</div>
+<div class="table-address-search-d">
+表示順序：
+<%= select_tag('conditions[sort_select_1]', options_for_select(
+    { t('activerecord.attributes.address_book.organization') => 'organization',
+      t('activerecord.attributes.address_book.name') => 'name',
+      t('activerecord.attributes.address_book.email') => 'email' }, 'email')) %>
+
+<%= select_tag('conditions[sort_select_2]', options_for_select(
+    { t('views.sort.asc') => 'asc', t('views.sort.desc') => 'desc'}, 'asc')) %>
+  <%= hidden_field_tag  "recipient_number",  params[:recipient_number] %>
+<% end %>
+&nbsp;&nbsp;
+組織名を入れる：
+<%= check_box_tag 'conditions[organization_flg]', '1', current_user.to_organization_add, {} %>
+<%#= check_box_tag 'conditions[organization_flg]', '1', false, {} %>
+</div>
+
+<div id="result"></div>
+
+<!--
+<a href="" onClick="window.parent.$.modal.close();">aaa</a>
+<a href="" class="simplemodal-close">sssssssssaaa</a>
+
+<input id="button_address_book_modal_close" class="simplemodal-close" type="button" value="close" />
+-->

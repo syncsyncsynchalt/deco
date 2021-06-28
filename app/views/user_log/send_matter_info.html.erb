@@ -1,0 +1,193 @@
+
+<h1><%= t('views.user_menu.user_log_send') %></h1>
+  <h2><%= t('.send_matter_info')%></h2>
+
+  <div class="comment">
+  <fieldset>
+  <div class="table-address-a">
+    <div class="item-top"><%= t('activerecord.attributes.send_matters.id') %></div>
+    <div class="input-top"><%= h @send_matter.id %></div>
+    <div class="item-mid"><%= t('activerecord.attributes.send_matters.name') %></div>
+    <div class="input-mid"><%= h @send_matter.name %></div>
+    <div class="item-mid"><%= t('activerecord.attributes.send_matters.mail_address') %></div>
+    <div class="input-mid"><%= h @send_matter.mail_address %><br></div>
+    <div class="item-mid"><%= t('activerecord.attributes.send_matters.password_notice') %></div>
+    <div class="input-mid"><%= @password_notice %><br></div>
+    <div class="item-mid"><%= t('activerecord.attributes.send_matters.download_check') %></div>
+    <div class="input-mid"><%= @download_check %><br></div>
+    <div class="item-mid"><%= t('activerecord.attributes.send_matters.file_life_period') %></div>
+    <div class="input-mid"><%= @file_life_period %><br></div>
+    <div class="item-mid"><%= t('activerecord.attributes.send_matters.message') %></div>
+    <div class="input-mid"><%= h @send_matter.message %><br></div>
+    <div class="item-mid"><%= t('activerecord.attributes.send_matters.status') %></div>
+    <div class="input-mid"><%= @status %><br></div>
+    <div class="item-mid"><%= t('activerecord.attributes.send_matters.created_at') %></div>
+    <div class="input-mid"><% if @send_matter.created_at -%>
+                             <%= (Time.parse(@send_matter.created_at.to_s)).strftime("%Y年%m月%d日%H時%M分%S秒") %>
+                           <% end -%><br>
+    </div>
+    <div class="item-mid"><%= t('activerecord.attributes.send_matters.moderate_flag') %></div>
+    <div class="input-mid">
+<% @send_moderate = @send_matter.send_moderate %>
+<% if @send_moderate == nil %>
+<%= t('views.moderate.none') %>
+<% else %>
+<% if @send_moderate.type_flag == 0 %>
+<%= t('views.moderate.nomal') %>
+<% else %>
+<%= t('views.moderate.simple') %>
+<% end %>
+<% end %>
+    </div>
+<% unless @send_moderate == nil %>
+    <div class="item-mid">決裁結果</div>
+    <div class="input-mid">
+<% if @send_moderate.result == 1 %>
+<font color="blue"><b>承認</b></font>
+<% elsif @send_moderate.result == 2 %>
+<font color="red">却下</font>
+<% else %>
+  未決
+<% end %>
+    </div>
+    <div class="item-mid">決裁ルート</div>
+    <div class="input-mid">
+<% @send_moderaters = @send_moderate.send_moderaters %>
+<% number = 0 %>
+    <div class="table-d" style="border:0px;">
+<% for moderater in @send_moderaters %>
+      <div class="input-l" style="border:0px; padding:5px 8px; height:20px;">
+<% number += 1 %>
+<%= number %>.
+<%= moderater.moderater.user.name %>
+      </div>
+<div class="input-r" style="border:0px; padding:5px 8px; height:20px; text-align:center;">
+<% if moderater.result == 1 %>
+<font color="blue"><b>承認</b></font>
+<% elsif moderater.result == 2 %>
+<font color="red">却下</font>
+<% else %>
+未決
+<% end %>
+      </div>
+<% end %>
+    </div>
+    </div>
+<% end %>
+
+    <div class="item-mid"><%= t('activerecord.attributes.send_matters.sent_at') %></div>
+<% if @send_matter.sent_at.present? %>
+    <div class="input-mid"><%= (Time.parse(@send_matter.sent_at.to_s)).strftime("%Y年%m月%d日%H時%M分%S秒") %>
+                           <br>
+    </div>
+<% elsif @send_matter.moderate_flag == nil %>
+    <div class="input-mid"><% if @send_matter.created_at -%>
+                             <%= (Time.parse(@send_matter.created_at.to_s)).strftime("%Y年%m月%d日%H時%M分%S秒") %>
+                           <% end -%><br>
+    </div>
+<% else %>
+    <div class="input-mid"><br>
+    </div>
+<% end -%>
+    <div class="item-mid"><%= t('views.receipt_term') %></div>
+<% if @send_matter.sent_at.present? %>
+    <div class="input-mid"><% if @send_matter.file_life_period -%>
+                             <%= (Time.parse(@send_matter.sent_at.to_s) +
+                                 @send_matter.file_life_period).strftime("%Y年%m月%d日%H時%M分%S秒") %>
+                           <% end -%><br>
+    </div>
+<% elsif @send_matter.moderate_flag == nil %>
+    <div class="input-bot"><% if @send_matter.file_life_period -%>
+                             <%= (Time.parse(@send_matter.created_at.to_s) +
+                                 @send_matter.file_life_period).strftime("%Y年%m月%d日%H時%M分%S秒") %>
+                           <% end -%><br>
+    </div>
+<% else %>
+    <div class="input-bot"><br>
+    </div>
+<% end -%>
+  </div>
+  </fieldset>
+  </div>
+
+  <h2><%= t('.receiver_info') %></h2>
+  <div class="comment">
+  <fieldset>
+  <table class="table-user-log">
+    <tr>
+    <th nowrap><%= t('activerecord.attributes.receivers.name') %></th>
+    <th nowrap><%= t('activerecord.attributes.receivers.mail_address') %></th>
+    </tr>
+
+  <% @count = -1 -%>
+  <% @receivers.each.with_index do | receiver, count | -%>
+    <tr>
+    <td nowrap><%= receiver.name %></td>
+    <td nowrap><%= receiver.mail_address %></td>
+    </tr>
+    <% @count += 1 -%>
+  <% end -%>
+  <% if @count < 0 -%>
+    <tr><td colspan=2 algin=center><%= t('views.messages.no_data') %></td></tr>
+  <% end -%>
+  </table>
+  </fieldset>
+  </div>
+
+
+  <h2><%= t('.file_info') %></h2>
+  <div class="comment">
+  <fieldset>
+  <table  class="table-user-log">
+    <tr>
+    <th nowrap bgcolor=#e5f0fe><%= t('.file_name') %></th>
+    <th nowrap bgcolor=#e5f0fe><%= t('.file_size') %></th>
+    <th nowrap bgcolor=#e5f0fe><%= t('.file_download_state') %></th>
+    <th nowrap bgcolor=#e5f0fe><%= t('.file_virus_state') %></th>
+    </tr>
+
+  <% @count = -1 -%>
+  <% download_flg = "" -%>
+  <% @attachments.each.with_index do | attachment, count | -%>
+    <% label_file_size = '' -%>
+    <% if attachment.size.to_i > 1024 * 1024 -%>
+      <% label_file_size = (attachment.size.to_i / (1024 * 1024)).to_s + ' MB' -%>
+    <% elsif attachment.size.to_i > 1024 -%>
+      <% label_file_size = (attachment.size.to_i / 1024).to_s + ' KB' -%>
+    <% else -%>
+      <% label_file_size = attachment.size.to_s + ' B' -%>
+    <% end -%>
+    <% if attachment.download_flg.to_i == 0 -%><% download_flg = t('views.download.yet') -%>
+    <% elsif attachment.download_flg.to_i == 1 -%><% download_flg = t('views.download.finished') -%>
+    <% else -%><% download_flg = t('views.download.ambiguous') -%>
+    <% end -%>
+    <tr>
+    <td nowrap><% if File.exist?($app_env['FILE_DIR'].to_s + "/#{attachment.id}") -%>
+                 <%= attachment.name %>
+                 <%# link_to attachment.name, {:controller => 'sys_data',
+                                                         :action => 'get_send_file',
+                                                         :id => attachment.id } %>
+               <% else -%><%= attachment.name -%><% end -%>
+    </td>
+    <td nowrap><%= label_file_size + " [" + attachment.size.to_s + "]" %></td>
+    <td nowrap><%= download_flg %></td>
+    <td nowrap>
+      <% if attachment.virus_check  == '0' %>
+        <%= t('views.virus_check_state.safe') %>
+      <% else %>
+        <%= attachment.virus_check %></td>
+      <% end %>
+    </tr>
+    <% @count += 1 -%>
+  <% end -%>
+  <% if @count < 0 -%>
+    <tr><td colspan=8 algin=center><%= t('views.messages.no_data') %></td></tr>
+  <% end -%>
+  </table>
+  </fieldset>
+
+
+<br>
+<a href="#" onclick="history.back(); return false;"><%= t('views.page_transration_button.back') %></a><br>
+<br>
+</div>

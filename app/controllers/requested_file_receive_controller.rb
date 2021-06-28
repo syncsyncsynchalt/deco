@@ -134,7 +134,13 @@ class RequestedFileReceiveController < ApplicationController
           end
           send_file $app_env['FILE_DIR'] + "/r#{@requested_attachment.id}",
                     :filename => @filename,
+                    :type => @requested_attachment.content_type,
+                    :x_sendfile => true
+=begin
+          send_file $app_env['FILE_DIR'] + "/r#{@requested_attachment.id}",
+                    :filename => @filename,
                     :type => @requested_attachment.content_type
+=end
         end
       else
         flash[:notice] = "不正なアクセスです（ＩＤが違います）。"

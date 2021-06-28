@@ -1,0 +1,87 @@
+// Place all the styles related to the user_log controller here.
+// They will automatically be included in application.css.
+// You can use Sass (SCSS) here: http://sass-lang.com/
+table.table-user-log {
+  width: 100%;
+  border: 1px solid #c0c0c0;
+  border-spacing: 0;
+  border-collapse: collapse;
+  font-size: 13px;
+  tr {
+  }
+  tr:hover {
+    background-color: #FFF5EE;
+#    background-color: #e5f0fe;
+  }
+  th {
+    font-weight: normal;
+    border: 1px solid #c0c0c0;
+    background-color:#e5f0fe;
+  }
+  td {
+    vertical-align: middle;
+    border: 1px solid #c0c0c0;
+    padding: 3px;
+  }
+  td.address_organization {
+    padding-left: 3px;
+    min-width:100px;
+  }
+  td.address_name {
+    padding-left: 3px;
+    min-width:150px;
+  }
+  td.address_email {
+    padding-left: 3px;
+    min-width:100px;
+  }
+  td.address_notes {
+    padding-left: 3px;
+    min-width:100px;
+  }
+  td.address_edit, td.address_destroy {
+    width:25px;
+    text-align: center;
+    vertical-align: middle;
+  }
+}
+
+table.table-address-inner {
+  width: 100%;
+  margin: 0px 0px 0px 0px;
+  border: 0px;
+  border-spacing: 0;
+  border-collapse: collapse;
+  font-size: 13px;
+  tr {
+    cursor: pointer;
+  }
+  tr:hover {
+    background-color: #FAFAFA;
+  }
+  td {
+    vertical-align: middle;
+    border: 0px;
+    padding: 3px;
+  }
+  td.address_name {
+    border: 0px;
+    padding-left: 3px;
+    min-width:150px;
+  }
+  td.address_email {
+    border: 0px;
+    padding-left: 3px;
+    min-width:100px;
+  }
+  td.address_notes {
+    border: 0px;
+    padding-left: 3px;
+    min-width:100px;
+  }
+  td.address_edit, td.address_destroy {
+    width:25px;
+    text-align: center;
+    vertical-align: middle;
+  }
+}

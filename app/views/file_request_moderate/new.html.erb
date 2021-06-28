@@ -1,4 +1,5 @@
-<h2>拒否の理由を記載してください。</h2>
+<h2>決裁却下</h2>
+<p>却下理由を記載してください。</p>
 <%= form_for(:request_modertaer, :url => { :action => "create", :id => params[:id]},
   :html => {:id => 'request_moderater', :name=> "request_modertaer" }) do |f| %>
 <%= f.hidden_field :result, {:value => 2} %>

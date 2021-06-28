@@ -175,8 +175,10 @@ function uploadProgress(file, bytesLoaded, bytesTotal) {
 
                 if (total_file_size == 0) {
                     show_transfer_rate(0);
+                } else if ((transfer_file_size + bytesLoaded) >= total_file_size) {
+                    show_transfer_rate(100);
                 } else {
-                  show_transfer_rate(Math.ceil(((transfer_file_size + bytesLoaded)/ total_file_size) * 100));
+                    show_transfer_rate(Math.ceil(((transfer_file_size + bytesLoaded)/ total_file_size) * 100));
                 }
 
                 var progress = new FileProgress(file, this.customSettings.progressTarget);

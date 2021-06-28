@@ -143,4 +143,5 @@ a.progressCancel:hover {
 /* -- SWFUpload Object Styles ------------------------------- */
 .swfupload {
         vertical-align: top;
+  z-index: 0;
 }

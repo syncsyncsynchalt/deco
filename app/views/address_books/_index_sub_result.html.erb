@@ -1,0 +1,60 @@
+<script type="text/javascript">
+$(function() {
+  $(".address_name,.address_email,.address_notes").click(function() {
+    var name_value = "";
+    if ($("#conditions_organization_flg").attr("checked") == 'checked') {
+      name_value = $(this).parent().find(".address_organization_h").val() + "　" + $(this).parent().find(".address_name_h").val();
+    } else {
+      name_value = $(this).parent().find(".address_name_h").val();
+    }
+    if (window.parent.$("#receiver_<%= params[:recipient_number] %>_name").size() > 0) {
+      window.parent.$("#receiver_<%= params[:recipient_number] %>_name").val(name_value);
+      window.parent.$("#receiver_<%= params[:recipient_number] %>_mail_address").val($(this).parent().find(".address_email_h").val());
+    }else{
+      window.parent.$("#requested_matter_<%= params[:recipient_number] %>_name").val(name_value);
+      window.parent.$("#requested_matter_<%= params[:recipient_number] %>_mail_address").val($(this).parent().find(".address_email_h").val());
+    }
+     $.modal.close();
+  });
+})
+</script>
+
+<table class="table-address-add">
+  <tr>
+    <td style="text-align: left;">
+      <div class="pagination">
+        <%= paginate @address_books, :remote => true %>
+      </div>
+    </td>
+  </tr>
+</table>
+
+<table class="table-address">
+  <tr>
+    <th>組織</th>
+    <th>名前</th>
+    <th>メールアドレス</th>
+  </tr>
+
+<% @address_books.each do |address_book| %>
+  <tr class="address_items" id="address_item_<%= address_book.id %>">
+    <td class="address_organization"><%= truncate(address_book.organization, {:length => 20}) %><%= hidden_field_tag "address_book_organization_#{address_book.id}",address_book.organization, {:class => "address_organization_h"} %>
+    </td>
+    <td class="address_name"><%= truncate(address_book.name, {:length => 20}) %><%= hidden_field_tag "address_book_name_#{address_book.id}",address_book.name, {:class => "address_name_h"} %></td>
+    <td class="address_email"><%= truncate(address_book.email,  {:length => 30}) %><%= hidden_field_tag "address_book_email_#{address_book.id}",address_book.email, {:class => "address_email_h"} %></td>
+  </tr>
+
+<% end %>
+</table>
+
+<table class="table-address-add">
+  <tr>
+    <td style="text-align: left;">
+      <div class="pagination">
+        <%= paginate @address_books, :remote => true %>
+      </div>
+    </td>
+  </tr>
+</table>
+
+

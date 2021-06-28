@@ -1,0 +1,79 @@
+<script type="text/javascript">
+$(function() {
+  $("#result").ajaxStart (function() {
+    $("#search_progress").html('<%= image_tag('common/scan_progress.gif', :alt => "progress", :border => 0) %>');
+    }).ajaxComplete (function() { $("#search_progress").html('');});
+
+  $( ".datepicker" ).datepicker();
+  // 検索ボタン押下処理
+  $("#button_address_book_search").click(function() {
+        load();
+  });
+  // ソート
+  $("#conditions_sort_select_1, #conditions_sort_select_2").change(function() {
+    load();
+  });
+  load();
+})
+
+function load() {
+    // POSTパラメータセット
+        data_param = {};
+        data_param['conditions'] = {}
+        data_param['conditions']['begin_date'] = $("#conditions_begin_date").val();
+        data_param['conditions']['end_date'] = $("#conditions_end_date").val();
+        data_param['conditions']['search_select'] = $("#conditions_search_select").val();
+        data_param['conditions']['search_text'] = $("#conditions_search_text").val();
+        data_param['conditions']['sort_select_1'] = $("#conditions_sort_select_1").val();
+        data_param['conditions']['sort_select_2'] = $("#conditions_sort_select_2").val();
+
+  　$.ajax({url: '<%= url_for :action => 'index_result'  %>',
+       　　　data: $.param(data_param),
+            dataType: 'script'});
+}
+</script>
+
+<h1><%= t('views.user_menu.user_log_send') %></h1>
+<div class="comment">
+<%= form_tag({ :action => 'index_result' }, { :remote => true } ) do %>
+<div class="table-address-search-u">
+期間：<%= text_field_tag('conditions[begin_date]', '', {:class => "datepicker"}) %>
+&nbsp;&nbsp;～&nbsp;&nbsp;<%= text_field_tag('conditions[end_date]', '', {:class => "datepicker"}) %>
+</div>
+<div class="table-address-search-u">
+<%= select_tag('conditions[search_select]', options_for_select(
+               { t('activerecord.attributes.send_matters.name') => 'name',
+                 t('activerecord.attributes.send_matters.mail_address') => 'mail_address'}, @hyoji_select_1),:include_blank => true) %>
+            &nbsp;
+             <%= text_field_tag 'conditions[search_text]', '', { :size => 30 } %>
+<input id="button_address_book_search" type="button" value="<%= t('address_books.search_button') %>" />
+<span id="search_progress"></span>
+</div>
+<div class="table-address-search-d">
+表示順序：
+<%= select_tag('conditions[sort_select_1]', options_for_select(
+    { t('activerecord.attributes.send_matters.created_at') => 'created_at'}, 'created_at')) %>
+
+<%= select_tag('conditions[sort_select_2]', options_for_select(
+    { t('views.sort.asc') => 'asc', t('views.sort.desc') => 'desc'}, 'desc')) %>
+</div>
+<% end %>
+
+<div id="result">
+<table class="table-address-add">
+  <tr>
+    <td style="text-align: left;">
+      <div class="pagination">
+      </div>
+    </td>
+  </tr>
+</table>
+<table class="table-address">
+  <tr>
+    <th><%= t('activerecord.attributes.send_matters.created_at') %></th>
+    <th><%= t('views.user_log.receiver_name') %></th>
+    <th><%= t('views.user_log.receiver_mail_address') %></th>
+  </tr>
+</table>
+</result>
+</div>

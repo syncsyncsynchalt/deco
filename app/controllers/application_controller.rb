@@ -31,6 +31,7 @@ class ApplicationController < ActionController::Base
   def check_access_ip
     @access_ip = request.env['HTTP_X_FORWARDED_FOR']
     if @access_ip
+      @access_ip = @access_ip.split(',')[0] if @access_ip.include?(',')
       unless @access_ip =~ /^\d+\.\d+\.\d+\.\d+|\d+\.\d+\.\d+\.\d+\/\d+$/
         @access_ip = request.env['REMOTE_ADDR']
       end
