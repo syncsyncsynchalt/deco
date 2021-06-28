@@ -2,7 +2,7 @@
   <% if session[:user_id] -%>
     ( <%= t('views.login_state.userid') %>: <%= current_user.login %> )
     <%= link_to "[#{t('views.login_state.management')}]", :controller => :user_management, :action => :index -%>
-    <%= link_to "[#{t('views.login_state.logout')}]", :controller => :sessions, :action => :destroy -%>
+    <%= link_to "[#{t('views.login_state.logout')}]", :controller => :sessions, :action => :destroy, :id => nil -%>
   <%- else -%>
 <%
     @login_user_exist_flg = 0

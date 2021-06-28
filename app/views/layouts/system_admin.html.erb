@@ -8,7 +8,7 @@ script_url = "<%= url_options[:script_name] %>";
     <title>システム管理 - DECO Drive</title>
     <%= csrf_meta_tags %>
     <%
-    links = Array.new 
+    links = Array.new
     # パッケージ用スタイル定義
     links << "application"
     # Engine用スタイル定義
@@ -18,9 +18,9 @@ script_url = "<%= url_options[:script_name] %>";
     %>
     <% links.each do |link| %>
     <%= stylesheet_link_tag link, media: 'all' %>
-    <% end %> 
+    <% end %>
     <%
-    links = Array.new 
+    links = Array.new
     # パッケージ用スクリプト定義
     links << "application"
     # Engine用スクリプト定義
@@ -30,7 +30,7 @@ script_url = "<%= url_options[:script_name] %>";
     %>
     <% links.each do |link| %>
     <%= javascript_include_tag link %>
-    <% end %> 
+    <% end %>
   </head>
 <% if controller.controller_name == 'top' %>
   <body class="top">
@@ -59,7 +59,7 @@ script_url = "<%= url_options[:script_name] %>";
       接続IPアドレス:<%= @access_ip %>
       <% if session[:user_id] -%>
       利用状況:外部アクセス( ユーザID: <%= current_user.login %> )
-      <%= link_to '[ログアウト]', :controller => :sessions, :action => :logout_for_administrator %>
+      <%= link_to '[ログアウト]', :controller => :sessions, :action => :logout_for_administrator, :id => nil %>
       <% else -%>
       利用状況:ローカルアクセス又は外部から
       <% end -%>

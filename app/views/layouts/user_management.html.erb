@@ -8,7 +8,7 @@ script_url = "<%= url_options[:script_name] %>";
     <title>個人管理</title>
     <%= csrf_meta_tags %>
     <%
-    links = Array.new 
+    links = Array.new
     # パッケージ用スタイル定義
     links << "application"
     # Engine用スタイル定義
@@ -18,9 +18,9 @@ script_url = "<%= url_options[:script_name] %>";
     %>
     <% links.each do |link| %>
     <%= stylesheet_link_tag link, media: 'all' %>
-    <% end %> 
+    <% end %>
     <%
-    links = Array.new 
+    links = Array.new
     # パッケージ用スクリプト定義
     links << "application"
     # Engine用スクリプト定義
@@ -30,7 +30,7 @@ script_url = "<%= url_options[:script_name] %>";
     %>
     <% links.each do |link| %>
     <%= javascript_include_tag link %>
-    <% end %> 
+    <% end %>
   </head>
   <body>
     <div id="header">
@@ -43,7 +43,7 @@ script_url = "<%= url_options[:script_name] %>";
         <% if session[:user_id] -%>
           ( <%= t('views.login_state.userid') %>: <%= current_user.login %> )
           <%= link_to "[#{t('views.login_state.top')}]", root_path -%>
-          <%= link_to "[#{t('views.login_state.logout')}]", :controller => :sessions, :action => :destroy -%>
+          <%= link_to "[#{t('views.login_state.logout')}]", :controller => :sessions, :action => :destroy, :id => nil -%>
         <%- end -%>
       <%- end -%>
     </div>
