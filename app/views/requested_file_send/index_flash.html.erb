@@ -90,13 +90,9 @@ file_upload();
     <div class="table-a">
       <div class="item-top">ダウンロードパスワード<span class="required">※</span></div>
     <% if @params_app_env['PASSWORD_AUTOMATION'] == '1' %>
-      <div class="input-top"><%= f.text_field :receive_password, :class => 'validate[required, custom[password], length[' +
-        @params_app_env['PW_LENGTH_MIN'] + ', ' +
-        @params_app_env['PW_LENGTH_MAX'] + ']]', :value => @randam_password %>
+      <div class="input-top"><%= f.text_field :receive_password, :class => "validate[required, custom[password], minSize[#{@params_app_env['PW_LENGTH_MIN']}], maxSize[#{@params_app_env['PW_LENGTH_MAX']}]]", :value => @randam_password %>
     <% else %>
-      <div class="input-top"><%= f.text_field :receive_password, :class => 'validate[required, custom[password], length[' +
-        @params_app_env['PW_LENGTH_MIN'] + ', ' +
-        @params_app_env['PW_LENGTH_MAX'] + ']]' %>
+      <div class="input-top"><%= f.text_field :receive_password, :class => "validate[required, custom[password], minSize[#{@params_app_env['PW_LENGTH_MIN']}], maxSize[#{@params_app_env['PW_LENGTH_MAX']}]]" %>
     <% end %>
           &nbsp;（<%= @params_app_env['PW_LENGTH_MIN'] %>文字以上<%= @params_app_env['PW_LENGTH_MAX'] %>文字以内の半角英数字)<br />
         <span class="note">
@@ -135,8 +131,7 @@ file_upload();
 
       <div class="item-bot">相手へのメッセージ</div>
       <div class="input-bot">
-<%= f.text_area :message, :cols => "40", :rows => '5' ,:class => 'validate[length[0, ' +
-                                           @params_app_env['MESSAGE_LIMIT'] + ']]' %><br />
+<%= f.text_area :message, :cols => "40", :rows => '5' ,:class => "validate[maxSize[#{@params_app_env['MESSAGE_LIMIT']}]]" %><br />
   (<%= h @params_app_env['MESSAGE_LIMIT'] %>文字まで入力可能)</div>
 
     </div>

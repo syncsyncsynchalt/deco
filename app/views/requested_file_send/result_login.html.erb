@@ -1,0 +1,14 @@
+<%= form_for(:login, :url => { :action => "result_auth" }) do |f| -%>
+
+<p>
+  <%= f.label :パスワード %><br />
+  <%= f.text_field :send_password %>
+</p>
+
+<p>
+    <%= f.submit "送信" %>
+</p>
+
+<div style="height:200px;"></div>
+
+<% end -%>

@@ -187,7 +187,7 @@ class Notification < ActionMailer::Base
     @attachment = attachment
     @mail_content = get_mail_content()
     title_text = get_mail_head_title()
-    mail(:to => requested_matter.mail_address,
+    mail(:to => requested_matter.request_matter.mail_address,
          :subject => "#{title_text}ファイル削除のご連絡",
          :reply_to => requested_matter.mail_address)
   end

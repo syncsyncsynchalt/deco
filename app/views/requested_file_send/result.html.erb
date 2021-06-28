@@ -50,9 +50,13 @@ function disp(message, link){
           <% end %>
         <% else %>
           <div class="input-r">
-            <%= link_to image_tag('common/delete.jpg', {:border => '0', :alt => '削除'}),
+            <%#= link_to image_tag('common/delete.jpg', {:border => '0', :alt => '削除'}),
                                  {:action => 'delete', :id => attachment.id},
                                  {:onclick => "disp('削除しますか？', '/requested_file_send/delete/#{attachment.id}'); return false;", :method => "post"} %>
+            <%= link_to image_tag('common/delete.jpg',
+            {:border => '0', :alt => '削除'}),
+            {:action => 'delete', :id => attachment.id},
+             :data => {:confirm => '削除しますか？'} -%>
           </div>
         <% end %>
       <% end %>

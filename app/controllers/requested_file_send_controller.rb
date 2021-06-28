@@ -608,32 +608,33 @@ class RequestedFileSendController < ApplicationController
   # 依頼送信結果
   def result
     session[:requested_matter_id] = nil
-    if session[:request_send_url_code]
-      @url_code = session[:request_send_url_code]
-       session[:requested_matter_id] =
-               session[:"#{@url_code}"]['requested_matter_id']
-      @requested_matter = RequestedMatter.find(session[:requested_matter_id])
-    elsif params[:id]
-#      @requested_matter = RequestedMatter.find(:first,
-#                          :conditions => {
-#                            :url_operation => params['id'] })
+    if params[:id].present?
       @requested_matter =
-          RequestedMatter
-          .where({:url_operation => params[:id]})
-          .first
-      session[:requested_matter_id] = @requested_matter.id if @requested_matter.present?
+        RequestedMatter
+        .where([["url_operation = ?",
+                 ].join(" AND "),
+                 params[:id],
+                ])
+        .first
+      if @requested_matter.present? &&
+          session[:"#{@requested_matter.url}"].present? &&
+          session[:"#{@requested_matter.url}"]['auth'] == 'yes'
+        @url_code = @requested_matter.url
+        session[:requested_matter_id] = @requested_matter.id
+      end
     end
 
     if session[:requested_matter_id]
-#      @requested_attachments = RequestedAttachment.find(:all,
-#              :conditions => {
-#                :requested_matter_id => session[:requested_matter_id] })
       @requested_attachments =
           RequestedAttachment
           .where({:requested_matter_id => session[:requested_matter_id]})
     else
-      flash[:notice] = "不正なアクセスです"
-      redirect_to(:action => "blank")
+      if params[:id]
+        redirect_to(:action => "result_login", :id => params[:id])
+      else
+        flash[:notice] = "不正なアクセスです"
+        redirect_to(:action => "blank")
+      end
     end
   end
 
@@ -666,18 +667,82 @@ class RequestedFileSendController < ApplicationController
                   @requested_matter, @attachment, url).deliver
 
           flash[:notice] = "#{@attachment.name} を削除しました。"
-          redirect_to(:action => "result")
+          redirect_to(:action => "result", :id => @requested_matter.url_operation)
         else
-          flash[:notice] = "不正なアクセスです"
+          flash[:notice] = "不正なアクセスです。"
           redirect_to(:action => "blank")
         end
       else
         flash[:notice] = "#{@attachment.name} はすでに削除されています。"
-        redirect_to(:action => "result")
+        redirect_to(:action => "result", :id => @requested_matter.url_operation)
       end
     else
-      flash[:notice] = "不正なアクセスです"
+      flash[:notice] = "不正なアクセスです。"
       redirect_to(:action => "blank")
+    end
+  end
+
+  # 認証画面(メールのリンク先)
+  def result_login
+    @url_operation = params[:id]
+    @requested_matter =
+        RequestedMatter
+        .where({ :url_operation => @url_operation })
+        .first
+    pass_port = 'pass'
+    if params[:id].present? && @requested_matter.present?
+      @url_code = @requested_matter.url
+      if @requested_matter.file_up_date
+        session[:request_send_url_code] = @url_code
+        if session[:"#{@url_code}"]
+          if session[:"#{@url_code}"]['auth']
+            pass_port = ''
+            session[:site_category] = session[:"#{@url_code}"]['site_category']
+            redirect_to :action => 'result'
+          end
+        end
+
+        if pass_port == 'pass'
+          session[:"#{@url_code}"] ||= Hash.new
+          session[:"#{@url_code}"]['auth'] = nil
+          session[:"#{@url_code}"]['site_category'] = "requested_file_send"
+          session[:"#{@url_code}"]['requested_matter_id'] = @requested_matter.id
+          session[:site_category] = session[:"#{@url_code}"]['site_category']
+          unless flash[:notice]
+            flash[:notice] = "ファイル送信時のセッションが切れているため、再度ログインしてください。"
+          end
+        end
+      else
+        flash[:notice] = "送信が完了しておりません。"
+        redirect_to :action => 'blank'
+      end
+    else
+      flash[:notice] = "不正なアクセスです。"
+      redirect_to :action => 'blank'
+    end
+  end
+
+  # 認証チェック
+  def result_auth
+    @url_code = session[:request_send_url_code]
+    @requested_matter =
+        RequestedMatter
+        .where({ :id => session[:"#{@url_code}"]['requested_matter_id'] })
+        .first
+    if @requested_matter.send_password == params[:login]['send_password']
+      @request_send_flag = true
+      if @request_send_flag == true
+        session[:"#{@url_code}"]['auth'] = "yes"
+        flash[:notice] = "ログインしました。"
+        redirect_to :action => 'result', :id => @requested_matter.url_operation
+      else
+        flash[:notice] = "ファイルの送信依頼期限を過ぎています。"
+        redirect_to :action => 'blank'
+      end
+    else
+      flash[:notice] = "パスワードが違います。"
+      redirect_to :action => 'result_login', :params =>
+              { :id => @requested_matter.url_operation }
     end
   end
 

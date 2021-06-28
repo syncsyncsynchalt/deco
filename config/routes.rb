@@ -82,6 +82,7 @@ Rails.application.routes.draw do
   get 'requested_file_send/result/:id', to: 'requested_file_send#result'
   get 'requested_file_send/delete/:id', to: 'requested_file_send#delete'
   post 'requested_file_send/delete/:id', to: 'requested_file_send#delete'
+  get 'requested_file_send/result_login/:id', to: 'requested_file_send#result_login'
   resources :requested_file_send do
     get :login, :on => :collection
     post :auth, :on => :collection
@@ -98,6 +99,8 @@ Rails.application.routes.draw do
     get :result_ng, :on => :collection
     get :blank, :on => :collection
     get :message, :on => :collection
+    get :result_login, :on => :collection
+    post :result_auth, :on => :collection
   end
 
   get 'requested_file_receive/login/:id', to: 'requested_file_receive#login'

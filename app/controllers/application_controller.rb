@@ -178,6 +178,8 @@ class ApplicationController < ActionController::Base
         if user.length == 0
           cookies.delete :auth_token
           reset_session
+          redirect_to :controller => "sessions",
+                  :action => "new_for_administrator"
         end
       else
         redirect_to :controller => "sessions",

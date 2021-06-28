@@ -40,9 +40,9 @@ class RequestedFileReceiveController < ApplicationController
     end
 
     if pass_port == 'pass'
-      session[:"#{@url_code}"] = {
-              'r_auth' => nil,
-              'requested_matter_id' => @requested_matter.id }
+      session[:"#{@url_code}"] ||= Hash.new
+      session[:"#{@url_code}"]['r_auth'] = nil
+      session[:"#{@url_code}"]['requested_matter_id'] = @requested_matter.id
 
       session[:site_category] = "requested_file_receive"
       unless flash[:notice]
