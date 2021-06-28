@@ -1,0 +1,169 @@
+<script type="text/javascript">
+var check_submitted = 0;
+
+localDomains = "<%= $local_domains %>";
+arInput = 0;
+max_receivers_num = <%= $app_env['RECEIVERS_LIMIT'] %>;
+for (i = 2 ; i <= max_receivers_num; i++) {
+  receivers[i] = 0;
+}
+arInput_f = 0;
+max_files_num = <%= $app_env['FILE_SEND_LIMIT'] %>;
+for (i = 2 ; i <= max_files_num; i++) {
+  files[i] = 0;
+}
+files[1] = 1;
+
+$(document).ready(function() {
+  $.validationEngineLanguage.newLang(localDomains);
+  $("#send_matter").validationEngine({
+    promptPosition: "centerRight",
+    success : function() { var submitbtn = document.getElementById("submitbtn");
+                           submitbtn.innerHTML = "<img src=\"/images/common/but_send_x.jpg\">";
+                           document.send_matter.submit(); },
+    failure : function() { check_submitted = 1; }
+  })
+
+});
+
+
+</script>
+
+<% form_for(:send_matter, :url => { :action => "create_noflash" },
+  :html => {:id => 'send_matter', :name=> "send_matter", :multipart => true }) do |f| -%>
+<%= f.error_messages %>
+<%= f.hidden_field :relayid, {:value => @relay_id} %>
+
+<h1>ファイル送信（簡易バージョン）</h1>
+
+<p>正常に送信できない場合はこの画面から送信が可能です。<br />
+以下のフォームに必要事項を記入し，[ファイルを送信する]をクリックしてください。
+<%- -%>（<span class="required">※</span> 印は必須項目です。）</p>
+
+<h2>１．送信者情報入力　（あなたの情報を入力してください）</h2>
+
+    <fieldset>
+
+    <legend>送信者情報入力</legend>
+    <div class="table-a">
+      <div class="item-top">あなたの名前<span class="required">※</span></div>
+      <div class="input-top"><%= f.text_field :name, :class => 'validate[required]', :size => 30 %></div>
+      <div class="item-bot">あなたのメールアドレス<span class="required">※</span></div>
+  <% if @local_ips.select{  |local_ip| IPAddr.new(local_ip.value).include?(@access_ip) }.size > 0 %>
+      <div class="input-bot"><%= f.text_field :mail_address, :class => 'validate[required, custom[localDomain]]', :size => 40 %>
+        <br /><span class="note">例）<% $local_domain_list.each_with_index do | local_domain, i | %> tokushima_tarou_1@<b><%= local_domain %></b><% if i + 1 < $local_domain_list.size %>, <% end %><% end %></span></div>
+  <% else %>
+      <div class="input-bot"><%= f.text_field :mail_address, :class => 'validate[required, custom[email]]', :size => 40 %>
+        <br /><span class="note">例）name1@example.com</span></div>
+  <% end %>
+    </div>
+
+    </fieldset>
+
+    <h2>２．パスワード，その他の設定</h2>
+
+    <fieldset>
+
+    <legend>パスワード，その他の設定</legend>
+
+    <div class="table-a">
+      <div class="item-top">ダウンロードパスワード<span class="required">※</span></div>
+      <div class="input-top"><%= f.text_field :receive_password,  :class => 'validate[required, custom[password], length[' +
+        $app_env['PW_LENGTH_MIN'] + ', ' +
+        $app_env['PW_LENGTH_MAX'] + ']]' %>
+          &nbsp;（<%= $app_env['PW_LENGTH_MIN'] %>文字以上<%= $app_env['PW_LENGTH_MAX'] %>文字以内の半角英数字)<br />
+        <span class="note">
+          受取人がファイルをダウンロードする場合に必要となるパスワードです。<br />
+        </span>
+      </div>
+      <div class="item-mid">パスワードの通知方法<span class="required">※</span></div>
+      <div class="input-mid"><%= f.select :password_notice, [["システムで行う", 1], ["自分で通知する", 0]] %>
+<br /><br />
+          <span class="note">＜項目について＞<br />
+           システムで行う　･･･自動通知メールの中にパスワードが記載されます。<br />
+           自分で通知する　･･･別途メール等の手段を用いて相手の方へパスワードをお知らせください。
+          </span>
+      </div>
+<div class="item-mid">ダウンロード完了通知メール<span class="required">※</span></div>
+      <div class="input-mid"><%= f.select :download_check, [["希望する", 1], ["希望しない", 0]] %><br />
+          <span class="note">
+          相手の方がファイルを１つでもダウンロードしたらメールで通知します。<br />
+          </span>
+      </div>
+      <div class="item-mid">ファイル保存期間<span class="required">※</span></div>
+      <div class="input-mid">
+    <%= f.select :file_life_period,
+               $file_life_periods,
+               {:selected => $app_env['FLPD_VALUE'].to_i} %>
+            <br />
+          <span class="note">
+          指定した期間が過ぎると，ファイルはサーバから自動的に削除されます。
+          </span>
+      </div>
+      <div class="item-bot">相手へのメッセージ</div>
+      <div class="input-bot">
+<%= f.text_area :message, :cols => "40", :rows => '5' ,:class => 'validate[length[0, ' +
+                                           $app_env['MESSAGE_LIMIT'] + ']]' %><br />
+  (<%= $app_env['MESSAGE_LIMIT'] %>文字まで入力可能)</div>
+</div>
+     </fieldset>
+
+    <h2>３．受取人情報入力　（ファイルを受け取る相手の情報を入力してください）</h2>
+
+    <span class="left">宛先は最大<%= h $app_env['RECEIVERS_LIMIT'] %> 名まで追加できます。<br /><br />
+    <img src="/images/common/name_s.jpg" />&nbsp;相手のお名前<span class="required">※</span><br />
+    <img src="/images/common/mail_s.jpg" />&nbsp;相手のメールアドレス<span class="required">※</span>&nbsp;&nbsp;<span class="note">例）name1@example.com</span>
+    </span>
+
+    <fieldset>
+    <legend>受取人情報入力</legend>
+
+<% i=1 %>
+<% while i<2 %>
+  <% fields_for :receiver , :index => i do |f2| %>
+
+    <div class="table-e">
+      <div class="item">ファイル受取人 1人目</div>
+      <div class="input-l">
+        <img src="/images/common/name.jpg" align="left" /><%= f2.text_field :name, :class => 'validate[required]', :size => 30 %> 様<br />
+        <img src="/images/common/mail.jpg" align="left" /><%= f2.text_field :mail_address, :class => 'validate[required, custom[email]]', :size => 40 %>
+      </div>
+      <div class="input-r"></div>
+      <div id="receiver_form"></div>
+    </div>
+
+  <% end %>
+<% i += i %>
+<% end %>
+
+
+    <span class="right"><input type="button" onclick="add_receiver('receiver', 'receiver_form', 'ファイル受取人')" value="+ 宛先欄を追加" /></span>
+
+<fieldset>
+
+    <h2>４．送信するファイルの選択</h2>
+
+    <span class="left"><%= $app_env['FILE_SEND_LIMIT'] %>ファイル
+    （合計<%= $app_env['FILE_TOTAL_SIZE_LIMIT'] %>MB）まで送信できます。
+    （1ファイルの最大サイズは<%= $app_env['FILE_SIZE_LIMIT'] %>MBまで）</span>
+
+<% i=1 %>
+<% while i<2 %>
+  <% fields_for :attachment , :index => i do |f| %>
+    <div class="table-e">
+      <div class="item">ファイル 1個目</div>
+      <div class="input-l">
+        <%= f.file_field :file, :class => 'validate[custom[file]]' %> <br />
+      </div>
+      <div class="input-r"></div>
+      <div id="add_files"></div>
+    </div>
+  <% end %>
+<% i += i %>
+<% end %>
+<span class="right"><input type="button" onclick="add_file('attachment', 'add_files')" value="+ ファイルを追加" /></span>
+
+    <p id="submitbtn" align="center"><%= image_submit_tag("common/but_send.gif" ) %></p>
+    <br /><br />
+<% end -%>
+

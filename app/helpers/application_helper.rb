@@ -1,0 +1,29 @@
+# Copyright (C) 2010 NMT Co.,Ltd.
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>
+
+# Methods added to this helper will be available to all templates in the application.
+module ApplicationHelper
+  def show_file_size(attachment)
+    html =''
+    if attachment.size >= (1024*1024)
+      html << "#{(attachment.size/1024/1024).round}MB"
+    elsif attachment.size >= 1024 && attachment.size < (1024*1024)
+      html << "#{(attachment.size/1024).round}KB"
+    else
+      html << "#{(attachment.size).round}B"
+    end
+    return html
+  end
+end

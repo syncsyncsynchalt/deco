@@ -1,0 +1,37 @@
+<script type="text/javascript">
+
+localDomains = ""
+
+$(document).ready(function() {
+  $.validationEngineLanguage.newLang(localDomains);
+  $("#app_env").validationEngine({
+    success : function() { document.app_env.submit(); },
+    failure : function() {}
+  })
+});
+</script>
+
+<%= $param_label[@app_env.key] %>の設定変更
+<fieldset>
+<div class="table-sys-a">
+
+<% form_for(@app_env, :url => { :action => 'update', :id => @app_env.id},
+                      :html => {:id => 'app_env', :name=> "app_env" }) do |f| %>
+  <%= f.error_messages %>
+  <div class="item-mid"></div>
+  <div class="input-mid"><%= f.text_field :value, :class => 'validate[required]' %></div>
+  <div class="item-mid"></div>
+  <div class="input-mid"><%= f.submit "　更新　" %></div>
+<% end %>
+
+</div>
+</fieldset>
+
+<br>
+
+<% if session[:target_for_back_id] -%>
+<%= link_to "戻る", {:action => session[:target_for_back], :id => session[:target_for_back_id]} %><br />
+<% else -%>
+<%= link_to "戻る", {:action => session[:target_for_back]} %><br />
+<% end -%>
+

@@ -1,0 +1,8 @@
+
+<%- if session[:target_for_back_id] -%>
+<%= link_to "戻る", {:action => session[:target_for_back],
+ :id => session[:target_for_back_id]} -%><br />
+<%- else -%>
+<%= link_to "戻る", {:action => session[:target_for_back]} -%><br />
+<%- end -%>
+

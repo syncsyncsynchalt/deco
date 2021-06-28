@@ -1,0 +1,23 @@
+2011-05-02 Version 1.0.3
+
+        Fixed a automatic delection of file.
+        Changed top_controller.
+
+        Changed db/migrate/20100610062613_add_image_to_content_items
+
+2011-01-24 Version 1.0.2
+
+        Changed downloading logs.
+        Exchanged all log to month one.
+
+2010-10-29: Version 1.0.1
+        
+        Fixed a contents management.
+        Changed nmt.rb.
+
+        Added automatic delection of file.
+        Changed application.rb
+
+2010-09-30: Version 1.0.0
+
+        Initial release.

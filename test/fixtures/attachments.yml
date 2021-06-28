@@ -1,0 +1,13 @@
+# Read about fixtures at http://ar.rubyonrails.org/classes/Fixtures.html
+
+one:
+  send_matter_id: 1
+  name: MyString
+  size: 1
+  relayid: MyString
+
+two:
+  send_matter_id: 1
+  name: MyString
+  size: 1
+  relayid: MyString

@@ -1,0 +1,23 @@
+# Read about fixtures at http://ar.rubyonrails.org/classes/Fixtures.html
+
+one:
+  name: MyString
+  mail_address: MyString
+  receive_password: MyString
+  download_check: 1
+  message: MyText
+  file_life_period: 1
+  url: MyString
+  status: 1
+  relayid: MyString
+
+two:
+  name: MyString
+  mail_address: MyString
+  receive_password: MyString
+  download_check: 1
+  message: MyText
+  file_life_period: 1
+  url: MyString
+  status: 1
+  relayid: MyString

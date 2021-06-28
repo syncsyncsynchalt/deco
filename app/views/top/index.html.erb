@@ -1,0 +1,57 @@
+  <div id="info">
+    <% cnt = 0 -%>
+
+<style type="text/css">
+</style>
+
+<%- for announcement in @announcements -%>
+  <%- cnt = cnt + 1 -%>
+
+<style type="text/css">
+</style>
+
+<script type="text/javascript">
+announcement_body_flg_<%= cnt %> = 0;
+
+function display_<%= cnt %> () {
+  if (announcement_body_flg_<%= cnt %> == 0) {
+    $("#announcement_body_<%= cnt %>").append("<div id=\"annoucement_body_block_<%= cnt %>\">" +
+                                              "<%= announcement.body.gsub("\r\n", "<br>\" +\r\n\"") %>&nbsp;<br><br>" +
+                                              "</div>");
+    announcement_body_flg_<%= cnt %> = 1;
+  } else {
+    announcement_body_flg_<%= cnt %> = 0;
+    $("#annoucement_body_block_<%= cnt %>").remove();
+  }
+}
+</script>
+      <div id="announcement_title" onclick="display_<%= cnt %>()"><%= h announcement.updated_at.strftime('%Y/%m/%d %H:%M') %>　<%= announcement.title %></div><br>
+<div id='announcement_body_<%= cnt %>'></div>
+<%- end -%>
+<%- if cnt == 0 -%>
+  現在、お知らせはありません。<br>
+<%- end -%>
+  </div>
+
+  <div id="menu">
+    <h1>システムメニュー</h1>
+    <dl>
+      <dt><%= link_to("ファイルを送る", {:controller => "file_send", :action => "index"}, {:id => 'm1'}) %></dt>
+      <dd><%= image_tag("common/menu01_cm.gif", :alt => "ファイルを送るときに使用します") %></dd>
+      <dt><%= link_to("ファイルを依頼する", {:controller => "file_request", :action => "index"}, {:id => 'm2'}) %></dt>
+      <dd><%= image_tag("common/menu02_cm.gif", :alt => "ファイル送付を依頼するときに使用します") %></dd>
+    </dl>
+  </div>
+
+  <div id="service">
+    <h1>サービスについて</h1>
+    <dl>
+<% @content_frames.each.with_index do |content_frame, count| -%>
+      <dt><%= link_to(content_frame.title, :controller => "contents", :action => "load", :id => content_frame.id) %></dt>
+      <dd><%= content_frame.description %></dd>
+<% end -%>
+    </dl>
+  </div>
+
+<script language="JavaScript" src="js/foot01.js" type="text/JavaScript"></script>
+

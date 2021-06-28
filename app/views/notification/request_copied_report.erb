@@ -1,0 +1,18 @@
+このメールは，「DECO」から発信しております。
+
+<%= h @request_matter.name %> 様
+
+次の内容で送信完了しました。
+
+■送信者一覧
+<% @requested_matters.each.with_index do | receiver, count | %><%= count + 1 -%>
+<%= h receiver.name %> 様（<%= h receiver.mail_address %>）
+<%= h @url %><%= h receiver.url %> (pw:<%= h receiver.send_password %>)
+
+<% end -%>
+■送信者へのメッセージ
+<%= h @request_matter.message %>
+
+■送信依頼受付期間
+<%= (Time.parse(@request_matter.created_at.to_s) +
+                      @request_period).strftime("%Y年%m月%d日%H時%M分%S秒") %>　

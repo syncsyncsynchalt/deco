@@ -1,0 +1,49 @@
+<script type="text/javascript">
+
+localDomains = ""
+
+$(document).ready(function() {
+  $.validationEngineLanguage.newLang(localDomains);
+  $("#announcement").validationEngine({
+    success : function() { document.announcement.submit(); },
+    failure : function() {}
+  })
+});
+</script>
+
+
+
+  <fieldset>
+  <% form_for(:announcement, :url => { :action => "create"}, 
+              :html => {:id => 'announcement', :name=> "announcement" }) do |f| -%>
+    <div class="table-sys-a">
+      <div class="item-mid2">タイトル</div>
+      <div class="input-mid2"><%= f.text_field :title, :size => '50', :class => 'validate[required]' %></div>
+      <div class="item-mid2">内容</div>
+      <div class="input-mid2"><%= f.text_area :body, :cols => '40', :rows => '10', :class => 'validate[required]' %></div>
+      <div class="item-mid2"></div>
+      <div class="input-mid2" align="center"><%= f.submit "　登録　" %></div>
+    </div>
+  <% end %>
+  </fieldset>
+
+  <br>
+
+  <fieldset>
+  <h2>現在登録されているアナウンス</h2>
+  <div class="table-sys-a">
+    <div class="item-mid3-1">更新時間</div>
+    <div class="item-mid3-2">タイトル</div>
+    <div class="item-mid3-3">　</div>
+
+    <% for announcement in @announcements -%>
+      <div class="input-mid3-1"><%= announcement.updated_at.strftime('%Y/%m/%d %H:%M') %></div>
+      <div class="input-mid3-2"><%= announcement.title %></div>
+      <div class="input-mid3-3"><%= link_to '[編集]', {:action => 'edit', :id => announcement.id } %>
+      <%= link_to '[削除]', {:action => 'destroy', :id => announcement.id},
+                             :confirm => '削除します。よろしいですか?', :method => :delete %></div>
+    <% end -%>
+  </div>
+  </fieldset>
+
+<br><br>

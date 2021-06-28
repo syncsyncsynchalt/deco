@@ -1,0 +1,137 @@
+<% form_tag :action => 'get_csv_of_request_log' do %>
+  <%= select_tag 'month_for_out', options_for_select(@select_month) %> のログを
+  <%= submit_tag "　CSV保存　" %>
+<% end %>
+
+<br>
+
+<% form_tag :action => 'request_log' do %>
+  <%= select_tag :type, options_for_select([["依頼人", 0], ["依頼人メールアドレス", 1],
+                       ["送信者名", 2], ["送信者メールアドレス", 3]], @type.to_i ) %>
+  <%= text_field_tag :keyward, @keyward %>
+  <%= submit_tag "　検索　" %>
+<% end %>
+<br>
+
+データ数：<%= @total_data %>　
+[ <%= @part_of_page %> ]
+　<%#= link_to 'CSV保存', {:action => 'get_csv_of_request_log'} %><br>
+
+<table border=1 cellspacing=0 cellpadding=3>
+  <tr bordercolor=gray>
+  <td nowrap bgcolor=#e5f0fe><br></td>
+  <td nowrap bgcolor=#e5f0fe>登録日</td>
+  <td nowrap bgcolor=#e5f0fe>依頼ＩＤ</td>
+  <td nowrap bgcolor=#e5f0fe>依頼人</td>
+  <td nowrap bgcolor=#e5f0fe>依頼人メールアドレス</td>
+  <td nowrap bgcolor=#e5f0fe>送信者名</td>
+  <td nowrap bgcolor=#e5f0fe>送信者メールアドレス</td>
+  </tr>
+  <% count = 0 -%>
+  <% cr_id = 0 -%>
+<% created_at = "" -%>
+<% request_matter_id = "" -%>
+<% request_matter_name = "" -%>
+<% request_matter_mail = "" -%>
+<% requested_matter_id = "" -%>
+<% requested_matter_name = "" -%>
+<% requested_matter_mail = "" -%>
+<% bf_created_at = "" -%>
+<% bf_request_matter_id = "" -%>
+<% bf_request_matter_id_b = "" -%>
+<% bf_request_matter_name = "" -%>
+<% bf_request_matter_mail = "" -%>
+<% bf_requested_matter_name = "" -%>
+<% bf_requested_matter_mail = "" -%>
+
+<%# @requested_matters.each.with_index do | requested_matter, count | -%>
+<% @rs.each do | data | -%>
+  <!--<%# cr_id = count + 1 -%>
+  <%# bf_request_matter_id_b = request_matter_id -%>
+  <%# bf_created_at = requested_matter.created_at.to_s -%>-->
+  <%# bf_created_at = (Time.parse(requested_matter.created_at.to_s)).strftime("%Y/%m/%d %H:%M:%S") -%>
+  <%# bf_request_matter_id = requested_matter.request_matter_id -%>
+  <%# bf_request_matter_name = requested_matter.request_name -%>
+  <%# bf_request_matter_mail = requested_matter.request_mail_address -%>
+  <%# requested_matter_id = requested_matter.requested_matter_id -%>
+  <%# bf_requested_matter_name = "<a href=\"/sys_log/requested_matter_info/" + requested_matter_id.to_s + "\">" +
+    requested_matter.requested_name + "</a>" -%>
+  <%# bf_requested_matter_mail = requested_matter.requested_mail_address -%>
+  <% bf_created_at = (Time.parse(data[3].to_s)).strftime("%Y/%m/%d %H:%M:%S") -%>
+  <% bf_request_matter_id = data[0] -%>
+  <% bf_request_matter_name = data[1] -%>
+  <% bf_request_matter_mail = data[2] -%>
+  <% requested_matter_id = data[4] -%>
+  <% bf_requested_matter_name = "<a href=\"/sys_log/requested_matter_info/" + requested_matter_id.to_s + "\">" +
+    data[5] + "</a>" -%>
+  <% bf_requested_matter_mail = data[6] -%>
+
+  <% if bf_request_matter_id_b != "" -%>
+    <% if bf_request_matter_id == bf_request_matter_id_b -%>
+      <% requested_matter_name = requested_matter_name + "<br>" + bf_requested_matter_name -%>
+      <% requested_matter_mail = requested_matter_mail + "<br>" + bf_requested_matter_mail -%>
+    <% else -%>
+      <% cr_id = cr_id + 1 -%>
+      <% if @s_data <= cr_id and cr_id <= @e_data -%>
+        <tr bordercolor=gray>
+        <td nowrap align=center><%= cr_id %></td>
+        <td nowrap><%= created_at %></td>
+        <td nowrap><%= request_matter_id %></td>
+        <td nowrap><%= request_matter_name %></td>
+        <td nowrap><%= request_matter_mail %></td>
+        <td nowrap><%= requested_matter_name %></td>
+        <td nowrap><%= requested_matter_mail %></td>
+        </tr>
+      <% end -%>
+
+      <% bf_request_matter_id_b = bf_request_matter_id -%>
+
+      <% created_at = bf_created_at -%>
+      <% request_matter_id = bf_request_matter_id -%>
+      <% request_matter_name = bf_request_matter_name -%>
+      <% request_matter_mail = bf_request_matter_mail -%>
+      <% requested_matter_name = bf_requested_matter_name -%>
+      <% requested_matter_mail = bf_requested_matter_mail -%>
+    <% end -%>
+  <% else -%>
+    <% bf_request_matter_id_b = bf_request_matter_id -%>
+
+    <% created_at = bf_created_at -%>
+    <% request_matter_id = bf_request_matter_id -%>
+    <% request_matter_name = bf_request_matter_name -%>
+    <% request_matter_mail = bf_request_matter_mail -%>
+    <% requested_matter_name = bf_requested_matter_name -%>
+    <% requested_matter_mail = bf_requested_matter_mail -%>
+  <% end -%>
+<% end -%>
+
+  <%# @requested_matters.each.with_index do | requested_matter, count | -%>
+    <!--tr bordercolor=gray>
+    <td nowrap align=center><%= count + 1 %></td>
+    <td nowrap><%#= requested_matter.request_matter.created_at.strftime("%Y/%m/%d %H:%M:%S") %></td>
+    <td nowrap><%#= requested_matter.request_matter.id %></td>
+    <td nowrap><%#= requested_matter.request_matter.name %></td>
+    <td nowrap><%#= requested_matter.request_matter.mail_address %></td>
+    <td nowrap><%#= requested_matter.id %></td>
+    <td nowrap><%#= requested_matter_mail_address %></td>
+    </tr-->
+  <%# end -%>
+
+  <% if cr_id == 0 and @total_data == 0 -%>
+    <tr><td colspan=8 algin=center>データがありません</td></tr>
+  <% else -%>
+    <% cr_id = cr_id + 1 %>
+    <% if @s_data <= cr_id and cr_id <= @e_data -%>
+      <tr bordercolor=gray>
+      <td nowrap align=center><%= cr_id %></td>
+      <td nowrap><%= created_at %></td>
+      <td nowrap><%= request_matter_id %></td>
+      <td nowrap><%= request_matter_name %></td>
+      <td nowrap><%= request_matter_mail %></td>
+      <td nowrap><%= requested_matter_name %></td>
+      <td nowrap><%= requested_matter_mail %></td>
+      </tr>
+    <% end -%>
+  <% end -%>
+</table>
+

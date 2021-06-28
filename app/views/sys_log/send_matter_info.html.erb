@@ -1,0 +1,115 @@
+
+  <h2>個別データ表示</h2>
+  <h3>送信情報</h3>
+  <fieldset>
+  <div class="table-sys-a">
+    <div class="item-mid">送信ＩＤ</div>
+    <div class="input-mid"><%= h @send_matter.id %></div>
+    <div class="item-mid">送信者名</div>
+    <div class="input-mid"><%= h @send_matter.name %></div>
+    <div class="item-mid">送信者メールアドレス</div>
+    <div class="input-mid"><%= h @send_matter.mail_address %><br></div>
+    <div class="item-mid">パスワード通知</div>
+    <div class="input-mid"><%= @password_notice %><br></div>
+    <div class="item-mid">ダウンロードチェック</div>
+    <div class="input-mid"><%= @download_check %><br></div>
+    <div class="item-mid">ファイル保存期間</div>
+    <div class="input-mid"><%= @file_life_period %><br></div>
+    <div class="item-mid">メッセージ</div>
+    <div class="input-mid"><%= h @send_matter.message %><br></div>
+    <div class="item-mid">ステータス</div>
+    <div class="input-mid"><%= @status %><br></div>
+    <div class="item-mid">送信日</div>
+    <div class="input-mid"><% if @send_matter.created_at -%>
+                             <%= (Time.parse(@send_matter.created_at.to_s)).strftime("%Y年%m月%d日%H時%M分%S秒") %>
+                           <% end -%><br>
+    </div>
+    <div class="item-mid">受信期限</div>
+    <div class="input-mid"><% if @send_matter.file_life_period -%>
+                             <%= (Time.parse(@send_matter.created_at.to_s) +
+                                 @send_matter.file_life_period).strftime("%Y年%m月%d日%H時%M分%S秒") %>
+                           <% end -%><br>
+    </div>
+  </div>
+  </fieldset>
+
+  <h3>受信者情報</h3>
+  <fieldset>
+  <table border=1 cellspacing=0 cellpadding=3>
+    <tr bordercolor=gray>
+    <td nowrap bgcolor=#e5f0fe><br></td>
+    <td nowrap bgcolor=#e5f0fe>ＩＤ</td>
+    <td nowrap bgcolor=#e5f0fe>受信者名</td>
+    <td nowrap bgcolor=#e5f0fe>メールアドレス</td>
+    </tr>
+
+  <% count = -1 -%>
+  <% @receivers.each.with_index do | receiver, count | -%>
+    <tr bordercolor=gray>
+    <td nowrap align=center><%= count + 1 %></td>
+    <td nowrap><%= receiver.id %></td>
+    <td nowrap><%= receiver.name %></td>
+    <td nowrap><%= receiver.mail_address %></td>
+    </tr>
+  <% end -%>
+  <% if count < 0 -%>
+    <tr><td colspan=4 algin=center>データがありません</td></tr>
+  <% end -%>
+  </table>
+  </fieldset>
+
+  <h3>ファイル情報</h3>
+  <fieldset>
+  <table border=1 cellspacing=0 cellpadding=3>
+    <tr bordercolor=gray>
+    <td nowrap bgcolor=#e5f0fe><br></td>
+    <td nowrap bgcolor=#e5f0fe>ＩＤ</td>
+    <td nowrap bgcolor=#e5f0fe>ファイル名</td>
+    <td nowrap bgcolor=#e5f0fe>サイズ</td>
+    <td nowrap bgcolor=#e5f0fe>種類</td>
+    <td nowrap bgcolor=#e5f0fe>ダウンロード状況</td>
+    <td nowrap bgcolor=#e5f0fe>ウィルス</td>
+    <td nowrap bgcolor=#e5f0fe>アップロード日</td>
+    </tr>
+
+  <% count = -1 -%>
+  <% download_flg = "" -%>
+  <% @attachments.each.with_index do | attachment, count | -%>
+    <% label_file_size = '' -%>
+    <% if attachment.size.to_i > 1024 * 1024 -%>
+      <% label_file_size = (attachment.size.to_i / (1024 * 1024)).to_s + ' MB' -%>
+    <% elsif attachment.size.to_i > 1024 -%>
+      <% label_file_size = (attachment.size.to_i / 1024).to_s + ' KB' -%>
+    <% else -%>
+      <% label_file_size = attachment.size.to_s + ' B' -%>
+    <% end -%>
+    <% if attachment.download_flg.to_i == 0 -%><% download_flg = "未" -%>
+    <% elsif attachment.download_flg.to_i == 1 -%><% download_flg = "済" -%>
+    <% else -%><% download_flg = "不明" -%>
+    <% end -%>
+    <tr bordercolor=gray>
+    <td nowrap align=center><%= count + 1 %></td>
+    <td nowrap><%= attachment.id %></td>
+    <td nowrap><% if File.exist?($app_env['FILE_DIR'] + "/#{attachment.id}") -%>
+                 <%= link_to attachment.name, {:controller => 'sys_data',
+                                                         :action => 'get_send_file',
+                                                         :id => attachment.id } %>
+               <% else -%><%= attachment.name -%><% end -%>
+    </td>
+    <td nowrap><%= label_file_size + " [" + attachment.size.to_s + "]" %></td>
+    <td nowrap><%= attachment.content_type %></td>
+    <td nowrap><%= download_flg %></td>
+    <td nowrap><%= attachment.virus_check %></td>
+    <td nowrap><%= (Time.parse(attachment.created_at.to_s)).strftime("%Y年%m月%d日%H時%M分%S秒") %></td>
+    </tr>
+  <% end -%>
+  <% if count < 0 -%>
+    <tr><td colspan=8 algin=center>データがありません</td></tr>
+  <% end -%>
+  </table>
+  </fieldset>
+
+
+<br>
+<a href="#" onclick="history.back(); return false;">戻る</a><br>
+<br>

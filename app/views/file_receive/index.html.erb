@@ -1,0 +1,45 @@
+<p>ダウンロードボタンをクリックして，ファイルをダウンロードしてください。</p>
+<div class="table-a">
+  <div class="item-top">ファイル送信者名</div>
+  <div class="input-top"><%=h @send_matter.name %>
+        &nbsp;&nbsp;（<%=h @send_matter.mail_address %>）</div>
+  <div class="item-mid">ファイル受信者名</div>
+  <div class="input-mid"><%=h @receiver.name %>
+        &nbsp;様&nbsp;（<%=h @receiver.mail_address %>）</div>
+  <div class="item-mid">ファイルお預かり日時</div>
+  <div class="input-mid">
+        <%= Time.parse(@send_matter.created_at.to_s).strftime("%Y年%m月%d日%H時%M分%S秒") %></div>
+  <div class="item-mid">お預かりしているファイル</div>
+  <div class="input-mid">
+    <div class="table-d">
+      <div class="item-l">ファイル名</div>
+      <div class="item-r"></div>
+      <% if @attachments.size > 0 %>
+        <% @attachments.each_with_index do |attachment, index| %>
+          <% if(attachment.virus_check != '0') %>
+          <% else %>
+            <div class="input-l"><%= index + 1 %>. <%=h truncate(attachment.name, 28) %>（<%=h show_file_size(attachment) %>）</div>
+            <div class="input-r"><%= link_to image_tag('/images/common/download.gif', {:border => '0', :alt => 'ダウンロード'}),
+                                 {:action => 'get', :id => attachment.id} %></div>
+          <% end %>
+        <% end %>
+      <% else %>
+        <div class="input-l">
+          <%=h @send_matter.name %> 様がファイルを削除しました。
+        </div>
+        <div class="input-r"></div>
+      <% end %>
+    </div>
+  </div>
+  <div class="item-mid">送信者からのメッセージ</div>
+  <% if @send_matter.message == '' %>
+    <div class="input-mid">　</div>
+  <% else %>
+    <div class="input-mid"><%=h @send_matter.message %></div>
+  <% end %>
+  <div class="item-bot">ファイル保管期限</div>
+  <div class="input-bot"><%= (Time.parse(@send_matter.created_at.to_s) +
+                             @send_matter.file_life_period).strftime("%Y年%m月%d日%H時%M分%S秒") %></div>
+</div>
+
+<div style="height:150px; clear:both;"></div>

@@ -1,0 +1,15 @@
+# Read about fixtures at http://ar.rubyonrails.org/classes/Fixtures.html
+
+one:
+  requested_matter_id: 1
+  name: MyString
+  size: 1
+  download_flg: 1
+  relayid: MyString
+
+two:
+  requested_matter_id: 1
+  name: MyString
+  size: 1
+  download_flg: 1
+  relayid: MyString

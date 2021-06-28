@@ -1,0 +1,182 @@
+<script type="text/javascript">
+
+localDomains = ""
+
+$(document).ready(function() {
+  $.validationEngineLanguage.newLang(localDomains);
+  $("#app_env1").validationEngine({
+    success : function() { document.app_env1.submit(); },
+    failure : function() {}
+  })
+  $("#app_env2").validationEngine({
+    success : function() { document.app_env2.submit(); },
+    failure : function() {}
+  })
+  $("#app_env3").validationEngine({
+    success : function() { document.app_env3.submit(); },
+    failure : function() {}
+  })
+  $("#app_env4").validationEngine({
+    success : function() { document.app_env4.submit(); },
+    failure : function() {}
+  })
+  $("#app_env5").validationEngine({
+    success : function() { document.app_env5.submit(); },
+    failure : function() {}
+  })
+});
+</script>
+
+  <fieldset>
+  <h2><%= $param_label['LOCAL_DOMAINS'] %></h2>
+  <div class="table-sys-a">
+  <% @app_envs.each do | app_env | -%>
+    <% if app_env.key == 'LOCAL_DOMAINS' -%>
+      <div class="input-mid-2-l"><%= app_env.value %></div>
+      <div class="input-mid-2-r">
+      <%= link_to '[編集]', {:action => 'edit1', :id => app_env.id } %>
+      <%= link_to '[削除]', {:action => 'destroy', :id => app_env.id},
+                            :confirm => '削除します。よろしいですか?', :method => :delete %>
+      </div>
+    <% end -%>
+  <% end -%>
+  <br>
+  <% form_for(:app_env, :url => { :action => "create"}, 
+              :html => {:id => 'app_env1', :name=> "app_env1" }) do |f| -%>
+    <div class="item-mid"><%= $param_label['LOCAL_DOMAINS'] %>の登録</div>
+    <%= f.error_messages %>
+    <div class="input-mid">
+      <%= f.hidden_field :key, {:value => "LOCAL_DOMAINS"} %>
+      <%= f.hidden_field :category, {:value => 0} %>
+      <%= f.text_field :value, :class => 'validate[required]' %>
+      <%= f.submit "Create" %>
+    </div>
+  <% end %>
+  </div>
+  </fieldset>
+
+<br>
+
+  <fieldset>
+  <h2><%= $param_label['LOCAL_IPS'] %></h2>
+  <div class="table-sys-a">
+  <% @app_envs.each do | app_env | %>
+    <% if app_env.key == 'LOCAL_IPS' -%>
+      <div class="input-mid-2-l"><%= app_env.value %></div>
+      <div class="input-mid-2-r">
+      <%= link_to '[編集]', {:action => 'edit1', :id => app_env.id } %>
+      <%= link_to '[削除]', {:action => 'destroy', :id => app_env.id},
+                            :confirm => '削除します。よろしいですか?', :method => :delete %>
+      </div>
+    <% end -%>
+  <% end -%>
+  <br>
+  <% form_for(:app_env, :url => { :action => "create"}, 
+              :html => {:id => 'app_env2', :name=> "app_env2" }) do |f| %>
+    <div class="item-mid"><%= $param_label['LOCAL_IPS'] %>の登録</div>
+    <%= f.error_messages %>
+    <div class="input-mid">
+      <%= f.hidden_field :key, {:value => "LOCAL_IPS"} %>
+      <%= f.hidden_field :category, {:value => 0} %>
+      <%= f.text_field :value, :class => 'validate[required]' %>
+      <%= f.submit "Create" %>
+    </div>
+  <% end %>
+  </div>
+  </fieldset>
+
+<br>
+
+  <fieldset>
+  <h2><%= $param_label['URL'] %></h2>
+  <div class="table-sys-a">
+  <% c=0 -%>
+  <% @app_envs.each do | app_env | %>
+    <% if app_env.key == 'URL' -%>
+      <div class="input-mid-2-l"><%= app_env.value %></div>
+      <div class="input-mid-2-r">
+      <%= link_to '[編集]', {:action => 'edit1', :id => app_env.id } %>
+      </div>
+      <% c += 1 -%>
+    <% end -%>
+  <% end -%>
+  <% if c == 0 -%>
+    <% form_for(:app_env, :url => { :action => "create"}, 
+                :html => {:id => 'app_env3', :name=> "app_env3" }) do |f| %>
+      <div class="item-mid"><%= $param_label['URL'] %>の登録</div>
+      <%= f.error_messages %>
+      <div class="input-mid">
+        <%= f.hidden_field :key, {:value => "URL"} %>
+        <%= f.hidden_field :category, {:value => 0} %>
+        <%= f.text_field :value, :class => 'validate[required]' %>
+        <%= f.submit "Create" %>
+      </div>
+    <% end %>
+  <% end -%>
+  </div>
+  </fieldset>
+
+<br>
+
+  <fieldset>
+  <h2><%= $param_label['FILE_DIR'] %></h2>
+  <div class="table-sys-a">
+  <% c=0 -%>
+  <% @app_envs.each do | app_env | %>
+    <% if app_env.key == 'FILE_DIR' -%>
+      <div class="input-mid-2-l"><%= app_env.value %></div>
+      <div class="input-mid-2-r">
+      <%= link_to '[編集]', {:action => 'edit1', :id => app_env.id } %>
+      </div>
+      <% c += 1 -%>
+    <% end -%>
+  <% end -%>
+  <% if c == 0 -%>
+    <% form_for(:app_env, :url => { :action => "create"}, 
+                :html => {:id => 'app_env4', :name=> "app_env4" }) do |f| %>
+      <div class="item-mid"><%= $param_label['FILE_DIR'] %>の登録</div>
+      <%= f.error_messages %>
+      <div class="input-mid">
+        <%= f.hidden_field :key, {:value => "FILE_DIR"} %>
+        <%= f.hidden_field :category, {:value => 0} %>
+        <%= f.text_field :value, :class => 'validate[required]' %>
+        <%= f.submit "Create" %>
+      </div> 
+    <% end %>
+  <% end -%>
+  </div>
+  </fieldset>
+
+<br>
+
+  <fieldset>
+  <h2><%= $param_label['REQUEST_PERIOD'] %></h2>
+  <div class="table-sys-a">
+  <% c=0 -%>
+  <% @app_envs.each do | app_env | %>
+    <% if app_env.key == 'REQUEST_PERIOD' -%>
+      <div class="input-mid-2-l"><%= app_env.value %></div>
+      <div class="input-mid-2-r">
+      <%= link_to '[編集]', {:action => 'edit1', :id => app_env.id } %>
+      </div>
+      <% c += 1 -%>
+    <% end -%>
+  <% end -%>
+  <% if c == 0 -%>
+    <% form_for(:app_env, :url => { :action => "create"}, 
+                :html => {:id => 'app_env5', :name=> "app_env5" }) do |f| %>
+      <div class="item-mid"><%= $param_label['REQUEST_PERIOD'] %>の登録</div>
+      <%= f.error_messages %>
+      <div class="input-mid">
+        <%= f.hidden_field :key, {:value => "REQUEST_PERIOD"} %>
+        <%= f.hidden_field :category, {:value => 0} %>
+        <%= f.text_field :value, :class => 'validate[required, custom[onlyNumber]]' %>
+        <%= f.submit "Create" %>
+      </div> 
+    <% end %>
+  <% end -%>
+  </div>
+  </fieldset>
+
+<br><br>
+

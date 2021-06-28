@@ -1,0 +1,169 @@
+<% form_tag :action => 'get_csv_of_send_log' do %>
+  <%= select_tag 'month_for_out', options_for_select(@select_month) %> のログを
+  <%= submit_tag "　CSV保存　" %>
+<% end %>
+
+<br>
+
+<% form_tag :action => 'send_log' do %>
+  <%#= f.select :type, [["送信者名", 0], ["送信者メールアドレス", 1],
+                       ["受信者名", 2], ["受信者メールアドレス", 3]] %>
+  <%#= f.text_field :keyword %>
+  <%= select_tag :type, options_for_select([["送信者名", 1], ["送信者メールアドレス", 2],
+                       ["受信者名", 3], ["受信者メールアドレス", 4]], @type.to_i ) %>
+  <%= text_field_tag :keyward, @keyward %>
+  <%= submit_tag "　検索　" %>
+<% end %>
+
+<br>
+
+データ数：<%= @total_data %>
+[ <%= @part_of_page %> ]
+　<%#= link_to 'CSV保存', {:action => 'get_csv_of_send_log'} %><br>
+
+
+<!--pre><%#= @sqlstr %></pre-->
+<table border=1 cellspacing=0 cellpadding=3>
+  <tr bordercolor=gray>
+  <td nowrap bgcolor=#e5f0fe><br></td>
+  <td nowrap bgcolor=#e5f0fe>送信日</td>
+  <td nowrap bgcolor=#e5f0fe>送信ＩＤ</td>
+  <td nowrap bgcolor=#e5f0fe>送信者名</td>
+  <td nowrap bgcolor=#e5f0fe>送信者メールアドレス</td>
+  <td nowrap bgcolor=#e5f0fe>受信者名</td>
+  <td nowrap bgcolor=#e5f0fe>受信者メールアドレス</td>
+  <td nowrap bgcolor=#e5f0fe>総ファイル数</td>
+  <td nowrap bgcolor=#e5f0fe>総ファイルサイズ</td>
+  </tr>
+
+  <% count = 0 -%>
+  <% cr_id = 0 -%>
+<% created_at = "" -%>
+<% send_matter_id = "" -%>
+<% sender_name = "" -%>
+<% sender_mail_address = "" -%>
+<% receiver_name = "" -%>
+<% receiver_mail_address = "" -%>
+<% total_file = "" -%>
+<% total_size = "" -%>
+<% order = "" -%>
+<% bf_created_at = "" -%>
+<% bf_send_matter_id = "" -%>
+<% bf_send_matter_id_b = "" -%>
+<% bf_sender_name = "" -%>
+<% bf_sender_mail_address = "" -%>
+<% bf_receiver_name = "" -%>
+<% bf_receiver_mail_address = "" -%>
+<% bf_total_file = "" -%>
+<% bf_total_size = "" -%>
+<% bf_order = "" -%>
+
+  <%# @send_files.each.with_index do | send_file, count | -%>
+  <% @rs.each do | data | -%>
+    <%# count = count + 1 -%>
+  <%# bf_created_at = (Time.parse(send_file.created_at.to_s)).strftime("%Y/%m/%d %H:%M:%S") -%>
+  <%# bf_send_matter_id = send_file.send_matter_id -%>
+  <%# bf_sender_name = send_file.sender_name -%>
+  <%# bf_sender_mail_address = send_file.sender_mail_address -%>
+  <%# bf_receiver_name = send_file.receiver_name -%>
+  <%# bf_receiver_mail_address = send_file.receiver_mail_address -%>
+  <%# bf_total_file = send_file.total_file -%>
+  <% bf_created_at = (Time.parse(data[1].to_s)).strftime("%Y/%m/%d %H:%M:%S") -%>
+  <% bf_send_matter_id = data[0] -%>
+  <% bf_sender_name = data[2] -%>
+  <% bf_sender_mail_address = data[3] -%>
+  <% bf_receiver_name = data[4] -%>
+  <% bf_receiver_mail_address = data[5] -%>
+  <% bf_total_file = data[6] -%>
+  <% bf_total_size = '0 B' -%>
+  <% bf_order = data[8] -%>
+  <!-- --><%# bf_total_size = send_file.total_size -%>
+  <%# if send_file.total_size -%>
+    <%# if send_file.total_size.to_i > 1024 * 1024 -%>
+      <%# bf_total_size = (send_file.total_size.to_i / (1024 * 1024)).to_s + ' MB' -%>
+    <%# elsif send_file.total_size.to_i > 1024 -%>
+      <%# bf_total_size = (send_file.total_size.to_i / 1024).to_s + ' KB' -%>
+    <%# else -%>
+      <%# bf_total_size = send_file.total_size.to_s + ' B' -%>
+  <% if data[7] -%>
+    <% if data[7].to_i > 1024 * 1024 -%>
+      <% bf_total_size = (data[7].to_i / (1024 * 1024)).to_s + ' MB' -%>
+    <% elsif data[7].to_i > 1024 -%>
+      <% bf_total_size = (data[7].to_i / 1024).to_s + ' KB' -%>
+    <% else -%>
+      <% bf_total_size = data[7].to_s + ' B' -%>
+    <% end -%>
+  <%  end -%>
+
+  <% if bf_send_matter_id_b != "" -%>
+    <% if bf_send_matter_id == bf_send_matter_id_b -%>
+      <% receiver_name = receiver_name + "<br>" + bf_receiver_name -%>
+      <% receiver_mail_address = receiver_mail_address + "<br>" + bf_receiver_mail_address -%>
+    <% else -%>
+      <%# cr_id = cr_id + 1 -%>
+      <%# if @s_data <= cr_id and cr_id <= @e_data -%>
+        <tr bordercolor=gray>
+        <td nowrap align=center><%#= cr_id %><%= order + @s_data - 1 %></td>
+        <td nowrap><%= created_at %></td>
+        <td nowrap><a href="/sys_log/send_matter_info/<%= send_matter_id %>"><%= send_matter_id %></a></td>
+        <td nowrap><%= sender_name %></td>
+        <td nowrap><%= sender_mail_address %></td>
+        <td nowrap><%= receiver_name %></td>
+        <td nowrap><%= receiver_mail_address %></td>
+        <td nowrap><%= total_file %></td>
+        <td nowrap><%= total_size %></td>
+        </tr>
+     <%# end -%>
+
+      <% bf_send_matter_id_b = bf_send_matter_id -%>
+
+      <% count = count + 1 -%>
+      <% created_at = bf_created_at -%>
+      <% send_matter_id = bf_send_matter_id -%>
+      <% sender_name = bf_sender_name -%>
+      <% sender_mail_address = bf_sender_mail_address -%>
+      <% receiver_name = bf_receiver_name -%>
+      <% receiver_mail_address = bf_receiver_mail_address -%>
+      <% total_file = bf_total_file -%>
+      <% total_size = bf_total_size -%>
+      <%# order = bf_order -%>
+      <% order = count -%>
+      <% cr_id = bf_order.to_i -%>
+    <% end -%>
+  <% else -%>
+      <% bf_send_matter_id_b = bf_send_matter_id -%>
+
+      <% count = count + 1 -%>
+      <% created_at = bf_created_at -%>
+      <% send_matter_id = bf_send_matter_id -%>
+      <% sender_name = bf_sender_name -%>
+      <% sender_mail_address = bf_sender_mail_address -%>
+      <% receiver_name = bf_receiver_name -%>
+      <% receiver_mail_address = bf_receiver_mail_address -%>
+      <% total_file = bf_total_file -%>
+      <% total_size = bf_total_size -%>
+      <%# order = bf_order -%>
+      <% order = count -%>
+      <% cr_id = bf_order.to_i -%>
+    <% end -%>
+  <% end -%>
+
+  <% if count == 0 -%>
+    <tr><td colspan=8 algin=center>データがありません</td></tr>
+  <% else -%>
+    <%# if @s_data <= cr_id and cr_id <= @e_data -%>
+      <tr bordercolor=gray>
+      <td nowrap align=center><%#= cr_id + 1 %><%= order + @s_data - 1 %></td>
+        <td nowrap><%= created_at %></td>
+        <td nowrap><a href="/sys_log/send_matter_info/<%= send_matter_id %>"><%= send_matter_id %></a></td>
+        <td nowrap><%= sender_name %></td>
+        <td nowrap><%= sender_mail_address %></td>
+        <td nowrap><%= receiver_name %></td>
+        <td nowrap><%= receiver_mail_address %></td>
+        <td nowrap><%= total_file %></td>
+        <td nowrap><%= total_size %></td>
+      </tr>
+    <%# end -%>
+  <% end -%>
+</table>
+

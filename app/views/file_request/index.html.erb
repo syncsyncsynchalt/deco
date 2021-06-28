@@ -1,0 +1,106 @@
+<script type="text/javascript">
+
+localDomains = "<%= h $local_domains %>"
+arInput = 0;
+max_receivers_num = <%= h $app_env['RECEIVERS_LIMIT'] %>;
+
+for (i = 2 ; i <= max_receivers_num; i++) {
+  receivers[i] = 0;
+}
+
+$(document).ready(function() {
+  $.validationEngineLanguage.newLang(localDomains);
+  $("#request_matter").validationEngine({
+    promptPosition: "centerRight",
+    success : function() { document.request_matter.submit(); },
+    failure : function() {}
+  })
+});
+</script>
+
+<h1>ファイル依頼</h1>
+
+<p>ファイルを送信してほしい相手にファイル送信を依頼する場合に使用します。<br>
+以下のフォームに必要事項を記入し，[ファイル送信を依頼する]をクリックしてください。
+（<span class="required">※</span> 印は必須項目です。）</p>
+
+<% form_for(:request_matter, :url => { :action => "create" }, :html => {:id => 'request_matter', :name=> "request_matter" }) do |f| -%>
+<%= f.error_messages -%>
+
+    <h2>１．依頼者情報入力　（あなたの情報を入力してください）</h2>
+
+<fieldset>
+
+    <legend>依頼者情報入力</legend>
+
+    <div class="table-a">
+      <div class="item-top">あなたの名前<span class="required">※</span></div>
+      <div class="input-top"><%= f.text_field :name, :class => 'validate[required]', :size => 30 %></div>
+      <div class="item-bot">あなたのメールアドレス<span class="required">※</span></div>
+  <%- if @local_ips.select{ |local_ip| IPAddr.new(local_ip.value).include?(@access_ip) }.size > 0 -%>
+      <div class="input-bot"><%= f.text_field :mail_address, :class => 'validate[required, custom[localDomain]]', :size => 40 %>
+      <br /><span class="note">例）<% $local_domain_list.each_with_index do | local_domain, i | %> tokushima_tarou_1@<b><%= h local_domain %></b><% if i + 1 < $local_domain_list.size %>, <%- end -%><%- end -%></span></div>
+  <%- else -%>
+      <div class="input-bot"><%= f.text_field :mail_address, :class => 'validate[required, custom[email]]', :size => 40 -%>
+      <br /><span class="note">例）name1@example.com</span></div>
+  <%- end -%>
+    </div>
+
+</fieldset>
+
+    <h2>２．メッセージ</h2>
+
+<fieldset>
+
+    <legend>メッセージ</legend>
+
+    <div class="table-a">
+
+    <div class="item-bot">相手へのメッセージ</div>
+    <div class="input-bot">
+    <%= f.text_area :message, :cols => "40", :rows => '5' ,:class => 'validate[length[0, ' +
+                                           $app_env['MESSAGE_LIMIT'] + ']]' %><br>
+  (<%= h $app_env['MESSAGE_LIMIT'] %>文字まで入力可能)</div>
+    </div>
+
+</fieldset>
+
+
+    <h2>３．送信者情報入力（ファイル送信を依頼する相手の情報を入力してください）</h2>
+
+    <span class="left">宛先は最大 <%= h $app_env['RECEIVERS_LIMIT'] %> 名まで追加できます。<br /><br />
+    <img src="/images/common/name_s.jpg" />&nbsp;相手のお名前<span class="required">※</span><br />
+    <img src="/images/common/mail_s.jpg" />&nbsp;相手のメールアドレス<span class="required">※</span>&nbsp;&nbsp;<span class="note">例）name1@example.com</span>
+    </span>
+
+    <fieldset>
+    <legend>送信者情報入力</legend>
+
+<%- i=1 -%>
+<%- while i<2 -%>
+  <%- fields_for :requested_matter, :index => i do |f2| -%>
+
+    <div class="table-e">
+      <div class="item">ファイル送信者 1人目</div>
+      <div class="input-l">
+        <img src="/images/common/name.jpg" align="left" /><%= f2.text_field :name, :class => 'validate[required]', :size => 30 %> 様<br />
+        <img src="/images/common/mail.jpg" align="left" /><%= f2.text_field :mail_address, :class => 'validate[required, custom[email]]', :size => 40 %>
+      </div>
+      <div class="input-r"></div>
+      <div id="receiver_form"></div>
+    </div>
+
+  <%- end -%>
+<%- i += i -%>
+<%- end -%>
+</fieldset>
+    <span class="right"><input type="button" onclick="add_receiver('requested_matter', 'receiver_form', 'ファイル送信者')" value="+ 宛先欄を追加" /></span>
+
+<fieldset>
+
+<br><br>
+<p align="center"><%= image_submit_tag("common/but_request.gif") -%></p>
+<%- end -%>
+<br /><br />
+
+

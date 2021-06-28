@@ -1,0 +1,101 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html>
+<head>
+  <title>システム管理 - DECO Drive</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <%= javascript_include_tag  'jquery', 'jquery.validationEngine', 'swfupload', 'swfupload.queue', 'handlers', 'fileprogress', 'deco' %>
+  <%= stylesheet_link_tag 'os', 'validationEngine.jquery' %>
+  <%= stylesheet_link_tag 'template' %>
+  <%= stylesheet_link_tag 'swfupload' %>
+  <%= stylesheet_link_tag 'styles' %>
+  <%= stylesheet_link_tag 'system.styles' %>
+</head>
+
+<% if controller.controller_name == 'top' %>
+  <body class="top">
+<% elsif controller.controller_name == 'file_send'%>
+  <body class="sen">
+<% elsif controller.controller_name == 'file_request'%>
+  <body class="req">
+<% elsif controller.action_name == 'about'%>
+  <body class="srv">
+<% elsif controller.action_name == 'usage'%>
+  <body class="use">
+<% elsif controller.action_name == 'constitution'%>
+  <body class="rul">
+<% elsif controller.action_name == 'ask'%>
+  <body class="con">
+<% else %>
+  <body>
+<% end %>
+
+<div id="header">
+<img src="/images/common/deco_logo01.jpg" alt="DECO Drive" />
+</div>
+
+<div id="status">
+[<%= `hostname`.chop -%>]
+<% @access_ip = request.env['HTTP_X_FORWARDED_FOR'] -%>
+接続IPアドレス:<%= @access_ip %>
+<% if logged_in? -%>
+  利用状況:外部アクセス( ユーザID: <%= current_user.login %> )
+  <%= link_to '[ログアウト]', :controller => :sessions, :action => :new_for_administrator %>
+<% else -%>
+  利用状況:ローカルアクセスアクセス又は外部から
+<% end -%>
+</div>
+
+
+<div id="main">
+
+
+<div id="sys-main">
+  <div id="sys-menu">
+  <br>
+  <ul><li><a href="/sys_top/">トップ</a><br></li></ul>
+  アナウンス管理
+  <ul><li><a href="/sys_announcement/index/">アナウンス管理</a></li></ul>
+  パラメータ管理
+  <ul><li><a href="/sys_param/common_index/">共通項目</a></li>
+  <li><a href="/sys_param/user_type_index/local/">ローカルユーザ</a></li>
+  <li><a href="/sys_param/user_type_index/remote/">リモートユーザ</a></li></ul>
+  ユーザ管理
+  <ul><li><a href="/sys_user/index/1">システム管理者</a></li>
+  <li><a href="/sys_user/index/2">リモートユーザ</a></li></ul>
+  コンテンツ管理
+  <ul><li><a href="/sys_contents/index/">コンテンツ管理</a></li></ul>
+  登録データ確認
+  <ul><li><a href="/sys_data/index/">登録データ確認</a></li></ul>
+  ログ閲覧
+  <ul><li><a href="/sys_log/send_log/">送信ログ</a></li>
+  <li><a href="/sys_log/receive_log/">受信ログ</a></li>
+  <li><a href="/sys_log/request_log/">依頼ログ</a></li></ul>
+  実績集計
+  <ul><li><a href="/sys_total/index/">実績集計</a></li></ul>
+  </div>
+
+  <div id="sys-cont">
+
+  <% if session[:section_title] -%>
+    <h1><%= session[:section_title] %></h1>
+  <% end -%>
+
+  <% if flash[:error] -%>
+    <div id="err-sys">
+  <%= flash[:error] %>
+    </div>
+  <% end -%>
+  <% if flash[:notice] -%>
+    <div id="hint-sys">
+  <%= flash[:notice] %>
+    </div>
+  <% end -%>
+
+  <%= yield %>
+  </div>
+</div>
+
+</div>
+
+</body>
+</html>

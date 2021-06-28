@@ -1,0 +1,11 @@
+# Read about fixtures at http://ar.rubyonrails.org/classes/Fixtures.html
+
+one:
+  send_matter_id: 1
+  name: MyString
+  mail_address: MyString
+
+two:
+  send_matter_id: 1
+  name: MyString
+  mail_address: MyString

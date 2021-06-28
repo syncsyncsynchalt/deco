@@ -1,0 +1,85 @@
+データ数：<%= @saved_files.length %>　
+[ <%= @part_of_page %> ]
+
+<% count = 0 -%>
+
+<table border=1 cellspacing=0 cellpadding=3>
+  <tr bordercolor=gray>
+  <td nowrap bgcolor=#e5f0fe><br></td>
+  <td nowrap bgcolor=#e5f0fe>保存日</td>
+  <td nowrap bgcolor=#e5f0fe>送信ＩＤ</td>
+  <td nowrap bgcolor=#e5f0fe>区分</td>
+  <td nowrap bgcolor=#e5f0fe>送信者</td>
+  <td nowrap bgcolor=#e5f0fe>送信者メールアドレス</td>
+  <td nowrap bgcolor=#e5f0fe>ファイルＩＤ</td>
+  <td nowrap bgcolor=#e5f0fe>ファイル名</td>
+  <td nowrap bgcolor=#e5f0fe>ファイルサイズ</td>
+  <td nowrap bgcolor=#e5f0fe>ファイルの種類</td>
+  <td nowrap bgcolor=#e5f0fe>ダウンロード</td>
+  <td nowrap bgcolor=#e5f0fe>ウィルスチェック</td>
+  </tr>
+  <% if @saved_files -%>
+    <% @saved_files.each.with_index do | saved_file, count | -%>
+      <% cr_id = count + 1 -%>
+      <% if @s_data <= cr_id and cr_id <= @e_data -%>
+        <% if saved_file.file_size.to_i > 1024 * 1024 -%>
+          <% label_file_size = (saved_file.file_size.to_i / (1024 * 1024)).to_s + ' MB' -%>
+        <% elsif saved_file.file_size.to_i > 1024 -%>
+          <% label_file_size = (saved_file.file_size.to_i / 1024).to_s + ' KB' -%>
+        <% else -%>
+          <% label_file_size = saved_file.file_size + ' B' -%>
+        <% end -%>
+        <% if saved_file.file_download_flg.to_i == 0 -%><% download_flg = "未" -%>
+        <% elsif saved_file.file_download_flg.to_i == 1 -%><% download_flg = "済" -%>
+        <% else -%><% download_flg = "他" -%>
+        <% end -%>
+
+        <tr bordercolor=gray>
+        <td nowrap><%= count + 1 %></td>
+        <td nowrap><%= (Time.parse(saved_file.file_up_date.to_s)).strftime("%Y/%m/%d %H:%M:%S") %></td>
+        <td nowrap><% if saved_file.flg == '送信' -%>
+                     <%= link_to saved_file.id, {:controller => 'sys_log',
+                                                 :action => 'send_matter_info',
+                                                 :id => saved_file.id } %>
+                   <% elsif saved_file.flg == '依頼' -%>
+                     <%= link_to saved_file.id, {:controller => 'sys_log',
+                                                 :action => 'requested_matter_info',
+                                                 :id => saved_file.id } %>
+                   <% end -%>
+        </td>
+        <td nowrap><%= saved_file.flg %></td>
+        <td nowrap><%= saved_file.sender_name %></td>
+        <td nowrap><%= saved_file.sender_mail_address %></td>
+        <td nowrap><%= saved_file.file_id %></td>
+        <td nowrap><% if saved_file.flg == '送信' -%>
+                     <% if File.exist?($app_env['FILE_DIR'] + "/#{saved_file.file_id}") -%>
+                       <%= link_to saved_file.file_name, {:controller => 'sys_data',
+                                                          :action => 'get_send_file',
+                                                          :id => saved_file.file_id } %>
+                     <% else -%><%= saved_file.file_name -%><% end -%>
+                   <% elsif saved_file.flg == '依頼' -%>
+                     <% if File.exist?($app_env['FILE_DIR'] + "/r#{saved_file.file_id}") -%>
+                       <%= link_to saved_file.file_name, {:controller => 'sys_data',
+                                                          :action => 'get_requested_file',
+                                                          :id => saved_file.file_id } %>
+                     <% else -%><%= saved_file.file_name -%><% end -%>
+                   <% end -%>
+        </td>
+        <td nowrap><%= label_file_size %></td>
+        <td nowrap><%= saved_file.file_content_type %></td>
+        <td nowrap><%= download_flg %></td>
+        <td nowrap><%= saved_file.file_virus_check %></td>
+        </tr>
+      <% end -%>
+    <% end -%>
+  <% else -%>
+    <tr>
+      <td colspan=7 algin=center>データがありません</td>
+    </tr>
+  <% end -%>
+  <% if count == 0 -%>
+    <tr><td colspan=7 algin=center>データがありません</td></tr>
+  <% end -%>
+</table>
+※　ＩＤについて，依頼は requested_matters.id，送信は send_matters.id<br>
+<br><br>

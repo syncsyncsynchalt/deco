@@ -1,0 +1,32 @@
+<p>
+以下の内容で送信しました。
+</p>
+
+<div class="table-a">
+
+  <div class="item-top">あなたのお名前</div>
+  <div class="input-top"><%= h @request_matter.name %>&nbsp;&nbsp;（<%= h @request_matter.mail_address %>）</div>
+
+  <div class="item-mid">相手のお名前</div>
+  <div class="input-mid">
+<% @requested_matters.each.with_index do | requested_matter, count | %>
+  お名前<%= h count + 1 %>人目：<%= h requested_matter.name %>（<%= h requested_matter.mail_address %>）<br>
+<% end %>
+  </div>
+
+  <div class="item-mid">相手へのメッセージ</div>
+<% if @request_matter.message == '' %>
+<div class="input-mid">　</div>
+<% else %>
+<div class="input-mid"><%= h @request_matter.message %></div>
+<% end %>
+
+  <div class="item-mid">送信案内ページ</div>
+  <div class="input-mid">送信案内ページのURLを相手の方へメールで案内しています。</div>
+</div>
+
+
+<div align="center" style="clear:both;"><br /><br /><%= link_to(image_tag("common/but_back.gif", :alt => "トップページへ戻る",  :border => 0),
+                            {:controller => "top", :action => "index"}) %></div>
+    <br /><br />
+

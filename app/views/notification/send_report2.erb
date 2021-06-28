@@ -1,0 +1,20 @@
+このメールは、<%= @send_matter.name %>様からの依頼により、「DECO」から発信しております。
+
+<%= @receiver.name %> 様
+
+あなた宛てのファイルが次のとおり、<%= @send_matter.name %>様から送付されております。
+
+送付ファイル一覧
+<% @attachments.each.with_index do | attachment, count | %><%= count + 1 %> <%= attachment.name %>（<%= show_file_size(attachment) %>）
+<% end %>
+
+ダウンロードは以下のURLをクリックして行ってください。
+
+http://<%= @url.value %>/file_receive/login/<%= @receiver.url %>
+
+<% if @send_matter.password_notice == 0 %>
+なお、ダウンロードするには、パスワードが必要です。
+<% else %>
+なお、ダウンロードするには、次のパスワードが必要になります。
+パスワード：<%= @send_matter.receive_password %>
+<% end %>

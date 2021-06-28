@@ -1,0 +1,20 @@
+<div id="center30">
+  <h1><%= image_tag("common/deco_logo01.jpg", :alt => "DECO Drive") %></h1>
+  <% if flash[:notice] -%>
+    <div id="hint-sys">
+  <%= flash[:notice] %>
+    </div>
+  <% end -%>
+
+  <% form_tag :action => :login_for_administrator do -%>
+  <div id="login_d">
+      <%= image_tag("common/userid.gif", :alt => "ユーザID") %>
+      <%= text_field_tag 'login' %><br />
+      <%= image_tag("common/pass.gif", :alt => "パスワード") %>
+      <%= password_field_tag 'password' %><br /><br /><br />
+      <%= image_submit_tag("common/login.gif")%>
+    </div>
+    <br /><br />
+    <%= image_tag("common/copyright.gif", :alt => "Tokushima Prefectural Government") %>
+  <% end -%>
+</div>

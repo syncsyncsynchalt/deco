@@ -1,0 +1,16 @@
+<% form_for(:login, :url => { :action => "auth" }) do |f| -%>
+<%= f.error_messages %>
+
+<p>
+  <%= f.label :パスワード %><br />
+  <%= f.text_field :send_password, :class => 'validate[required,length[4, 8]]' %>
+</p>
+
+<p>
+    <%= f.submit "送信" %>
+</p>
+
+<div style="height:200px;"></div>
+
+<% end -%>
+

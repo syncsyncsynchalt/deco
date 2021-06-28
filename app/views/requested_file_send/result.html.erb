@@ -1,0 +1,95 @@
+<p>
+以下の内容で送信しました。
+</p>
+
+    <div class="table-a">
+
+      <div class="item-top">あなたの名前</div>
+      <div class="input-top"><%= h @requested_matter.name %>&nbsp;&nbsp;（<%= h @requested_matter.mail_address %>）</div>
+      <div class="item-mid">依頼者のお名前</div>
+      <div class="input-mid"><%= h @requested_matter.request_matter.name %>
+                           （<%= h @requested_matter.request_matter.mail_address %>）</div>
+
+      <div class="item-mid">パスワード</div>
+      <div class="input-mid"><%= h @requested_matter.receive_password %></div>
+
+      <div class="item-mid">パスワードの通知方法</div>
+      <% if @requested_matter.password_notice == 1 %>
+        <div class="input-mid">システムで通知</div>
+      <% else %>
+         <div class="input-mid">自分で通知</div>
+      <% end %>
+
+  <div class="item-mid">送信ファイル</div>
+  <div class="input-mid">
+    <div class="table-d">
+      <div class="item-l">ファイル名</div>
+      <div class="item-r"></div>
+      <% @requested_attachments.each.with_index do |attachment, count| %>
+        <div class="input-l"><%= count + 1 %>. <%= truncate(attachment.name, 28) %>（<%= show_file_size(attachment) %>）</div>
+        <% if(attachment.virus_check != '0') %>
+          <div class="input-r">
+            <%= image_tag("common/alert.jpg", :align => 'left', :hspace => '5', :size => "21x20", :title => "ウイルスが検出されたため削除されました。(#{attachment.virus_check})") %>
+            ウイルス検出のため削除しました。<br>(<%=h attachment.virus_check %>)
+          </div>
+        <% else %>
+          <div class="input-r"><%= link_to image_tag('/images/common/delete.jpg', {:border => '0', :alt => '削除'}),
+                                 {:action => 'delete', :id => attachment.id},
+                                 {:confirm => "削除しますか？", :method => "post"} %></div>
+        <% end %>
+      <% end %>
+    </div>
+  </div>
+
+      <div class="item-mid">ダウンロード完了通知メール</div>
+      <% if @requested_matter.download_check == 1 %>
+      <div class="input-mid">希望する</div>
+      <% else %>
+      <div class="input-mid">希望しない</div>
+      <% end %>
+
+      <div class="item-mid">ファイル保存期限</div>
+      <div class="input-mid"><%= (Time.parse(@requested_matter.file_up_date.to_s) +
+                        @requested_matter.file_life_period).strftime("%Y年%m月%d日%H時%M分%S秒") %></div>
+
+      <div class="item-mid">相手へのメッセージ</div>
+      <% if @requested_matter.message == '' %>
+      <div class="input-mid">　</div>
+      <% else %>
+      <div class="input-mid"><%= h @requested_matter.message %></div>
+      <% end %>
+
+<div class="item-mid">ダウンロードページ</div>
+      <div class="input-mid">ダウンロードページのURLをお相手の方へメールで案内しています。<br />
+          ダウンロードページは、
+        <%= link_to "こちら", {:controller => 'requested_file_receive',
+                               :action => 'login',
+                               :id => @requested_matter.url} %>
+です。<br />
+      </div>
+    </div>
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />

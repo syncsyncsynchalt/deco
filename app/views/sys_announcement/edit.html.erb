@@ -1,0 +1,35 @@
+<script type="text/javascript">
+
+localDomains = ""
+
+$(document).ready(function() {
+  $.validationEngineLanguage.newLang(localDomains);
+  $("#announcement").validationEngine({
+    success : function() { document.announcement.submit(); },
+    failure : function() {}
+  })
+});
+</script>
+
+
+
+  <fieldset>
+  <h2>アナウンスの編集</h2>
+  <% form_for(@announcement, :url => { :action => "update", :id => @announcement.id}, 
+              :html => {:id => 'announcement', :name=> "announcement" }) do |f| -%>
+    <div class="table-sys-a">
+      <div class="item-mid2">タイトル</div>
+      <div class="input-mid2"><%= f.text_field :title, :size => '50', :class => 'validate[required]' %></div>
+      <div class="item-mid2">内容</div>
+      <div class="input-mid2"><%= f.text_area :body, :cols => '40', :rows => '10', :class => 'validate[required]' %></div>
+      <div class="item-mid2"></div>
+      <div class="input-mid2" align="center"><%= f.submit "　更新　" %></div>
+    </div>
+  <% end %>
+  </fieldset>
+
+  <br>
+
+<div align="center"><%= link_to "戻る", {:action => 'index'} %></div>
+
+<br><br>

@@ -1,0 +1,32 @@
+  <fieldset>
+  <h2>登録ユーザ一覧</h2>
+  <div align="right"><%= link_to '新規作成', {:controller => 'users', :action => 'new'} %></div>
+  <div class="table-sys-a">
+    <div class="item-mid3-1">ユーザＩＤ<br></div>
+    <div class="item-mid3-2">メールアドレス／備考<br></div>
+    <div class="item-mid3-3">　</div>
+    <% cnt = 0 -%>
+    <% for user in @users -%>
+      <% cnt =+ 1 %>
+      <div class="input-mid3-1"><%= user.login %></div>
+      <div class="input-mid3-2"><%= user.email %><br>
+      <%- if user.note -%><%= user.note -%>
+      <%- else -%><br>
+      <%- end -%><br></div>
+      <div class="input-mid3-3">
+      <%= link_to '[パスワード変更]', {:action => 'chg_pw', :id => user.id } %>
+      <%= link_to '[編集]', {:action => 'edit', :id => user.id } %>
+      <%= link_to '[削除]', {:action => 'destroy', :id => user.id},
+                             :confirm => '削除します。よろしいですか?',
+                             :method => :delete -%><br></div>
+    <%- end -%>
+    <%- if cnt == 0 -%>
+      <div class="input-mid3-1"><br></div>
+      <div class="input-mid3-2">登録データがありません<br></div>
+      <div class="input-mid3-3"><br></div>
+    <%- end -%>
+
+  </div>
+  </fieldset>
+
+<br><br><br>
