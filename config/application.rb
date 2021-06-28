@@ -14,6 +14,8 @@ module Deco
     # Initialize configuration defaults for originally generated Rails version.
     config.load_defaults 5.1
 
+    config.middleware.use Rack::TempfileReaper
+
     # Settings in config/environments/* take precedence over those specified here.
     # Application configuration should go into files in config/initializers
     # -- all .rb files in that directory are automatically loaded.
@@ -26,7 +28,7 @@ module Deco
     config.time_zone = 'Tokyo'
     config.active_record.default_timezone = :local
 
-    # RailsEngine—p‚Ìassets’è‹`
+    # RailsEngineï¿½pï¿½ï¿½assetsï¿½ï¿½ï¿½`
     Dir.glob("vendor/engines/*/").each do |path|
       config.assets.precompile += %W( #{File.basename(path)}/application.* )
     end

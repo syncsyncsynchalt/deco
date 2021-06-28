@@ -42,8 +42,8 @@ function load() {
 </div>
 <div class="table-address-search-u">
 <%= select_tag('conditions[search_select]', options_for_select(
-               { t('activerecord.attributes.send_matters.name') => 'name',
-                 t('activerecord.attributes.send_matters.mail_address') => 'mail_address'}, @hyoji_select_1),:include_blank => true) %>
+               { t('activerecord.attributes.receivers.name') => 'name',
+                 t('activerecord.attributes.receivers.mail_address') => 'mail_address'}, @hyoji_select_1),:include_blank => true) %>
             &nbsp;
              <%= text_field_tag 'conditions[search_text]', '', { :size => 30 } %>
 <input id="button_address_book_search" type="button" value="<%= t('address_books.search_button') %>" />

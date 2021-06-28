@@ -24,12 +24,12 @@ class SendMatter < ActiveRecord::Base
 
   scope :with_begin_date, ->(begin_date) {
     unless begin_date.blank?
-      where(arel_table[:created_at].gteq(Date.parse(begin_date).to_s(:db)))
+      where(arel_table[:created_at].gteq(Date.parse(begin_date).to_datetime.beginning_of_day.to_s(:db)))
     end
   }
   scope :with_end_date, ->(end_date) {
     unless end_date.blank?
-      where(arel_table[:created_at].lteq(Date.parse(end_date).to_s(:db)))
+      where(arel_table[:created_at].lteq(Date.parse(end_date).to_datetime.end_of_day.to_s(:db)))
     end
   }
   scope :with_receivers, ->(select, text) {
@@ -42,8 +42,9 @@ class SendMatter < ActiveRecord::Base
     order(arel_table[sort_select_1.to_sym].__send__(sort_select_2))
   }
   scope :search_q, ->(user_id, conditions) {
+    joins(:receivers).
     with_begin_date(conditions[:begin_date]).
-    with_end_date(conditions[:nd_date]).
+    with_end_date(conditions[:end_date]).
     with_receivers(conditions[:search_select], conditions[:search_text]).
     where(:user_id => user_id).
     with_order(conditions[:sort_select_1], conditions[:sort_select_2])

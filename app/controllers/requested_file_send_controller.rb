@@ -235,7 +235,7 @@ class RequestedFileSendController < ApplicationController
           f.binmode
           f.write(file_data)
         end
-            
+
         if file.content_type.blank?
           if MIME::Types.type_for(params[:Filedata].original_filename)[0].content_type
             @requested_attachment.content_type = MIME::Types.type_for(params[:Filedata].original_filename)[0].content_type
@@ -255,7 +255,9 @@ class RequestedFileSendController < ApplicationController
           @requested_attachment.virus_check = @virus_check_result
           @requested_attachment.save
           if(@virus_check_result != 0)
-            File.delete(file_path)
+            if File.exist?(file_path)
+              File.delete(file_path)
+            end
           end
         else
           @requested_attachment.virus_check = '0'
@@ -308,11 +310,16 @@ class RequestedFileSendController < ApplicationController
             f.write(@file.read)
           end
         end
-        if MimeMagic.by_magic(File.open(@params_app_env['FILE_DIR'] +
-                                        "/r#{@requested_attachment.id}"))
-          @requested_attachment.content_type =
-              MimeMagic.by_magic(File.open(@params_app_env['FILE_DIR'] +
-                                         "/r#{@requested_attachment.id}")).type
+#        if MimeMagic.by_magic(File.open(@params_app_env['FILE_DIR'] +
+#                                        "/r#{@requested_attachment.id}"))
+#          @requested_attachment.content_type =
+#              MimeMagic.by_magic(File.open(@params_app_env['FILE_DIR'] +
+#                                         "/r#{@requested_attachment.id}")).type
+#        else
+#          @requested_attachment.content_type = ''
+#        end
+        if MIME::Types.type_for(params[:Filedata].original_filename)[0].content_type
+          @requested_attachment.content_type = MIME::Types.type_for(params[:Filedata].original_filename)[0].content_type
         else
           @requested_attachment.content_type = ''
         end
@@ -326,11 +333,13 @@ class RequestedFileSendController < ApplicationController
           @requested_attachment.virus_check = @virus_check_result
           @requested_attachment.save!
           if(@virus_check_result != 0)
-            File.delete(@params_app_env['FILE_DIR'] + "/r#{@requested_attachment.id}")
+            if File.exist?(@params_app_env['FILE_DIR'] + "/r#{@requested_attachment.id}")
+              File.delete(@params_app_env['FILE_DIR'] + "/r#{@requested_attachment.id}")
+            end
           end
         else
-          @attachment.virus_check = '0'
-          @attachment.save
+          @requested_attachment.virus_check = '0'
+          @requested_attachment.save
         end
       end
     end
@@ -530,8 +539,9 @@ class RequestedFileSendController < ApplicationController
                 @requested_attachment.virus_check = @virus_check_result
                 @requested_attachment.save!
                 unless @virus_check_result == 0
-                  File.delete(@params_app_env['FILE_DIR'] +
-                          "/r#{@requested_attachment.id }")
+                  if File.exist?(@params_app_env['FILE_DIR'] + "/r#{@requested_attachment.id}")
+                    File.delete(@params_app_env['FILE_DIR'] + "/r#{@requested_attachment.id }")
+                  end
                   @virus_attachments.push @requested_attachment
                 end
               else
@@ -608,8 +618,10 @@ class RequestedFileSendController < ApplicationController
 #                          :conditions => {
 #                            :url_operation => params['id'] })
       @requested_matter =
-          RequestedMatter.where({:url_operation => params['id']})
-      session[:requested_matter_id] = @requested_matter.id
+          RequestedMatter
+          .where({:url_operation => params[:id]})
+          .first
+      session[:requested_matter_id] = @requested_matter.id if @requested_matter.present?
     end
 
     if session[:requested_matter_id]
@@ -639,6 +651,7 @@ class RequestedFileSendController < ApplicationController
       @attachment = RequestedAttachment.find(params[:id])
       if @attachment.present?
         if @attachment.requested_matter_id == session[:requested_matter_id]
+          filename = @params_app_env['FILE_DIR'] + "/r" + @attachment.id.to_s
           if File.exist?(filename)
             File.delete(filename)
           end

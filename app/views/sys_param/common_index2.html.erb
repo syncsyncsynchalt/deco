@@ -26,7 +26,7 @@ $(document).ready(function() {
       <div class="input-mid-2-r">
       <%= link_to '[編集]', {:action => 'edit1', :id => app_env.id } %>
       <%= link_to '[削除]', {:action => 'destroy', :id => app_env.id},
-                            :confirm => '削除します。よろしいですか?', :method => :delete %>
+                            :data => {:confirm => '削除します。よろしいですか?', :method => :delete} %>
       </div>
       <% c += 1 -%>
     <% end -%>
@@ -36,7 +36,7 @@ $(document).ready(function() {
   ※ デフォルトの件名<br />
   「○○のご連絡」に以下の文字列を先頭に追記できます。<br /><br />
   <div class="table-sys-a">
-    <%= form_for(:app_env, :url => { :action => "create"}, 
+    <%= form_for(:app_env, :url => { :action => "create"},
                 :html => {:id => 'app_env1', :name=> "app_env1" }) do |f| %>
       <div class="item-mid"><%= $param_label['SEND_MAIL_TITLE'] %>の登録</div>
       <div class="input-mid">
@@ -65,7 +65,7 @@ $(document).ready(function() {
       <div class="input-mid-2-r">
       <%= link_to '[編集]', {:action => 'edit1', :id => app_env.id } %>
       <%= link_to '[削除]', {:action => 'destroy', :id => app_env.id},
-                            :confirm => '削除します。よろしいですか?', :method => :delete %>
+                            :data => {:confirm => '削除します。よろしいですか?', :method => :delete} %>
       </div>
       <% c += 1 -%>
     <% end -%>
@@ -76,7 +76,7 @@ $(document).ready(function() {
   「このメールは，○○様からの依頼により，「DECO」から発信しております。」<br />
   の「DECO」のまえに以下の文字列を追記できます。<br /><br />
   <div class="table-sys-a">
-    <%= form_for(:app_env, :url => { :action => "create"}, 
+    <%= form_for(:app_env, :url => { :action => "create"},
                 :html => {:id => 'app_env2', :name=> "app_env2" }) do |f| %>
       <div class="item-mid"><%= $param_label['SEND_MAIL_CONTENT'] %>の登録</div>
       <div class="input-mid">

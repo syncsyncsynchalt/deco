@@ -130,13 +130,8 @@ class FileSendController < ApplicationController
         f.binmode
         f.write(file_data)
       end
-          
+
       if file.content_type.blank?
-#        if MimeMagic.by_magic(File.open(file_path))
-#          @attachment.content_type = MimeMagic.by_magic(File.open(file_path)).type
-#        else
-#          @attachment.content_type = ''
-#        end
         if MIME::Types.type_for(params[:Filedata].original_filename)[0].content_type
           @attachment.content_type = MIME::Types.type_for(params[:Filedata].original_filename)[0].content_type
         else
@@ -155,7 +150,9 @@ class FileSendController < ApplicationController
         @attachment.virus_check = @virus_check_result
         @attachment.save
         if(@virus_check_result != 0)
-          File.delete(file_path)
+          if File.exist?(file_path)
+            File.delete(file_path)
+          end
         end
       else
         @attachment.virus_check = '0'
@@ -188,11 +185,6 @@ class FileSendController < ApplicationController
         end
       end
       @attachment.file_save_pass = @params_app_env['FILE_DIR'] + "/#{@attachment.id}"
-#      if MimeMagic.by_magic(File.open(@params_app_env['FILE_DIR'] + "/#{@attachment.id}"))
-#        @attachment.content_type = MimeMagic.by_magic(File.open(@params_app_env['FILE_DIR'] + "/#{@attachment.id}")).type
-#      else
-#        @attachment.content_type = ''
-#      end
       if MIME::Types.type_for(params[:Filedata].original_filename)[0].content_type
         @attachment.content_type = MIME::Types.type_for(params[:Filedata].original_filename)[0].content_type
       else
@@ -209,7 +201,9 @@ class FileSendController < ApplicationController
         @attachment.virus_check = @virus_check_result
         @attachment.save
         if(@virus_check_result != 0)
-          File.delete(@params_app_env['FILE_DIR'] + "/#{@attachment.id }")
+          if File.exist?(@params_app_env['FILE_DIR'] + "/#{@attachment.id }")
+            File.delete(@params_app_env['FILE_DIR'] + "/#{@attachment.id }")
+          end
         end
       else
         @attachment.virus_check = '0'
@@ -438,11 +432,6 @@ class FileSendController < ApplicationController
             f.write(value[:file].read)
           end
           @attachment.file_save_pass = @params_app_env['FILE_DIR'] + "/#{@attachment.id}"
-#          if MimeMagic.by_magic(File.open(@params_app_env['FILE_DIR'] + "/#{@attachment.id}"))
-#            @attachment.content_type = MimeMagic.by_magic(File.open(@params_app_env['FILE_DIR'] + "/#{@attachment.id}")).type
-#          else
-#            @attachment.content_type = ''
-#          end
           if MIME::Types.type_for(value[:file].original_filename)[0]
             @attachment.content_type = MIME::Types.type_for(value[:file].original_filename)[0]
           else
@@ -459,11 +448,16 @@ class FileSendController < ApplicationController
             @attachment.virus_check = @virus_check_result
             @attachment.save!
             if(@virus_check_result != 0)
-              File.delete(@params_app_env['FILE_DIR'] + "/#{@attachment.id}")
+              if File.exist?(@params_app_env['FILE_DIR'] + "/#{@attachment.id}")
+                File.delete(@params_app_env['FILE_DIR'] + "/#{@attachment.id}")
+              end
             end
             unless @virus_check_result == 0
               @virus_attachments.push @attachment
             end
+          else
+            @attachment.virus_check = '0'
+            @attachment.save
           end
         end
 
@@ -677,6 +671,7 @@ class FileSendController < ApplicationController
     @attachment = Attachment.find(params[:id])
     @receivers = @send_matter.receivers
     if @attachment.present? && @attachment.send_matter_id == session[:send_matter_id]
+      filename = @params_app_env['FILE_DIR'] + "/" + @attachment.id.to_s
       if File.exist?(filename)
         File.delete(filename)
       end

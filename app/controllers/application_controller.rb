@@ -22,8 +22,10 @@ class ApplicationController < ActionController::Base
     def send_file_headers!(options)
       super(options)
       match = /(.+); filename="(.+)"/.match(headers['Content-Disposition'])
-      encoded = URI.encode_www_form_component(match[2]).gsub("+", "%20")
-      headers['Content-Disposition'] = "#{match[1]}; filename*=UTF-8''#{encoded}" unless encoded == match[2]
+      if match.present?
+        encoded = URI.encode_www_form_component(match[2]).gsub("+", "%20")
+        headers['Content-Disposition'] = "#{match[1]}; filename*=UTF-8''#{encoded}" unless encoded == match[2]
+      end
     end
   end
 
@@ -56,7 +58,7 @@ class ApplicationController < ActionController::Base
 #      puts "REMOTE_ADDR = #{request.env['REMOTE_ADDR']}"
       for access_ip in request.env['REMOTE_ADDR'].split(',')
         if access_ip =~ /^\d+\.\d+\.\d+\.\d+|\d+\.\d+\.\d+\.\d+\/\d+$/
-          access_ip_lists << access_ip
+          access_ip_lists.unshift(access_ip)
           @access_ip = access_ip
         end
       end
@@ -65,7 +67,7 @@ class ApplicationController < ActionController::Base
 #      puts "HTTP_X_FORWARDED_FOR = #{request.env['HTTP_X_FORWARDED_FOR']}"
       for access_ip in request.env['HTTP_X_FORWARDED_FOR'].split(',')
         if access_ip =~ /^\d+\.\d+\.\d+\.\d+|\d+\.\d+\.\d+\.\d+\/\d+$/
-          access_ip_lists << access_ip
+          access_ip_lists.unshift(access_ip)
           @access_ip = access_ip
         end
       end
@@ -284,20 +286,20 @@ class ApplicationController < ActionController::Base
         .where(:key => "FILE_DIR")
         .first
 #    @send_files = Attachment.find(:all,
-#            :select => "attachments.id as id, " + 
+#            :select => "attachments.id as id, " +
 #              "send_matters.created_at as created_at, " +
 #              "send_matters.file_life_period as file_life_period",
 #            :joins => "left outer join send_matters " +
 #              "on attachments.send_matter_id = send_matters.id")
     @send_files = Attachment
-    .select("attachments.id as id, " + 
+    .select("attachments.id as id, " +
            "send_matters.created_at as created_at, " +
            "send_matters.file_life_period as file_life_period")
     .joins("left outer join send_matters " +
            "on attachments.send_matter_id = send_matters.id")
 
 #    @request_files = RequestedAttachment.find(:all,
-#            :select => "requested_attachments.id as id, " + 
+#            :select => "requested_attachments.id as id, " +
 #              "requested_matters.created_at as created_at, " +
 #              "requested_matters.file_life_period as file_life_period",
 #            :joins => "left outer join requested_matters " +
@@ -305,7 +307,7 @@ class ApplicationController < ActionController::Base
 #              "requested_matters.id")
     @request_files =
         RequestedAttachment
-        .select("requested_attachments.id as id, " + 
+        .select("requested_attachments.id as id, " +
               "requested_matters.created_at as created_at, " +
               "requested_matters.file_life_period as file_life_period")
         .joins("left outer join requested_matters " +
@@ -338,7 +340,7 @@ class ApplicationController < ActionController::Base
     end
 
 #    @vaccumed_send_files1 = Attachment.find(:all,
-#            :select => "attachments.id as id, " + 
+#            :select => "attachments.id as id, " +
 #              "send_matters.created_at as created_at, " +
 #              "send_matters.file_life_period as file_life_period",
 #            :joins => "left outer join send_matters " +
@@ -347,7 +349,7 @@ class ApplicationController < ActionController::Base
 #              "and attachments.send_matter_id is null" ])
     @vaccumed_send_files1 =
         Attachment
-        .select("attachments.id as id, " + 
+        .select("attachments.id as id, " +
               "send_matters.created_at as created_at, " +
               "send_matters.file_life_period as file_life_period")
         .joins("left outer join send_matters " +
@@ -364,7 +366,7 @@ class ApplicationController < ActionController::Base
 
     keep_term = 7
 #    @vaccumed_send_files2 = Attachment.find(:all,
-#            :select => "attachments.id as id, " + 
+#            :select => "attachments.id as id, " +
 #              "send_matters.created_at as created_at, " +
 #              "send_matters.file_life_period as file_life_period, " +
 #              "(LOCALTIME() - INTERVAL #{keep_term} DAY) as time1, " +
@@ -378,7 +380,7 @@ class ApplicationController < ActionController::Base
 #              "INTERVAL send_matters.file_life_period SECOND " ])
     @vaccumed_send_files2 =
         Attachment
-        .select("attachments.id AS id, " + 
+        .select("attachments.id AS id, " +
               "send_matters.created_at AS created_at, " +
               "send_matters.file_life_period AS file_life_period, " +
               "(LOCALTIME() - INTERVAL #{keep_term} DAY) AS time1, " +
@@ -400,7 +402,7 @@ class ApplicationController < ActionController::Base
 
     keep_term = 7
 #    @vaccumed_request_files = RequestedAttachment.find(:all,
-#            :select => "requested_attachments.id as id, " + 
+#            :select => "requested_attachments.id as id, " +
 #              "requested_matters.created_at as created_at, " +
 #              "requested_matters.file_life_period as file_life_period, " +
 #              "(LOCALTIME() - INTERVAL #{keep_term} DAY) as time1, " +
@@ -415,7 +417,7 @@ class ApplicationController < ActionController::Base
 #              "INTERVAL requested_matters.file_life_period SECOND " ])
     @vaccumed_request_files =
         RequestedAttachment
-        .select("requested_attachments.id AS id, " + 
+        .select("requested_attachments.id AS id, " +
               "requested_matters.created_at AS created_at, " +
               "requested_matters.file_life_period AS file_life_period, " +
               "(LOCALTIME() - INTERVAL #{keep_term} DAY) AS time1, " +

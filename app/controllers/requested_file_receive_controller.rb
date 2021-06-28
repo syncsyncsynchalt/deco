@@ -38,7 +38,7 @@ class RequestedFileReceiveController < ApplicationController
         redirect_to :action => 'index'
       end
     end
-    
+
     if pass_port == 'pass'
       session[:"#{@url_code}"] = {
               'r_auth' => nil,
@@ -118,18 +118,15 @@ class RequestedFileReceiveController < ApplicationController
           redirect_to :action => 'blank'
         else
           if @requested_matter.download_check == 1
-#            unless RequestedAttachment.find(:first,
-#                    :conditions => ["requested_matter_id = ?
-#                      AND download_flg = ?",
-#                      session[:"#{@url_code}"]['requested_matter_id'], 1])
-            unless RequestedAttachment
-                       .where([["requested_matter_id = ?",
-                                "download_flg = ?",
-                                ].join(" AND "),
-                               session[:"#{@url_code}"]['requested_matter_id'],
-                               1,
-                               ])
-                       .first
+#            unless RequestedAttachment
+#                       .where([["requested_matter_id = ?",
+#                                "download_flg = ?",
+#                                ].join(" AND "),
+#                               session[:"#{@url_code}"]['requested_matter_id'],
+#                               1,
+#                               ])
+#                       .first
+            unless @requested_attachment.download_flg == 1
               Notification.requested_file_dl_report(
                       @requested_attachment).deliver
             end

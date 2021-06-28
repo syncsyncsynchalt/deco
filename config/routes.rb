@@ -28,6 +28,7 @@ Rails.application.routes.draw do
     post :create_noflash, :on => :collection
     get :login, :on => :collection
     get :auth, :on => :collection
+    post :auth, :on => :collection
     get :result, :on => :collection
     get :result_ng, :on => :collection
     get :delete, :on => :collection
@@ -39,6 +40,8 @@ Rails.application.routes.draw do
     get :login, :on => :collection
     post :auth, :on => :collection
     get :get, :on => :collection
+    get :message, :on => :collection
+    get :illegal, :on => :collection
   end
 
   get 'file_send_moderate/index/:id', to: 'file_send_moderate#index'
@@ -78,6 +81,7 @@ Rails.application.routes.draw do
   get 'requested_file_send/blank/:id', to: 'requested_file_send#blank'
   get 'requested_file_send/result/:id', to: 'requested_file_send#result'
   get 'requested_file_send/delete/:id', to: 'requested_file_send#delete'
+  post 'requested_file_send/delete/:id', to: 'requested_file_send#delete'
   resources :requested_file_send do
     get :login, :on => :collection
     post :auth, :on => :collection
@@ -90,6 +94,7 @@ Rails.application.routes.draw do
     post :create_noflash, :on => :collection
     get :result, :on => :collection
     get :delete, :on => :collection
+    post :delete, :on => :collection
     get :result_ng, :on => :collection
     get :blank, :on => :collection
     get :message, :on => :collection
@@ -101,6 +106,7 @@ Rails.application.routes.draw do
     post :auth, :on => :collection
     get :get, :on => :collection
     get :blank, :on => :collection
+    get :message, :on => :collection
   end
 
   get 'content/load/:id', to: 'content#load'
